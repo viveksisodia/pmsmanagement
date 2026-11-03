@@ -1,0 +1,244 @@
+.wrapper {
+    display: flex;
+    height: calc(100vh - 190px);
+}
+
+/* LEFT PANEL */
+
+.user-panel {
+    width: 220px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+.user-header {
+    height: 52px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-row {
+    height: 40px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+}
+
+    .user-row img {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+    }
+
+.user-id {
+    margin-left: auto;
+    font-size: 12px;
+    color: #777;
+}
+
+/* CENTER */
+
+.timeline-wrapper {
+    flex: 1;
+    overflow: auto;
+    background: #fafafa;
+    position: relative;
+}
+
+.timeline-header,
+#timeline {
+    min-width: 4320px;
+}
+
+.timeline-header {
+    height: 52px;
+    display: flex;
+    position: sticky;
+    top: 0;
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+    z-index: 100;
+}
+
+.time-col {
+    min-width: 90px;
+    border-right: 1px solid #ececec;
+    text-align: center;
+    padding-top: 6px;
+    font-size: 11px;
+    color: #666;
+}
+
+    .time-col span {
+        display: block;
+        margin-top: 2px;
+        font-size: 13px;
+        color: #222;
+    }
+
+/* ROW */
+
+.timeline-row {
+    height: 40px;
+    position: relative;
+    border-bottom: 1px solid #eee;
+    min-width: 4320px;
+}
+
+/* AVAILABLE STRIP */
+
+.available-strip {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 4320px;
+    height: 20px;
+    background: repeating-linear-gradient( to right, #ffffff, #ffffff 14px, #e5ecf1 14px, #e5ecf1 16px );
+    z-index: 1;
+    border-top: 1px solid #e5ecf1;
+    border-bottom: 1px solid #e5ecf1;
+}
+
+/* PLANNED */
+
+.planned-time {
+    position: absolute;
+    top: 10px;
+    height: 20px;
+    background: #cbd9e5;
+    border-radius: 0px;
+    z-index: 2;
+}
+
+/* GRID */
+
+.grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(40,90px);
+    width: 4320px;
+}
+
+    /*.grid div {
+        border-right: 1px solid #ededed;
+    }*/
+
+/* TASK */
+
+.task-bar {
+    position: absolute;
+    top: 12px;
+    height: 16px;
+    background: #fff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px 0 0px;
+    font-size: 12px;
+    cursor: move;
+    user-select: none;
+    z-index: 20;
+    overflow: hidden;
+    white-space: nowrap;
+    justify-content: space-between;
+}
+
+    .task-bar:hover {
+        background: #f1f1f1;
+    }
+.left-icon {color:#afc1d0;font-size:15px;line-height: 1;}
+.task-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.close {
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 100%;
+    cursor: ew-resize;
+}
+
+.dragging {
+    opacity: .9;
+    z-index: 9999;
+    box-shadow: 0 10px 20px rgba(0,0,0,.15);
+}
+
+/* RIGHT PANEL */
+
+.task-panel {
+    width: 280px;
+    background: #fff;
+    border:0;
+    border-left: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.task-header {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+.badge {
+    background: #eee;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.task-list {
+    flex: 1;
+    overflow: auto;
+    padding:0 10px 10px 10px;
+}
+
+.task-card {
+    border: 1px solid #cbd9e5;
+    border-radius: 4px;
+    padding: 2px 10px 2px 0;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff;
+    cursor: grab;
+}
+
+.task-title {
+    flex: 1;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.assign-btn {
+    margin: 14px;
+    border: none;
+    background: #5a124f;
+    color: #fff;
+    padding: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}

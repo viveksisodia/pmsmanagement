@@ -1,0 +1,471 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">User</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <!--<a href="myprojects.html">Projects</a>-->
+        <a href="mytask.html" class="active">My Task</a>
+        <a href="task-logs.html">Task Logs</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-4 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Task</div>
+                        <div class="d-flex align-items-center gap-1 me-3">
+                            <i class="ri-arrow-left-s-line" id="prevBtn" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                            <i class="ri-calendar-line text-muted" style="font-size: 16px;"></i>
+                            <span style="font-size: 15px;" id="calendarTitle">May 2026</span>
+                            <i class="ri-arrow-right-s-line" id="nextBtn" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-open-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Open</span></div>
+                                            <div class="tile-body">25</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-warning"><i class="bx bx-hourglass"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Work in Progress</span></div>
+                                            <div class="tile-body">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-info"><i class="bx bx-history"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Reopen</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <!--<div class="search_box me-2">
+            <input type="text" class="form-control" id="" placeholder="Search...">
+            <i class="ri-search-line"></i>
+        </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <a href="mytask.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="List View"><i class="ri-list-check"></i></a>
+                        <a href="mytask-kanban.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Kanban View"><i class="las la-chart-bar2"></i></a>
+                        <a href="mytask-timesheet.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Timesheet"><i class="bx bx-server"></i></a>
+                        <a href="mytask-weekly.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Weekly View"><i class="ri-time-line"></i></a>
+                        <a href="mytask-calendar.html" class="sub-soft-btn active" data-bs-toggle="tooltip" title="Calendar"><i class="bx bx-calendar"></i></a>
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Filter"><i class="ri-filter-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner calendar_view p-0">
+            <div class="row g-2">
+
+                <!-- LEFT -->
+                <div class="col-xl-8"> 
+                    <!-- CALENDAR -->
+                    
+                        <div id="calendar"></div>
+                    
+                </div>
+                <!-- RIGHT PANEL -->
+                <div class="col-xl-4">
+
+                    <div class="task-panel h-100">
+
+                        <div class="task-header d-flex justify-content-between align-items-center">
+
+                            <h4 class="mb-0" id="selectedDate" style="font-weight:600;">
+                                11 May 2026
+                            </h4>
+                            <button class="sub-soft-btn" data-bs-toggle="tooltip" title="+ Add Task"><i class="ri-add-line"></i></button>
+                        </div>
+
+                        <div class="table-responsive">
+
+                            <table class="table align-middle tbl_cal_status mb-0">
+
+                                <thead>
+
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Project Name</th>
+                                        <th>Assigned Hours</th>
+                                        <th>Status</th>
+                                    </tr>
+
+                                </thead>
+
+                                <tbody id="taskTableBody"></tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script src="/pms/new/assets/js/index.global.min.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+
+        // =========================
+        // TASK DATA
+        // =========================
+
+        const tasks = {
+
+            "2026-05-11": [
+
+                {
+                    tdbg: "#ffc300",
+                    name: "Financing cost",
+                    project: "Construction XYZ",
+                    assignhrs:"02:30:00",
+                    status: "success",
+                    color: "danger"
+                },
+
+                {
+                    tdbg: "#3978de",
+                    name: "Engineering cost",
+                    project: "Construction XYZ",
+                    assignhrs: "02:30:00",
+                    status: "warning",
+                    color: "primary"
+                },
+
+                {
+                    tdbg: "#ff2b2f",
+                    name: "Other Task",
+                    project: "Construction XYZ",
+                    assignhrs: "02:30:00",
+                    status: "success",
+                    color: "warning"
+                }
+
+            ]
+
+        };
+
+        // =========================
+        // EVENTS
+        // =========================
+
+        const events = [];
+
+        for (let day = 1; day <= 30; day++) {
+
+            events.push({
+
+                title: "5 Tasks",
+
+                start: `2026-05-${String(day).padStart(2, '0')}`,
+
+                className: "calendar-event",
+
+                extendedProps: {
+
+                    assigned: "08:00:00",
+                    actual: "07:30:00"
+
+                }
+
+            });
+
+        }
+
+        // =========================
+        // INIT CALENDAR
+        // =========================
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+
+                // MONTH VIEW ONLY
+                initialView: 'dayGridMonth',
+
+                initialDate: '2026-05-01',
+
+                height: 'auto',
+
+                fixedWeekCount: true,
+
+                showNonCurrentDates: true,
+
+                // HIDE INTERNAL HEADER
+                headerToolbar: false,
+
+                events: events,
+
+                // CUSTOM EVENT DESIGN
+                eventContent: function (arg) {
+
+                    return {
+
+                        html: `
+
+                            <div>
+
+                                <div class="event-title">
+                                    ${arg.event.title}
+                                </div>
+
+                                <div class="event-time">
+                                    Assigned Time: ${arg.event.extendedProps.assigned}
+                                </div>
+
+                                <div class="event-hours">
+                                    Actual Hrs: ${arg.event.extendedProps.actual}
+                                </div>
+
+                            </div>
+
+                        `
+                    };
+                },
+
+                // UPDATE TITLE
+                datesSet: function (info) {
+
+                    document.getElementById('calendarTitle')
+                        .innerText = info.view.title;
+
+                },
+
+                // DATE CLICK
+                dateClick: function (info) {
+
+                    loadTasks(info.dateStr);
+
+                }
+
+            });
+
+            calendar.render();
+
+            // DEFAULT TASK LOAD
+            loadTasks('2026-05-11');
+
+            // =========================
+            // EXTERNAL CONTROLS
+            // =========================
+
+            document.getElementById('prevBtn')
+                .addEventListener('click', function () {
+
+                    calendar.prev();
+
+                });
+
+            document.getElementById('nextBtn')
+                .addEventListener('click', function () {
+
+                    calendar.next();
+
+                });
+
+
+        });
+
+        // =========================
+        // LOAD TASK TABLE
+        // =========================
+
+        function loadTasks(date) {
+
+            const tbody = document.getElementById('taskTableBody');
+
+            const dateText = new Date(date).toLocaleDateString('en-GB', {
+
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+
+            });
+
+            document.getElementById('selectedDate')
+                .innerText = dateText;
+
+            tbody.innerHTML = '';
+
+            const selectedTasks = tasks[date] || [];
+
+            if (selectedTasks.length === 0) {
+
+                tbody.innerHTML = `
+
+                    <tr>
+
+                        <td colspan="4"
+                            class="text-center py-5 text-muted">
+
+                            No Tasks Available
+
+                        </td>
+
+                    </tr>
+
+                `;
+
+                return;
+            }
+
+            selectedTasks.forEach((task, index) => {
+
+                tbody.innerHTML += `
+
+                    <tr>
+
+                        <td class="color_border" style="border-left-color:${task.tdbg} !important;">
+
+                            <span class="task-dot bg-${task.color}"></span>
+
+                            ${task.name}
+
+                        </td>
+
+                        <td>${task.project}</td>
+                        <td>${task.assignhrs}</td>
+
+                        <td>
+
+                            <div class="status-icon status-${task.status}">
+
+                                ${
+                    task.status === 'success'
+                        ? '<i class="las la-check-circle"></i>'
+                        : '<i class="las la-history"></i>'
+                    }
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                `;
+            });
+
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,809 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="popupmaster - Copy.master.cs" Inherits="popupmaster" %>
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>Project Management</title>    
+    <link rel="shortcut icon" href="/pms/assets/images/favicon.png">
+    <link rel="stylesheet" href="/pms/assets/libs/dragula/dragula.min.css">
+    <link href="/pms/assets/js/jquery.dataTables.min.css" rel="stylesheet" type="text/css">  
+    <link href="/pms/assets/libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <script src="/pms/assets/js/layout.js"></script>
+    <link href="/pms/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/pms/assets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="/pms/assets/css/app.min.css" rel="stylesheet" type="text/css">
+    <link href="/pms/assets/css/custom.min.css" rel="stylesheet" type="text/css">
+   
+    <style>
+        body {background:#fff;}
+    </style>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager runat="server" > </asp:ScriptManager>
+    
+    <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">        
+    </asp:ContentPlaceHolder>
+<!-- JAVASCRIPT -->
+    <%--<script src="/pms/assets/js/jquery-3.7.0.js"></script>--%>
+    <script src="/pms/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/assets/libs/simplebar/simplebar.min.js"></script>
+    <script src="/pms/assets/js/plugins.js"></script>
+    <script src="/pms/assets/libs/prismjs/prism.js"></script>
+    <script src="/pms/assets/js/app.js"></script>  
+<div class="offcanvas offcanvas-end" id="addcolumns" data-bs-backdrop="static" tabindex="-1" data-bs-scroll="false">
+    <div class="offcanvas-header border-bottom" style="padding:14px 24px;">
+        <h5 class="offcanvas-title"">Add Columns</h5>
+        <div class="hstack gap-2">
+            <button type="button" onclick="fs1Function()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsr"><i class="ph-arrows-out-simple-bold"></i></button>
+            <button type="button" onclick="fse1Function()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsre"><i class="ph-arrows-in-simple-bold"></i></button>
+            <button type="button" class="btn btn-danger btn-icon btn-sm rounded-circle btn-ios" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ph-x-bold"></i></button>
+        </div>
+    </div>
+    <div class="offcanvas-body p-0 overflow-hidden">
+        <div data-simplebar style="height: calc(100vh - 112px);">
+            <div class="acitivity-timeline p-4">
+                <div class="row gy-4">
+                    <div class="col-lg-12">
+                        <div class="lead_form">
+                            <div class="lead_form_head">
+                            <h4>+ Add Custom Columns</h4>
+                            </div>
+                            <div class="lead_form_body">
+                                <div class="row">
+                                    <div class="col-xxl-12 col-lg-12">
+                                        <div class="d-flex align-items-center">
+                                            <label class="form-label flex-grow-1">Column Type</label>
+                                        </div>
+                                        <select class="form-control">
+                                            <option>-- Select --</option>
+                                            <option selected="selected">Text Box</option>
+                                            <option>Textarea</option>
+                                            <option>Dropdown</option>
+                                            <option>Multi Select</option>
+                                            <option>Date</option>
+                                            <option>Time</option>
+                                            <option>Checkbox</option>
+                                            <option>Radiobox</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xxl-12 col-lg-12">
+                                        <div class="d-flex align-items-center">
+                                            <label class="form-label flex-grow-1">Column Name</label>
+                                            <div class="gap-1 flex-shrink-0 align-self-center">
+                                                <div class="form-check">
+                                                    <label class="form-label">
+                                                        <input class="form-check-input" type="checkbox" />
+                                                        Is Mandatory
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="text" class="form-control">
+                                    </div>
+                                    <div class="col-xxl-12 col-lg-12 mb-2" style="">
+                                        <div class="d-flex align-items-center">
+                                            <label class="form-label flex-grow-1">Add Dropdown Values</label>
+                                        </div>
+                                        <div class="bg-light p-3 border">
+                                            <div class="input-group mb-3">
+                                                <input type="text" class="form-control" aria-label="Recipient's username with two button addons">
+                                                <button class="btn btn-success" type="button">Add</button>
+                                            </div>
+                                            <div class="list-group nested-list nested-sortable-handle custom-sortable">
+                                                <div class="list-group-item">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="flex-grow-1"><i class="ri-drag-move-fill align-bottom handle"></i>Select 1</div>
+                                                        <div class="flex-shrink-0 dropdown">
+                                                            <a href="#!" class="text-reset d-inline-block" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="bi bi-three-dots-vertical"></i>
+                                                            </a>
+                                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                                <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square me-1 align-baseline"></i> Edit</a></li>
+                                                                <li><a class="dropdown-item" href="#"><i class="bi bi-trash3 me-1 align-baseline"></i> Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="list-group-item">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="flex-grow-1"><i class="ri-drag-move-fill align-bottom handle"></i>Select 2</div>
+                                                        <div class="flex-shrink-0 dropdown">
+                                                            <a href="#!" class="text-reset d-inline-block" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="bi bi-three-dots-vertical"></i>
+                                                            </a>
+                                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                                <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square me-1 align-baseline"></i> Edit</a></li>
+                                                                <li><a class="dropdown-item" href="#"><i class="bi bi-trash3 me-1 align-baseline"></i> Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="list-group-item">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="flex-grow-1"><i class="ri-drag-move-fill align-bottom handle"></i>Select 3</div>
+                                                        <div class="flex-shrink-0 dropdown">
+                                                            <a href="#!" class="text-reset d-inline-block" data-bs-toggle="dropdown" aria-expanded="false">
+                                                                <i class="bi bi-three-dots-vertical"></i>
+                                                            </a>
+                                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                                <li><a class="dropdown-item" href="#"><i class="bi bi-pencil-square me-1 align-baseline"></i> Edit</a></li>
+                                                                <li><a class="dropdown-item" href="#"><i class="bi bi-trash3 me-1 align-baseline"></i> Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xxl-12 col-lg-12">
+                                        <div class="d-flex align-items-center">
+                                            <label class="form-label flex-grow-1">Default Value</label>
+                                        </div>
+                                        <input type="text" class="form-control" style="display:none;">
+                                        <textarea class="form-control" style="display:none;"></textarea>
+                                        <select class="form-control" style="display:none;">
+                                            <option>-- Select --</option>
+                                            <option>Select 1</option>
+                                            <option>Select 2</option>
+                                            <option>Select 3</option>
+                                        </select>
+                                        <div class="mb-2" style="">
+                                        <select id="select_custom" class="form-control" multiple="multiple">
+                                            <option>Select 1</option>
+                                            <option>Select 2</option>
+                                            <option>Select 3</option>
+                                        </select>
+                                        </div>
+                                        <input type="date" class="form-control" style="display:none;">
+                                        <input type="time" class="form-control" style="display:none;">
+                                        <div class="form-check" style="display:none;">
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <label class="form-label d-block">
+                                                        <input class="form-check-input" type="checkbox" />
+                                                        Checkbox 1
+                                                    </label>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <label class="form-label d-block">
+                                                        <input class="form-check-input" type="checkbox" />
+                                                        Checkbox 2
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-check form-radio-primary" style="display:none;">
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <label class="form-check-label d-block">
+                                                        <input value="" name="radiobox" type="radio" class="form-check-input">
+                                                        Radiobox 1
+                                                    </label>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <label class="form-check-label d-block">
+                                                        <input value="" name="radiobox" type="radio" class="form-check-input">
+                                                        Radiobox 2
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+
+                                    <div class="col-xxl-12 col-lg-12">
+                                        <div class="d-flex align-items-center">
+                                            <label class="form-label flex-grow-1">Description</label>
+                                        </div>
+                                        <textarea class="form-control"></textarea>
+                                    </div>
+                                    <div class="col-xxl-12 col-lg-12">
+                                        <div class="d-flex align-items-center">
+                                            <label class="form-label flex-grow-1">Access</label>
+                                        </div>
+                                        <select id="select_access" class="form-control" multiple="multiple">
+                                            <option>Staff</option>
+                                            <option>Client</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%--<div class="offcanvas-foorter border p-3 pt-1 pb-1 text-right"> 
+        <a href="javascript:void(0);" class="btn btn-danger" data-bs-dismiss="offcanvas" aria-label="Close">Close</a>
+        <a href="javascript:void(0);" class="btn btn-success">Add</a>
+    </div>--%>
+</div>
+<div id="conversation" class="modal fade bs-example-modal-center" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header p-3 pt-1 pb-1 bg-light" style="border-bottom:1px solid #ccc;">
+                <h5 class="modal-title">Conversation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 pt-0" style="min-height:465px;">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs-custom nav-tab-rpv"
+                    role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#Comments1" role="tab">Comments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#Documents1" role="tab">Documents
+                            
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#ActiveLog1" role="tab">Active Log</a>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content text-muted">
+                    <div class="tab-pane active" id="Comments1" role="tabpanel">                        
+                        <div class="chat-conversation p-3" data-simplebar style="height: 350px;">
+                            <ul class="list-unstyled chat-conversation-list chat-sm">
+                                <li class="chat-list left">
+                                    <div class="conversation-list">
+                                        <div class="chat-avatar">
+                                            <img src="/pms/assets/images/avatar-2.jpg" alt="">
+                                        </div>
+                                        <div class="user-chat-content">                                                
+                                            <h6>Frank Hook</h6>
+                                            <div class="ctext-wrap">
+                                                <div class="ctext-wrap-content">
+                                                    <p class="mb-0 ctext-content">Good morning All</p>
+                                                </div>
+                                                <div class="dropdown align-self-start message-box-drop">
+                                                    <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2 text-muted align-bottom"></i>Reply</a>
+                                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line me-2 text-muted align-bottom"></i>Copy</a>
+                                                        <a class="dropdown-item delete-item" href="#"><i class="ri-delete-bin-5-line me-2 text-muted align-bottom"></i>Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="conversation-name"><small class="text-muted">23/02/2024</small> | <small class="text-muted">09:10 am</small></div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- chat-list -->
+                                <li class="chat-list right">
+                                    <div class="conversation-list">
+                                        <div class="user-chat-content">
+                                            <div class="ctext-wrap">
+                                                <div class="ctext-wrap-content">
+                                                    <p class="mb-0 ctext-content">Good morning, How are you? What about our next meeting?</p>
+                                                </div>
+                                                <div class="dropdown align-self-start message-box-drop">
+                                                    <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2 text-muted align-bottom"></i>Reply</a>
+                                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line me-2 text-muted align-bottom"></i>Copy</a>
+                                                        <a class="dropdown-item delete-item" href="#"><i class="ri-delete-bin-5-line me-2 text-muted align-bottom"></i>Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="conversation-name"><small class="text-muted">23/02/2024</small> | <small class="text-muted">09:10 am</small></div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- chat-list -->
+                                <li class="chat-list left">
+                                    <div class="conversation-list">
+                                        <div class="chat-avatar">
+                                            <img src="/pms/assets/images/avatar-1.jpg" alt="">
+                                        </div>
+                                        <div class="user-chat-content">                                                
+                                            <h6>Christi</h6>
+                                            <div class="ctext-wrap">
+                                                <div class="ctext-wrap-content">
+                                                    <p class="mb-0 ctext-content">Good morning</p>
+                                                </div>
+                                                <div class="dropdown align-self-start message-box-drop">
+                                                    <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2 text-muted align-bottom"></i>Reply</a>
+                                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line me-2 text-muted align-bottom"></i>Copy</a>
+                                                        <a class="dropdown-item delete-item" href="#"><i class="ri-delete-bin-5-line me-2 text-muted align-bottom"></i>Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="conversation-name"><small class="text-muted">23/02/2024</small> | <small class="text-muted">09:10 am</small></div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- chat-list -->
+                                <li class="chat-list left">
+                                    <div class="conversation-list">
+                                        <div class="chat-avatar">
+                                            <img src="/pms/assets/images/avatar-2.jpg" alt="">
+                                        </div>
+                                        <div class="user-chat-content">
+                                            <h6>Frank Hook</h6>
+                                            <div class="ctext-wrap">
+                                                <div class="ctext-wrap-content">
+                                                    <p class="mb-0 ctext-content">Yeah everything is fine. Our next meeting tomorrow at 10.00 AM</p>
+                                                </div>
+                                                <div class="dropdown align-self-start message-box-drop">
+                                                    <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2 text-muted align-bottom"></i>Reply</a>
+                                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line me-2 text-muted align-bottom"></i>Copy</a>
+                                                        <a class="dropdown-item delete-item" href="#"><i class="ri-delete-bin-5-line me-2 text-muted align-bottom"></i>Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="conversation-name"><small class="text-muted">23/02/2024</small> | <small class="text-muted">09:10 am</small></div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- chat-list -->
+
+                                <li class="chat-list right">
+                                    <div class="conversation-list">
+                                        <div class="user-chat-content">
+                                            <div class="ctext-wrap">
+                                                <div class="ctext-wrap-content">
+                                                    <p class="mb-0 ctext-content">Wow that's great</p>
+                                                </div>
+                                                <div class="dropdown align-self-start message-box-drop">
+                                                    <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2 text-muted align-bottom"></i>Reply</a>
+                                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line me-2 text-muted align-bottom"></i>Copy</a>
+                                                        <a class="dropdown-item delete-item" href="#"><i class="ri-delete-bin-5-line me-2 text-muted align-bottom"></i>Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="conversation-name"><small class="text-muted">23/02/2024</small> | <small class="text-muted">09:10 am</small></div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- chat-list -->
+                                <li class="chat-list left">
+                                    <div class="conversation-list">
+                                        <div class="chat-avatar">
+                                            <img src="/pms/assets/images/avatar-1.jpg" alt="">
+                                        </div>
+                                        <div class="user-chat-content">                                                
+                                            <h6>Christi</h6>
+                                            <div class="ctext-wrap">
+                                                <div class="ctext-wrap-content">
+                                                    <p class="mb-0 ctext-content">Good</p>
+                                                </div>
+                                                <div class="dropdown align-self-start message-box-drop">
+                                                    <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="ri-more-2-fill"></i>
+                                                    </a>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="#"><i class="ri-reply-line me-2 text-muted align-bottom"></i>Reply</a>
+                                                        <a class="dropdown-item" href="#"><i class="ri-file-copy-line me-2 text-muted align-bottom"></i>Copy</a>
+                                                        <a class="dropdown-item delete-item" href="#"><i class="ri-delete-bin-5-line me-2 text-muted align-bottom"></i>Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="conversation-name"><small class="text-muted">23/02/2024</small> | <small class="text-muted">09:10 am</small></div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- chat-list -->
+                            </ul>
+                        </div>                        
+                        <div class="border-top border-top-dashed">
+                            <div class="row g-2 mx-3 mt-2 mb-0">
+                                <div class="col">
+                                    <div class="position-relative">
+                                        <input type="text" class="form-control border-light bg-light" placeholder="Enter Message...">
+                                    </div>
+                                </div><!-- end col -->
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-secondary"><i class="ti ti-send"></i></button>
+                                </div><!-- end col -->
+                            </div><!-- end row -->
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="Documents1" role="tabpanel">
+                        <%--<div class="lead_form_body p-2 pb-0 mt-2">
+                            <input type="text" class="form-control" placeholder="File Name">
+                        </div>   --%> 
+                        <div class="input-group p-2 mb-2 mt-2">
+                            <input type="file" class="form-control" style="border-color:#777;border-radius:0px;" aria-label="Upload">
+                            <button class="btn btn-success" style="border-radius:0px;"  type="button">Upload</button>                                                    
+                        </div>
+                            
+                        <div class="p-2 pt-0 pb-0" data-simplebar style="max-height: 300px;">
+                            <%--<p>No file selected.</p>--%>
+                            <table class="table table-sm text-left">
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-pdf-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-word-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-excel-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-pdf-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-word-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-image-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-pdf-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-word-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                                <tr>
+                                    <td width="45px"><div class="attch_icon"><i class="bi bi-file-earmark-image-fill"></i></div></td>
+                                    <td>
+                                        <span>File name here...</span><br />
+                                        <small class="text-muted">23/02/2024 (79.2 KB)</small>
+                                    </td>
+                                    <td class="text-right" style="vertical-align:middle;"><a href="javascript:void(0);" class="btn btn-success btn-icon btn-sm"><i class="ri-eye-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="View"></i></a> <a href="javascript:void(0);" class="btn btn-danger btn-icon btn-sm"><i class="ri-delete-bin-5-line" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="Delete"></i></a></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="ActiveLog1" role="tabpanel">
+                        
+                    </div>                                        
+                </div>
+            </div>
+            <%--<div class="pb-3 text-center">
+                <button type="button" class="btn btn-primary">Add</button>
+            </div>--%>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<div id="changeowner" class="modal fade bs-example-modal-center" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3 pt-1 pb-1 bg-light" style="border-bottom:1px solid #ccc;">
+                <h5 class="modal-title">Change Owner</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 pb-2">
+                <div class="lead_form_body m-0 p-0">
+                    <div class="row"> 
+                        <div class="col-sm-12 mb-1">
+                            <select class="form-control">
+                                <option value="1">Christi</option>
+                                <option value="2">Frank Hook</option>
+                                <option value="3">Ruby</option>
+                                <option value="4">Vivek Sisodia</option>
+                                <option value="5">Avneesh</option>
+                                <option value="6">Mohit Sharma</option>
+                                <option value="7">Amit Kumar</option>
+                                <option value="8">Jone Doe</option>
+                                <option value="9">Avdhesh Singh</option>
+                                <option value="10">Ranjay Varun</option>
+                                <option value="11">Sachin Gupta</option>
+                                <option value="12">Sanjeev</option>                                
+                                <option value="13" selected="selected">Lewis Arnold</option>
+                            </select>
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+            <div class="pb-3 text-center">
+                <button type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<div id="addteam" class="modal fade bs-example-modal-center" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header p-3 pt-1 pb-1 bg-light" style="border-bottom:1px solid #ccc;">
+                <h5 class="modal-title">Add Team</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 pb-2">
+                <div class="lead_form_body m-0 p-0">
+                    <div class="row"> 
+                        <div class="col-sm-12 mb-1">
+                            <select id="select_emp1" class="form-control" multiple="multiple">
+                                <option value="1" selected="selected">Christi</option>
+                                <option value="2" selected="selected">Frank Hook</option>
+                                <option value="3" selected="selected">Ruby</option>
+                                <option value="4" selected="selected">Vivek Sisodia</option>
+                                <option value="5" selected="selected">Avneesh</option>
+                                <option value="6">Mohit Sharma</option>
+                                <option value="7">Amit Kumar</option>
+                                <option value="8">Jone Doe</option>
+                                <option value="9">Avdhesh Singh</option>
+                                <option value="10">Ranjay Varun</option>
+                                <option value="11">Sachin Gupta</option>
+                                <option value="12">Sanjeev</option>
+                            </select>
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+            <div class="pb-3 text-center">
+                <button type="button" class="btn btn-primary">Add</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<div id="boq" class="modal fade bs-example-modal-center" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header p-3 pt-1 pb-1 bg-light" style="border-bottom:1px solid #ccc;">
+                <h5 class="modal-title">Bill of Quantity (BOQ)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 pb-2">
+                <div class="row">
+                    <div class="col-sm mb-2">
+                        <div class="d-flex justify-content-sm-end">
+                        <div class="btn-group mt-4 mt-sm-0" role="group" aria-label="Basic example">
+                            <button type="button" class="btn btn-outline-primary btn-icon"><span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="IMPORT FROM ANOTHER SOFTWARE"><i class="ri-download-2-line"></i></span></button>
+                            <button type="button" class="btn btn-outline-primary btn-icon"><span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="SEND BY MAIL"><i class="ri-mail-send-line"></i></span></button>                                           
+                            <button type="button" class="btn btn-outline-primary btn-icon"><span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover" title="DOWNLOAD"><i class="ri-download-line"></i></span></button>
+                        </div>
+                        </div>
+                    </div>                                
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle table-striped table-hover table-nowrap table-bordered table-sm">
+                        <tr>
+                            <th>S.No.</th>
+                            <th>Item & Description</th>
+                            <th>Quantity</th>
+                            <th>Make & Model</th>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <%--<div class="pb-3 text-center">
+                <button type="button" class="btn btn-primary">Add</button>
+            </div>--%>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<div id="actualbudget" class="modal fade bs-example-modal-center" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header p-3 pt-1 pb-1 bg-light" style="border-bottom:1px solid #ccc;">
+                <h5 class="modal-title">Project Cost Sheet Actual Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 pb-2">
+                <div class="lead_form_body m-0 p-0">
+                    <div class="row"> 
+                                              
+                    </div>
+                </div>
+            </div>
+            <%--<div class="pb-3 text-center">
+                <button type="button" class="btn btn-primary">Add</button>
+            </div>--%>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<%--<script>    
+document.querySelectorAll('a.toggle-vis').forEach((el) => {
+    el.addEventListener('click', function (e) {
+        e.preventDefault();
+ 
+        let columnIdx = e.target.getAttribute('data-column');
+        let column = table.column(columnIdx);
+ 
+        // Toggle the visibility
+        column.visible(!column.visible());
+    });
+});
+$('.dropdown-item.toggle-vis').click(function (e) {
+    if ($(this).hasClass("text-mute")) {
+        $(this).removeClass("text-mute");
+    }
+    else {
+        $(this).addClass("text-mute");
+    }
+});
+</script>--%>
+<script>
+    $('#select_emp1').select2({
+        dropdownParent: $("#addteam"),
+        placeholder: 'Select Employee',
+	    width: '100%',
+        closeOnSelect: false,
+        allowClear: true,
+    });   
+</script>
+<script>
+    $('#select_access').select2({
+        dropdownParent: $("#addcolumns"),
+        placeholder: 'Select access',
+	    width: '100%',
+        closeOnSelect: true,
+        allowClear: true,
+    });   
+</script>
+<script>
+    $('#select_custom').select2({
+        dropdownParent: $("#addcolumns"),
+        placeholder: '-- Select --',
+	    width: '100%',
+        closeOnSelect: true,
+        allowClear: true,
+    });   
+</script>
+
+<script type="text/javascript" src="/pms/assets/js/moment.min.js"></script>
+<script type="text/javascript" src="/pms/assets/js/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/pms/assets/js/daterangepicker.css" />
+<script>
+$(function() {
+  $('.timesheet-wrap').daterangepicker({
+    opens: 'center'
+  });
+});
+$('.dayswrapper').daterangepicker({
+    opens: 'center',
+    locale: {
+      format: 'DD/MM/YYYY'
+    }
+  });
+</script>
+<script>
+$('body').on('click', function (e) {
+        $('[data-bs-toggle=popover]').each(function () {
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                (($(this).popover('hide').data('bs.popover')||{}).inState||{}).click = false;
+            }
+        });
+    });
+</script>
+<%--<script>
+    $(function () {
+$('[data-bs-toggle="tooltip"]').tooltip()
+    })
+$('[data-bs-toggle-second="tooltip"]').tooltip();
+</script>--%>
+<script>
+    var count11 = 1;
+    function loadsrc(val1, val2) {
+        count11++;
+        //alert(val1);
+
+        if (val2.includes("aspx?")) {
+            document.getElementById(val1).src = val2 + "&count=" + count11;
+        }
+        else
+        {
+
+            document.getElementById(val1).src = val2 + "?count=" + count11;
+        }
+        try {
+
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+
+    
+</script>
+
+
+      
+
+   <%-- <script>
+$(function() {
+  $('.timesheet-wrap').daterangepicker({
+    opens: 'center'
+  });
+});
+
+</script>--%>
+
+        
+<div class="offcanvas offcanvas-end canvas_lg_screen canvas-fullscreen" id="canvas_popup_multinew" data-bs-backdrop="static" tabindex="-1" data-bs-scroll="false">
+    <div style="display:none;">
+     <button type="button" id="btnclosemainpopupmulti" class="btn btn-danger btn-icon btn-sm rounded-circle btn-ios" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ph-x-bold"></i></button>
+      <button type="button" id="btnclosemainpopupzoominmulti" onclick="fse3Functionmulti()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsr"><i class="ph-arrows-out-simple-bold"></i></button>
+      <button type="button" id="btnclosemainpopupzoomoutmulti" onclick="fs3Functionmulti()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsre"><i class="ph-arrows-in-simple-bold"></i></button>
+    </div>
+    <iframe id='inner_popup_multinew' width="100%" height="100%" style="padding:0px 0px;" border="0px"></iframe>      
+   </div>
+        <script>
+    var count11 = 1;
+    function loadsrcnew(val1, val2) {
+        count11++;
+        //alert(val1);
+debugger
+if (window.top) {
+  window.top.close(); // Attempt to close the top window
+}
+        if (val2.includes("aspx?"))
+        {
+          document.getElementById(val1).src = val2 + "&count=" + count11;
+        }
+        else
+        {
+         document.getElementById(val1).src = val2 + "?count=" + count11;
+        }
+       
+        try {
+
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+</script>
+    </form>
+</body>
+</html>

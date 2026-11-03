@@ -1,0 +1,102 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="angular_headpopup.master.cs" Inherits="angularmaster_angular" %>
+
+   
+<!DOCTYPE html>
+
+<html lang="en" >
+<head runat="server">
+ <meta charset="utf-8" />
+    <title>Absolute ERP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/pms/angularmaster/js/angular.min.js"></script>
+    <script src="/pms/angularmaster/js/angular-sanitize.js"></script>
+    <script src="/pms/angularmaster/js/dirPagination.js"></script> 
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+      <link href="/pms/new/assets/css/drag-task.css" rel="stylesheet" />    
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+     
+    <form id="form1" runat="server">
+        <asp:ScriptManager runat="server" EnablePageMethods="true"></asp:ScriptManager>
+       
+         <!-- Main Nav -->
+    
+       <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+        
+        </asp:ContentPlaceHolder>
+   
+<script>
+    var count11 = 1;
+    function loadsrc(val1, val2) {
+        count11++;
+        //alert(val1);
+        if (val2.includes("aspx?"))
+        {
+          document.getElementById(val1).src = val2 + "&count=" + count11;
+        }
+        else
+        {
+             document.getElementById(val1).src = val2 + "?count=" + count11;
+        }
+       
+        try {
+
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+function loadsrc_angold(val1, val2) {
+        count11++;
+        //alert(val1);
+        document.getElementById(val1).src="";            
+        
+       
+        try {
+document.getElementById(val1).src = val2;
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+function loadsrc_ang(frameId, url) {
+
+    let frame = document.getElementById(frameId);
+
+    if (frame) {
+        frame.src = "about:blank";   // force reset
+
+        setTimeout(function () {
+            frame.src = url + "&r=" + Date.now();
+        }, 50);
+    }
+}
+</script>
+        <script src="/angularmaster/assets/js/app.js"></script>
+    <%--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>--%>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+        
+    <script src="/pms/angularmaster/js/sweetalert.js"></script>
+        <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+        
+    </form>
+     
+    
+   
+
+  
+
+</body>
+</html>

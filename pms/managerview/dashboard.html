@@ -1,0 +1,1034 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+
+    <script src="/pms/new/assets/js/chart.js"></script>
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+    </style>
+    <style>
+        .dashboard1 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .dashboard2 {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .dashboard3 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            padding:12px;
+            margin:0px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding:0;
+        }
+
+            .card-header h3 {
+                font-size: 16px;
+                color: #000;
+                margin:0;
+            }
+
+        select {
+            padding: 3px 5px;
+            border: 1px solid #ddd;
+            border-radius: 0px;
+            outline: none;
+            background:#fff;
+            cursor:pointer;
+        }
+
+        .chart-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .chart-box {
+            width: 160px;
+            height: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-box {
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .legend {
+            list-style: none;
+            font-size: 14px;
+            line-height: 1.9;
+            padding: 0;
+        }
+
+            .legend li {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 9px;
+            }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .wide {
+            grid-template-columns: 1fr 2fr;
+        }
+
+        @media(max-width:1100px) {
+            .dashboard1, .dashboard2, .dashboard3 {
+                grid-template-columns: repeat(2,1fr);
+            }
+
+            .wide {
+                grid-column: span 2;
+            }
+        }
+
+        @media(max-width:767px) {
+            .dashboard1, .dashboard2, .dashboard3 {
+                grid-template-columns: 1fr;
+            }
+
+            .wide {
+                grid-column: span 1;
+            }
+
+            .chart-wrapper {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">Project Manager</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="myprojects.html">Projects</a>
+        <a href="mytask.html">Task</a>
+        <a href="myteam.html">Team</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-3 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Dashboard</div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-2-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Total Project</span></div>
+                                            <div class="tile-body">52</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-warning"><i class="bx bx-hourglass"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Inprogress</span></div>
+                                            <div class="tile-body">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-info"><i class="ri-share-forward-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Ready to Live</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-gray"><i class="bx bx-archive"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Hold</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-3 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <div class="d-flex align-items-center gap-1 me-2">
+                            <i class="ri-calendar-line text-muted" style="font-size: 16px;"></i>
+                            <span style="font-size: 15px;">04/05/2025</span>
+                            <i class="ri-arrow-down-s-line" style="font-size: 20px;line-height: 1;"></i>
+                        </div>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-3">
+            <div class="dashboard1">
+                <!-- Projects -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Projects</h3>
+                        <select>
+                            <option>Status</option>
+                            <option>Priority</option>
+                            <option>Situation</option>
+                        </select>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="projectChart"></canvas>
+                        </div>
+                        <ul class="legend">
+                            <li><span class="dot" style="background:#f7c948"></span> 1 To be started (4%)</li>
+                            <li><span class="dot" style="background:#f4a582"></span> 8 Inprogress (83%)</li>
+                            <li><span class="dot" style="background:#a5b4fc"></span> 2 Ready to Live (9%)</li>
+                            <li><span class="dot" style="background:#607d8b"></span> 1 Hold (4%)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Milestones -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Milestones</h3>
+                        <select>
+                            <option>Status</option>
+                            <option>Priority</option>
+                            <option>Situation</option>
+                        </select>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="milestoneChart"></canvas>
+                        </div>
+                        <ul class="legend">
+                            <li><span class="dot" style="background:#f7c948"></span> 1 To be started (4%)</li>
+                            <li><span class="dot" style="background:#f4a582"></span> 4 Inprogress (83%)</li>
+                            <li><span class="dot" style="background:#a5b4fc"></span> 2 Ready to Live (9%)</li>
+                            <li><span class="dot" style="background:#607d8b"></span> 1 Hold (4%)</li>
+                            <li><span class="dot" style="background:#4ade80"></span> 0 Completed (0%)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Task -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Task</h3>
+                        <select>
+                            <option>Status</option>
+                            <option>Priority</option>
+                            <option>Situation</option>
+                        </select>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="taskChart"></canvas>
+                        </div>
+                        <ul class="legend">
+                            <li><span class="dot" style="background:#f7c948"></span> 1 To be started (0%)</li>
+                            <li><span class="dot" style="background:#f4a582"></span> 32 Inprogress (85%)</li>
+                            <li><span class="dot" style="background:#a5b4fc"></span> 20 Ready to Live (10%)</li>
+                            <li><span class="dot" style="background:#607d8b"></span> 1 Hold (5%)</li>
+                            <li><span class="dot" style="background:#4ade80"></span> 2 Completed (10%)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Subtask -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Subtask</h3>
+                        <select>
+                            <option>Status</option>
+                            <option>Priority</option>
+                            <option>Situation</option>
+                        </select>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="subtaskChart"></canvas>
+                        </div>
+                        <ul class="legend">
+                            <li><span class="dot" style="background:#f7c948"></span> 1 To be started (0%)</li>
+                            <li><span class="dot" style="background:#f4a582"></span> 101 Inprogress (85%)</li>
+                            <li><span class="dot" style="background:#a5b4fc"></span> 10 Ready to Live (10%)</li>
+                            <li><span class="dot" style="background:#607d8b"></span> 1 Hold (5%)</li>
+                            <li><span class="dot" style="background:#4ade80"></span> 10 Completed (10%)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard2">
+                <!-- Bar Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Project Percentage Completion</h3>
+                    </div>
+                    <div class="bar-box" style="height:200px;">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Priority Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Project with Milestone</h3>
+                    </div>
+                    <div class="mt-2">
+                        <div class="project-wrapper">
+                            <div class="project-name-in">Construction XYZ</div>
+                            <div class="pro-progress-bar">
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone2: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:50%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone3: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:80%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone5: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-wrapper">
+                            <div class="project-name-in">Construction ABC</div>
+                            <div class="pro-progress-bar">
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:80%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-wrapper">
+                            <div class="project-name-in">Construction NSA</div>
+
+                            <div class="pro-progress-bar">
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:80%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:40%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-wrapper">
+                            <div class="project-name-in">Construction XYZ</div>
+                            <div class="pro-progress-bar">
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone2: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:50%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone3: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:80%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone5: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-wrapper">
+                            <div class="project-name-in">Construction ABC</div>
+                            <div class="pro-progress-bar">
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:80%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-wrapper">
+                            <div class="project-name-in">Construction NSA</div>
+                            <div class="pro-progress-bar">
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:80%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone1: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:100%;background:#85ff8d;"></div>
+                                    </div>
+                                </div>
+                                <div class="separator"></div>
+                                <div class="step-milestone">
+                                    <div class="progress progress-md animated-progress" data-bs-toggle="tooltip" data-bs-html="true" title="Milestone4: 3 <br> Task : 100/74">
+                                        <div class="progress-bar" role="progressbar" style="width:40%;background:#ffde73;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Critical Projects</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle tbl-tag mt-1 mb-1">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Project Manager</th>
+                                    <th>Team</th>
+                                    <th>Deadline</th>
+                                    <th>Completion %</th>
+                                    <th>Situation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight: 600;">Construction XYZ</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                            <div style="color:#000;line-height: 1;">Erica Kernan<br /><small class="text-muted">34534</small></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="mile_st">
+                                            <div class="avatar-group">
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-danger">
+                                                            D
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-primary">
+                                                            +2
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>02/06/2026</td>
+                                    <td>
+                                        <div>
+                                            <div class="d-block mb-0">
+                                                <div style="font-size:11px !important;color:#777;">22%</div>
+                                            </div>
+                                            <div class="progress progress-md animated-progress">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width:22%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-danger" style="font-weight:600;"><i class="ri-alert-fill"></i> Critical</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600;">Construction XYZ</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                            <div style="color:#000;line-height: 1;">Erica Kernan<br /><small class="text-muted">34534</small></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="mile_st">
+                                            <div class="avatar-group">
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-danger">
+                                                            D
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-primary">
+                                                            +2
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>02/06/2026</td>
+                                    <td>
+                                        <div>
+                                            <div class="d-block mb-0">
+                                                <div style="font-size:11px !important;color:#777;">35%</div>
+                                            </div>
+                                            <div class="progress progress-md animated-progress">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width:35%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-danger" style="font-weight:600;"><i class="ri-alert-fill"></i> Critical</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600;">Construction XYZ</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                            <div style="color:#000;line-height: 1;">Erica Kernan<br /><small class="text-muted">34534</small></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="mile_st">
+                                            <div class="avatar-group">
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-danger">
+                                                            D
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-primary">
+                                                            +2
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>02/06/2026</td>
+                                    <td>
+                                        <div>
+                                            <div class="d-block mb-0">
+                                                <div style="font-size:11px !important;color:#777;">30%</div>
+                                            </div>
+                                            <div class="progress progress-md animated-progress">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width:30%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-danger" style="font-weight:600;"><i class="ri-alert-fill"></i> Critical</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: 600;">Construction XYZ</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                            <div style="color:#000;line-height: 1;">Erica Kernan<br /><small class="text-muted">34534</small></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="mile_st">
+                                            <div class="avatar-group">
+                                                <a href="javascript:void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-danger">
+                                                            D
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                                <a href="javascript:void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript:void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                                    <div class="avatar-xxs">
+                                                        <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                                    </div>
+                                                </a>
+                                                <a href="javascript:void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                                    <div class="avatar-xxs">
+                                                        <div class="avatar-title rounded-circle bg-primary">
+                                                            +2
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>02/06/2026</td>
+                                    <td>
+                                        <div>
+                                            <div class="d-block mb-0">
+                                                <div style="font-size:11px !important;color:#777;">60%</div>
+                                            </div>
+                                            <div class="progress progress-md animated-progress">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width:60%;"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-danger" style="font-weight:600;"><i class="ri-alert-fill"></i> Critical</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Issues -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Issues</h3>
+                        <select>
+                            <option>All Project</option>
+                        </select>
+                    </div>
+
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="issuesChart"></canvas>
+                        </div>
+
+                        <ul class="legend">
+                            <li><span class="dot" style="background:#f7c948"></span> 13 Issues (35%)</li>
+                            <li><span class="dot" style="background:#f4a582"></span> 40 Resolved (65%)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard2">
+                <!-- Bar Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Task Tag</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle tbl-tag mt-1 mb-1">
+                            <thead>
+                                <tr>
+                                    <th>Tag Name</th>
+                                    <th>Number of Task</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#ffcc4d;">Important</span></td>
+                                    <td>
+                                        32
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#ff9092;">Immediate</span></td>
+                                    <td>
+                                        68
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#bf8eff;">Hold</span></td>
+                                    <td>
+                                        52
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#85b4ff;">Leave It</span></td>
+                                    <td>
+                                        86
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#6deb76;">Resolved</span></td>
+                                    <td>
+                                        100
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Horizontal Progress -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Total Tasks with Priority</h3>
+                        <select>
+                            <option>Priority</option>
+                            <option>Status</option>
+                        </select>
+                    </div>
+                    <div class="bar-box" style="height:200px;">
+                        <canvas id="priorityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+        const centerTextPlugin = {
+            id: 'centerText',
+            beforeDraw(chart) {
+                const { width, height, ctx } = chart;
+                const text = chart.config.options.plugins.centerText;
+                if (!text) return;
+                ctx.save();
+                ctx.font = 'bold 22px Arial';
+                ctx.fillStyle = '#000';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text.number, width / 2, height / 2 - 6);
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#000';
+                ctx.fillText(text.label, width / 2, height / 2 + 14);
+                ctx.restore();
+            }
+        };
+        Chart.register(centerTextPlugin);
+
+        const colors = ['#f7c948', '#f4a582', '#a5b4fc', '#607d8b', '#4ade80'];
+
+        const doughnutOptions = (number, label) => ({
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '82%',
+            plugins: {
+                legend: { display: false },
+                centerText: { number, label },
+                tooltip: { callbacks: { label: c => `${c.raw} ${c.label}` } }
+            }
+        });
+
+        // DOUGHNUT CHARTS
+        new Chart(document.getElementById('projectChart'), {
+            type: 'doughnut',
+            data: { labels: ['To Start', 'In Progress', 'Ready', 'Hold'], datasets: [{ data: [1, 8, 2, 1], backgroundColor: colors, borderWidth: 0, radius: '90%' }] },
+            options: doughnutOptions(12, 'Total Projects')
+        });
+        new Chart(document.getElementById('milestoneChart'), {
+            type: 'doughnut',
+            data: { labels: ['To Start', 'In Progress', 'Ready', 'Hold', 'Completed'], datasets: [{ data: [1, 4, 2, 1, 0], backgroundColor: colors, borderWidth: 0, radius: '90%' }] },
+            options: doughnutOptions(8, 'Total Milestones')
+        });
+        new Chart(document.getElementById('taskChart'), {
+            type: 'doughnut',
+            data: { labels: ['To Start', 'In Progress', 'Ready', 'Hold', 'Completed'], datasets: [{ data: [1, 32, 20, 1, 2], backgroundColor: colors, borderWidth: 0, radius: '90%' }] },
+            options: doughnutOptions(56, 'Total Task')
+        });
+        new Chart(document.getElementById('subtaskChart'), {
+            type: 'doughnut',
+            data: { labels: ['To Start', 'In Progress', 'Ready', 'Hold', 'Completed'], datasets: [{ data: [1, 101, 10, 1, 10], backgroundColor: colors, borderWidth: 0, radius: '90%' }] },
+            options: doughnutOptions(123, 'Total Subtask')
+        });
+
+        // BAR CHART
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: { labels: ['0%-25%', '26%-50%', '51%-75%', '76%-100%'], datasets: [{ label: 'Projects', data: [2, 4, 8, 10], backgroundColor: '#f4b6e5', borderRadius: 0, barThickness: 30 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#e5e7eb' } }, x: { grid: { display: false } } } }
+        });
+        // ISSUES CHART
+        new Chart(document.getElementById('issuesChart'), {
+            type: 'doughnut',
+            data: { labels: ['Open', 'Close'], datasets: [{ data: [13, 40], backgroundColor: colors, borderWidth: 0, radius: '90%' }] },
+            options: doughnutOptions(53, 'Total Issues')
+        });
+        // PRIORITY CHART FIXED
+        const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+        new Chart(priorityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Construction XYZ', 'Construction ABC', 'Construction NSA', 'Construction JKA', 'Construction IYR'],
+                datasets: [
+                    { label: 'High', data: [120, 120, 120, 120, 120], backgroundColor: 'rgba(255,99,132,0.6)', barThickness: 20 },
+                    { label: 'Medium', data: [100, 100, 100, 100, 100], backgroundColor: 'rgba(54,162,235,0.6)', barThickness: 20 },
+                    { label: 'Low', data: [45, 45, 45, 45, 45], backgroundColor: 'rgba(255,206,86,0.6)', barThickness: 20 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: 0 },
+                interaction: { mode: 'index', intersect: false },
+                animation: { duration: 1200 },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+
+                            // custom box size (this is the key)
+                            boxWidth: 8,
+                            boxHeight: 8,
+
+                            padding: 10,
+
+                            generateLabels: (chart) => {
+                                return chart.data.datasets.map((dataset, i) => ({
+                                    text: dataset.label,
+                                    fillStyle: dataset.backgroundColor,
+                                    strokeStyle: 'transparent',   // ❌ no border
+                                    lineWidth: 0,                 // ❌ no border
+                                    hidden: !chart.isDatasetVisible(i),
+                                    index: i,
+                                    pointStyle: 'circle'
+                                }));
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { stacked: false, beginAtZero: true, suggestedMax: 150, grid: { color: '#fff' } },
+                    x: { stacked: false, grid: { display: false } }
+                }
+            }
+
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1347 @@
+
+CREATE TABLE [dbo].[Pms_tbl_Workflow](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[WorkflowName] [nvarchar](250) NOT NULL,
+	[ApplyOn] [nvarchar](30) NOT NULL,
+	[EventCode] [nvarchar](60) NULL,
+	[RulePriority] [int] NULL,
+	[StopProcessing] [bit] NULL,
+	[Description] [nvarchar](1000) NULL,
+	[regid] [int] NULL,
+	[uid] [int] NULL,
+	[status] [bit] NULL,
+	[archive] [bit] NULL,
+	[cdate] [datetime] NULL,
+	[modifieddate] [datetime] NULL,
+	[OrderNo] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_Workflow] ADD  DEFAULT ((100)) FOR [RulePriority]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_Workflow] ADD  DEFAULT ((1)) FOR [StopProcessing]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_Workflow] ADD  DEFAULT ((1)) FOR [status]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_Workflow] ADD  DEFAULT ((0)) FOR [archive]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_Workflow] ADD  DEFAULT (getdate()) FOR [cdate]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_Workflow] ADD  CONSTRAINT [DF_Pms_Workflow_OrderNo]  DEFAULT ((1)) FOR [OrderNo]
+GO
+CREATE TABLE [dbo].[Pms_tbl_WorkflowCondition](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[WorkflowId] [int] NOT NULL,
+	[BranchNo] [int] NULL,
+	[BranchType] [nvarchar](20) NULL,
+	[SequenceNo] [int] NULL,
+	[FieldCode] [nvarchar](100) NULL,
+	[OperatorCode] [nvarchar](50) NULL,
+	[CompareValue] [nvarchar](1000) NULL,
+	[LogicalOperator] [nvarchar](10) NULL,
+	[regid] [int] NULL,
+	[uid] [int] NULL,
+	[status] [bit] NULL,
+	[archive] [bit] NULL,
+	[cdate] [datetime] NULL,
+	[CompareValue2] [nvarchar](1000) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowCondition] ADD  DEFAULT ((1)) FOR [BranchNo]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowCondition] ADD  DEFAULT ((1)) FOR [SequenceNo]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowCondition] ADD  DEFAULT ((1)) FOR [status]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowCondition] ADD  DEFAULT ((0)) FOR [archive]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowCondition] ADD  DEFAULT (getdate()) FOR [cdate]
+GO
+CREATE TABLE [dbo].[Pms_tbl_WorkflowAction](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[WorkflowId] [int] NOT NULL,
+	[BranchNo] [int] NULL,
+	[BranchType] [nvarchar](20) NULL,
+	[ActionId] [int] NULL,
+	[SequenceNo] [int] NULL,
+	[regid] [int] NULL,
+	[uid] [int] NULL,
+	[status] [bit] NULL,
+	[archive] [bit] NULL,
+	[cdate] [datetime] NULL,
+	[TakenById] [int] NULL,
+	[DesignationId] [int] NULL,
+	[IsEmail] [bit] NULL,
+	[IsWhatsApp] [bit] NULL,
+	[IsBell] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  DEFAULT ((1)) FOR [BranchNo]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  DEFAULT ((1)) FOR [SequenceNo]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  DEFAULT ((1)) FOR [status]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  DEFAULT ((0)) FOR [archive]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  DEFAULT (getdate()) FOR [cdate]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  CONSTRAINT [DF_Pms_WorkflowAction_IsEmail]  DEFAULT ((0)) FOR [IsEmail]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  CONSTRAINT [DF_Pms_WorkflowAction_IsWhatsApp]  DEFAULT ((0)) FOR [IsWhatsApp]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowAction] ADD  CONSTRAINT [DF_Pms_WorkflowAction_IsBell]  DEFAULT ((0)) FOR [IsBell]
+GO
+CREATE TABLE [dbo].[Pms_tbl_WorkflowUserAction](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[WorkflowId] [int] NOT NULL,
+	[SrNo] [int] NULL,
+	[BranchType] [nvarchar](20) NULL,
+	[SequenceNo] [int] NULL,
+	[ActionBranchType] [nvarchar](20) NULL,
+	[ActionId] [int] NULL,
+	[TakenById] [int] NULL,
+	[DesignationId] [int] NULL,
+	[IsEmail] [bit] NULL,
+	[IsWhatsApp] [bit] NULL,
+	[IsBell] [bit] NULL,
+	[IsRemarkRequired] [bit] NULL,
+	[regid] [int] NULL,
+	[uid] [int] NULL,
+	[status] [bit] NULL,
+	[archive] [bit] NULL,
+	[cdate] [datetime] NULL,
+	[modifieddate] [datetime] NULL,
+	[NextStatusId] [int] NULL,
+	[AssignToType] [nvarchar](30) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((1)) FOR [SrNo]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((1)) FOR [SequenceNo]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((0)) FOR [IsEmail]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((0)) FOR [IsWhatsApp]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((0)) FOR [IsBell]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((0)) FOR [IsRemarkRequired]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((1)) FOR [status]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT ((0)) FOR [archive]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowUserAction] ADD  DEFAULT (getdate()) FOR [cdate]
+GO
+CREATE TABLE [dbo].[Pms_tbl_WorkflowThenAction](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[WorkflowId] [int] NOT NULL,
+	[SrNo] [int] NULL,
+	[BranchType] [nvarchar](20) NULL,
+	[SequenceNo] [int] NULL,
+	[TakenById] [int] NULL,
+	[DesignationId] [int] NULL,
+	[IsEmail] [bit] NULL,
+	[IsWhatsApp] [bit] NULL,
+	[IsBell] [bit] NULL,
+	[regid] [int] NULL,
+	[uid] [int] NULL,
+	[status] [bit] NULL,
+	[archive] [bit] NULL,
+	[cdate] [datetime] NULL,
+	[modifieddate] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowThenAction] ADD  CONSTRAINT [DF_Pms_WorkflowThenAction_IsEmail]  DEFAULT ((0)) FOR [IsEmail]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowThenAction] ADD  CONSTRAINT [DF_Pms_WorkflowThenAction_IsWhatsApp]  DEFAULT ((0)) FOR [IsWhatsApp]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowThenAction] ADD  CONSTRAINT [DF_Pms_WorkflowThenAction_IsBell]  DEFAULT ((0)) FOR [IsBell]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowThenAction] ADD  CONSTRAINT [DF_Pms_WorkflowThenAction_Status]  DEFAULT ((1)) FOR [status]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowThenAction] ADD  CONSTRAINT [DF_Pms_WorkflowThenAction_Archive]  DEFAULT ((0)) FOR [archive]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowThenAction] ADD  CONSTRAINT [DF_Pms_WorkflowThenAction_CDate]  DEFAULT (getdate()) FOR [cdate]
+GO
+CREATE TABLE [dbo].[Pms_tbl_WorkflowLog](
+	[id] [bigint] IDENTITY(1,1) NOT NULL,
+	[WorkflowId] [int] NULL,
+	[ApplyOn] [nvarchar](30) NULL,
+	[EntityId] [int] NULL,
+	[EventCode] [nvarchar](60) NULL,
+	[BranchNo] [int] NULL,
+	[BranchType] [nvarchar](20) NULL,
+	[ActionId] [int] NULL,
+	[IsSuccess] [bit] NULL,
+	[LogMessage] [nvarchar](2000) NULL,
+	[regid] [int] NULL,
+	[uid] [int] NULL,
+	[cdate] [datetime] NULL,
+	[TakenById] [int] NULL,
+	[DesignationId] [int] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_WorkflowLog] ADD  DEFAULT (getdate()) FOR [cdate]
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_Workflow_GetMasters]
+(
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    /* =====================================================
+       1. ACTION MASTER
+       Used in User Actions:
+       Complete / Rework / Approve / Reject etc.
+       ===================================================== */
+    SELECT
+        id,
+        MasterName AS ActionName
+    FROM dbo.Pms_tbl_SimpleMasterList
+    WHERE regid = @regid
+      AND ISNULL(status, 1) = 1
+      AND ISNULL(archive, 0) = 0
+    ORDER BY MasterName;
+
+
+    /* =====================================================
+       2. STATUS MASTER
+       Used in Workflow Condition -> Status
+       ===================================================== */
+    SELECT
+        id,
+        ProjectStatus AS ValueText
+    FROM dbo.Pms_tbl_Projectstatus
+    WHERE regid = @regid
+      AND ISNULL(status, 1) = 1
+      AND ISNULL(archive, 0) = 0
+    ORDER BY ProjectStatus;
+
+
+    /* =====================================================
+       3. PRIORITY MASTER
+       Used in Workflow Condition -> Priority
+       ===================================================== */
+    SELECT
+        id,
+        name AS ValueText
+    FROM dbo.Pms_tbl_Priority
+    WHERE regid = @regid
+      AND ISNULL(status, 1) = 1
+      AND ISNULL(archive, 0) = 0
+    ORDER BY name;
+
+
+    /* =====================================================
+       4. DEPARTMENT MASTER
+       Used in:
+       - THEN Assignment -> Take By
+       - User Action -> After Action Department
+       ===================================================== */
+    SELECT
+        Dept_Id AS id,
+        Department_name AS DepartmentName
+    FROM dbo.tbl_Department_master
+    WHERE regid = @regid
+      AND ISNULL(status, 1) = 1
+      AND ISNULL(archive, 0) = 0
+    ORDER BY Department_name;
+
+
+    /* =====================================================
+       5. DESIGNATION / JOB TITLE MASTER
+       Used in:
+       - THEN Assignment -> Designation
+       - User Action -> After Action Designation
+       ===================================================== */
+    SELECT
+        id,
+        name AS DesignationName
+    FROM dbo.tbl_JOBTITLE_master
+    WHERE regid = @regid
+      AND ISNULL(status, 1) = 1
+      AND ISNULL(archive, 0) = 0
+    ORDER BY name;
+
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_Workflow_List]
+(
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        W.id,
+        W.WorkflowName,
+        W.ApplyOn,
+        W.EventCode,
+        ISNULL(W.OrderNo,1) AS OrderNo,
+        W.Description,
+        ISNULL(W.status,1) AS status,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_WorkflowCondition C WHERE C.WorkflowId=W.id AND C.regid=@regid AND ISNULL(C.archive,0)=0) AS ConditionCount,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_WorkflowAction A WHERE A.WorkflowId=W.id AND A.regid=@regid AND ISNULL(A.archive,0)=0) AS ActionCount
+    FROM dbo.Pms_tbl_Workflow W
+    WHERE W.regid = @regid
+      AND ISNULL(W.archive,0) = 0
+    ORDER BY ISNULL(W.OrderNo,1), W.id DESC;
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_Workflow_GetById]
+(
+    @WorkflowId INT,
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        id,
+        WorkflowName,
+        ApplyOn,
+        ISNULL(OrderNo,1) AS OrderNo,
+        Description,
+        ISNULL(status,1) AS status
+    FROM dbo.Pms_tbl_Workflow
+    WHERE id = @WorkflowId
+      AND regid = @regid
+      AND ISNULL(archive,0) = 0;
+
+    SELECT
+        id,
+        BranchNo AS SrNo,
+        BranchType AS Type,
+        FieldCode,
+        OperatorCode,
+        CompareValue,
+        CompareValue2,
+        LogicalOperator
+    FROM dbo.Pms_tbl_WorkflowCondition
+    WHERE WorkflowId = @WorkflowId
+      AND regid = @regid
+      AND ISNULL(archive,0) = 0
+    ORDER BY BranchNo, SequenceNo, id;
+
+    SELECT
+        A.id,
+        A.BranchNo AS SrNo,
+        A.BranchType AS Type,
+        A.TakenById,
+        A.DesignationId,
+        ISNULL(A.IsEmail,0) AS IsEmail,
+        ISNULL(A.IsWhatsApp,0) AS IsWhatsApp,
+        ISNULL(A.IsBell,0) AS IsBell
+    FROM dbo.Pms_tbl_WorkflowAction A
+    WHERE A.WorkflowId = @WorkflowId
+      AND A.regid = @regid
+      AND ISNULL(A.archive,0) = 0
+    ORDER BY A.BranchNo, A.SequenceNo, A.id;
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_WorkflowThenAction_GetByWorkflow]
+(
+    @WorkflowId INT,
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        TA.id,
+        TA.WorkflowId,
+        ISNULL(TA.SrNo,1) AS SrNo,
+        ISNULL(NULLIF(TA.BranchType,''),'IF') AS Type,
+        ISNULL(TA.SequenceNo,1) AS SequenceNo,
+        TA.TakenById,
+        TA.DesignationId,
+        ISNULL(TA.IsEmail,0) AS IsEmail,
+        ISNULL(TA.IsWhatsApp,0) AS IsWhatsApp,
+        ISNULL(TA.IsBell,0) AS IsBell
+    FROM dbo.Pms_tbl_WorkflowThenAction TA
+    WHERE TA.WorkflowId = @WorkflowId
+      AND TA.regid = @regid
+      AND ISNULL(TA.status,1) = 1
+      AND ISNULL(TA.archive,0) = 0
+    ORDER BY ISNULL(TA.SrNo,1),
+             ISNULL(TA.SequenceNo,1),
+             TA.id;
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_WorkflowUserAction_GetByWorkflow]
+(
+    @WorkflowId INT,
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        UA.id,
+        UA.WorkflowId,
+        ISNULL(UA.SrNo,1) AS SrNo,
+        ISNULL(NULLIF(UA.BranchType,''),'IF') AS Type,
+        ISNULL(UA.SequenceNo,1) AS ActionSrNo,
+        ISNULL(
+            NULLIF(UA.ActionBranchType,''),
+            CASE WHEN ISNULL(UA.SequenceNo,1)=1 THEN 'IF' ELSE 'ELSEIF' END
+        ) AS ActionType,
+        UA.ActionId,
+        UA.NextStatusId,
+        CASE
+            WHEN UPPER(ISNULL(NULLIF(LTRIM(RTRIM(UA.AssignToType)),''),''))
+                 IN ('DEPARTMENT','OWNER','NO_ASSIGNMENT')
+                THEN UPPER(UA.AssignToType)
+            WHEN UA.TakenById IS NOT NULL OR UA.DesignationId IS NOT NULL
+                THEN 'DEPARTMENT'
+            ELSE 'NO_ASSIGNMENT'
+        END AS AssignToType,
+        UA.TakenById,
+        UA.DesignationId,
+        ISNULL(UA.IsEmail,0) AS IsEmail,
+        ISNULL(UA.IsWhatsApp,0) AS IsWhatsApp,
+        ISNULL(UA.IsBell,0) AS IsBell,
+        ISNULL(UA.IsRemarkRequired,0) AS IsRemarkRequired
+    FROM dbo.Pms_tbl_WorkflowUserAction UA
+    WHERE UA.WorkflowId=@WorkflowId
+      AND UA.regid=@regid
+      AND ISNULL(UA.status,1)=1
+      AND ISNULL(UA.archive,0)=0
+    ORDER BY ISNULL(UA.SrNo,1),ISNULL(UA.SequenceNo,1),UA.id;
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_Workflow_Save]
+(
+    @WorkflowId INT = 0,
+    @WorkflowName NVARCHAR(250),
+    @ApplyOn NVARCHAR(30),
+    @OrderNo INT = 1,
+    @Description NVARCHAR(1000) = NULL,
+    @IsActive BIT = 1,
+    @regid INT,
+    @uid INT = NULL,
+    @ConditionsXml XML = NULL,
+    @ActionsXml XML
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        SET @WorkflowName = LTRIM(RTRIM(ISNULL(@WorkflowName,'')));
+        SET @ApplyOn = UPPER(LTRIM(RTRIM(ISNULL(@ApplyOn,''))));
+
+        IF @WorkflowName = ''
+            RAISERROR('Workflow Name is required.',16,1);
+
+        IF @ApplyOn NOT IN ('PROJECT','MILESTONE','TASK','SUBTASK')
+            RAISERROR('Invalid Apply On.',16,1);
+
+        IF ISNULL(@OrderNo,0) <= 0
+            SET @OrderNo = 1;
+
+        IF @ActionsXml IS NULL OR @ActionsXml.exist('/Actions/Action') = 0
+            RAISERROR('At least one action row is required.',16,1);
+
+        IF @ConditionsXml IS NOT NULL AND EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE UPPER(T.C.value('@Type','NVARCHAR(20)')) NOT IN ('IF','ELSEIF')
+        )
+            RAISERROR('Conditions are allowed only for IF and ELSE IF.',16,1);
+
+        /* Validate condition fields. */
+        IF @ConditionsXml IS NOT NULL AND EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE UPPER(T.C.value('@FieldCode','NVARCHAR(100)')) NOT IN
+            (
+                'STATUS',
+                'PRIORITY',
+                'COMPLETION_PERCENT',
+                'DURATION_PERCENT',
+                'PROGRESS_DIFFERENCE_PERCENT'
+            )
+        )
+            RAISERROR('Invalid workflow condition field.',16,1);
+
+        /* Status / Priority operators. */
+        IF @ConditionsXml IS NOT NULL AND EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE UPPER(T.C.value('@FieldCode','NVARCHAR(100)')) IN ('STATUS','PRIORITY')
+              AND UPPER(T.C.value('@OperatorCode','NVARCHAR(50)')) NOT IN
+                  ('EQ','NE','IN','NOT_IN')
+        )
+            RAISERROR('Status/Priority supports only =, !=, IN and NOT IN.',16,1);
+
+        /* Numeric field operators. */
+        IF @ConditionsXml IS NOT NULL AND EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE UPPER(T.C.value('@FieldCode','NVARCHAR(100)')) IN
+                  ('COMPLETION_PERCENT','DURATION_PERCENT','PROGRESS_DIFFERENCE_PERCENT')
+              AND UPPER(T.C.value('@OperatorCode','NVARCHAR(50)')) NOT IN
+                  ('EQ','NE','GT','GE','LT','LE','BETWEEN')
+        )
+            RAISERROR('Numeric condition operator is invalid.',16,1);
+
+        /* BETWEEN requires second value. */
+        IF @ConditionsXml IS NOT NULL AND EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE UPPER(T.C.value('@OperatorCode','NVARCHAR(50)')) = 'BETWEEN'
+              AND NULLIF(T.C.value('@CompareValue2','NVARCHAR(1000)'),'') IS NULL
+        )
+            RAISERROR('Second value is required for BETWEEN.',16,1);
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ActionsXml.nodes('/Actions/Action') T(C)
+            WHERE UPPER(T.C.value('@Type','NVARCHAR(20)')) NOT IN ('IF','ELSEIF','ELSE')
+        )
+            RAISERROR('Invalid IF / ELSE IF / ELSE type.',16,1);
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ActionsXml.nodes('/Actions/Action') T(C)
+            WHERE T.C.value('@SrNo','INT') = 1
+              AND UPPER(T.C.value('@Type','NVARCHAR(20)')) <> 'IF'
+        )
+            RAISERROR('Sr No. 1 must be IF.',16,1);
+
+        IF ISNULL(@WorkflowId,0) = 0
+        BEGIN
+            INSERT dbo.Pms_tbl_Workflow
+            (
+                WorkflowName,
+                ApplyOn,
+                EventCode,
+                OrderNo,
+                Description,
+                regid,
+                uid,
+                status,
+                archive,
+                cdate
+            )
+            VALUES
+            (
+                @WorkflowName,
+                @ApplyOn,
+                NULL,
+                @OrderNo,
+                @Description,
+                @regid,
+                @uid,
+                ISNULL(@IsActive,1),
+                0,
+                GETDATE()
+            );
+
+            SET @WorkflowId = CAST(SCOPE_IDENTITY() AS INT);
+        END
+        ELSE
+        BEGIN
+            UPDATE dbo.Pms_tbl_Workflow
+            SET
+                WorkflowName = @WorkflowName,
+                ApplyOn = @ApplyOn,
+                EventCode = NULL,
+                OrderNo = @OrderNo,
+                Description = @Description,
+                status = ISNULL(@IsActive,1),
+                uid = @uid,
+                modifieddate = GETDATE()
+            WHERE id = @WorkflowId
+              AND regid = @regid
+              AND ISNULL(archive,0) = 0;
+
+            IF @@ROWCOUNT = 0
+                RAISERROR('Workflow not found.',16,1);
+
+            DELETE dbo.Pms_tbl_WorkflowCondition
+            WHERE WorkflowId = @WorkflowId
+              AND regid = @regid;
+
+            DELETE dbo.Pms_tbl_WorkflowAction
+            WHERE WorkflowId = @WorkflowId
+              AND regid = @regid;
+        END;
+
+        IF @ConditionsXml IS NOT NULL
+        BEGIN
+            INSERT dbo.Pms_tbl_WorkflowCondition
+            (
+                WorkflowId,
+                BranchNo,
+                BranchType,
+                SequenceNo,
+                FieldCode,
+                OperatorCode,
+                CompareValue,
+                CompareValue2,
+                LogicalOperator,
+                regid,
+                uid,
+                status,
+                archive,
+                cdate
+            )
+            SELECT
+                @WorkflowId,
+                ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@SrNo','NVARCHAR(20)'),'')),1),
+                UPPER(ISNULL(NULLIF(T.C.value('@Type','NVARCHAR(20)'),''),'IF')),
+                ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@SequenceNo','NVARCHAR(20)'),'')),1),
+                UPPER(NULLIF(T.C.value('@FieldCode','NVARCHAR(100)'),'')),
+                UPPER(NULLIF(T.C.value('@OperatorCode','NVARCHAR(50)'),'')),
+                NULLIF(T.C.value('@CompareValue','NVARCHAR(1000)'),''),
+                NULLIF(T.C.value('@CompareValue2','NVARCHAR(1000)'),''),
+                UPPER(NULLIF(T.C.value('@LogicalOperator','NVARCHAR(10)'),'')),
+                @regid,
+                @uid,
+                1,
+                0,
+                GETDATE()
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C);
+        END;
+
+        INSERT dbo.Pms_tbl_WorkflowAction
+        (
+            WorkflowId,
+            BranchNo,
+            BranchType,
+            ActionId,
+            TakenById,
+            DesignationId,
+            IsEmail,
+            IsWhatsApp,
+            IsBell,
+            SequenceNo,
+            regid,
+            uid,
+            status,
+            archive,
+            cdate
+        )
+        SELECT
+            @WorkflowId,
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@SrNo','NVARCHAR(20)'),'')),1),
+            UPPER(ISNULL(NULLIF(T.C.value('@Type','NVARCHAR(20)'),''),'IF')),
+            NULL,
+            TRY_CONVERT(INT,NULLIF(T.C.value('@TakenById','NVARCHAR(20)'),'')),
+            TRY_CONVERT(INT,NULLIF(T.C.value('@DesignationId','NVARCHAR(20)'),'') ),
+            ISNULL(TRY_CONVERT(BIT,NULLIF(T.C.value('@IsEmail','NVARCHAR(5)'),'')),0),
+            ISNULL(TRY_CONVERT(BIT,NULLIF(T.C.value('@IsWhatsApp','NVARCHAR(5)'),'')),0),
+            ISNULL(TRY_CONVERT(BIT,NULLIF(T.C.value('@IsBell','NVARCHAR(5)'),'')),0),
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@SequenceNo','NVARCHAR(20)'),'')),1),
+            @regid,
+            @uid,
+            1,
+            0,
+            GETDATE()
+        FROM @ActionsXml.nodes('/Actions/Action') T(C);
+
+        COMMIT TRANSACTION;
+
+        SELECT
+            @WorkflowId AS WorkflowId,
+            'Workflow saved successfully.' AS Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @Err NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_WorkflowThenAction_Save]
+(
+    @WorkflowId INT,
+    @regid INT,
+    @uid INT = NULL,
+    @ActionsXml XML = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS
+        (
+            SELECT 1
+            FROM dbo.Pms_tbl_Workflow
+            WHERE id = @WorkflowId
+              AND regid = @regid
+              AND ISNULL(archive,0) = 0
+        )
+        BEGIN
+            RAISERROR('Workflow not found for THEN Action.',16,1);
+        END;
+
+        /* Replace only dedicated THEN Action rows. */
+        DELETE FROM dbo.Pms_tbl_WorkflowThenAction
+        WHERE WorkflowId = @WorkflowId
+          AND regid = @regid;
+
+        IF @ActionsXml IS NOT NULL
+           AND @ActionsXml.exist('/Actions/Action') = 1
+        BEGIN
+            INSERT INTO dbo.Pms_tbl_WorkflowThenAction
+            (
+                WorkflowId,
+                SrNo,
+                BranchType,
+                SequenceNo,
+                TakenById,
+                DesignationId,
+                IsEmail,
+                IsWhatsApp,
+                IsBell,
+                regid,
+                uid,
+                status,
+                archive,
+                cdate,
+                modifieddate
+            )
+            SELECT
+                @WorkflowId,
+                ISNULL(
+                    TRY_CONVERT(
+                        INT,
+                        NULLIF(T.C.value('string((@SrNo)[1])','NVARCHAR(20)'), '')
+                    ),
+                    1
+                ),
+                UPPER(
+                    ISNULL(
+                        NULLIF(T.C.value('string((@Type)[1])','NVARCHAR(20)'), ''),
+                        'IF'
+                    )
+                ),
+                ISNULL(
+                    TRY_CONVERT(
+                        INT,
+                        NULLIF(T.C.value('string((@SequenceNo)[1])','NVARCHAR(20)'), '')
+                    ),
+                    1
+                ),
+                TRY_CONVERT(
+                    INT,
+                    NULLIF(T.C.value('string((@TakenById)[1])','NVARCHAR(30)'), '')
+                ),
+                TRY_CONVERT(
+                    INT,
+                    NULLIF(T.C.value('string((@DesignationId)[1])','NVARCHAR(30)'), '')
+                ),
+                CASE
+                    WHEN LOWER(
+                        ISNULL(
+                            NULLIF(T.C.value('string((@IsEmail)[1])','NVARCHAR(10)'), ''),
+                            '0'
+                        )
+                    ) IN ('1','true') THEN 1 ELSE 0
+                END,
+                CASE
+                    WHEN LOWER(
+                        ISNULL(
+                            NULLIF(T.C.value('string((@IsWhatsApp)[1])','NVARCHAR(10)'), ''),
+                            '0'
+                        )
+                    ) IN ('1','true') THEN 1 ELSE 0
+                END,
+                CASE
+                    WHEN LOWER(
+                        ISNULL(
+                            NULLIF(T.C.value('string((@IsBell)[1])','NVARCHAR(10)'), ''),
+                            '0'
+                        )
+                    ) IN ('1','true') THEN 1 ELSE 0
+                END,
+                @regid,
+                @uid,
+                1,
+                0,
+                GETDATE(),
+                NULL
+            FROM @ActionsXml.nodes('/Actions/Action') T(C);
+        END;
+
+        DECLARE @ExpectedRows INT = 0;
+        DECLARE @SavedRows INT = 0;
+
+        IF @ActionsXml IS NOT NULL
+            SET @ExpectedRows = @ActionsXml.value('count(/Actions/Action)','INT');
+
+        SELECT @SavedRows = COUNT(1)
+        FROM dbo.Pms_tbl_WorkflowThenAction
+        WHERE WorkflowId = @WorkflowId
+          AND regid = @regid
+          AND ISNULL(status,1) = 1
+          AND ISNULL(archive,0) = 0;
+
+        IF @SavedRows <> @ExpectedRows
+        BEGIN
+            RAISERROR(
+                'THEN Action count mismatch. Expected %d row(s), saved %d row(s).',
+                16,
+                1,
+                @ExpectedRows,
+                @SavedRows
+            );
+        END;
+
+        COMMIT TRANSACTION;
+
+        SELECT
+            1 AS Result,
+            @WorkflowId AS WorkflowId,
+            @SavedRows AS SavedRows,
+            'THEN Action saved successfully.' AS Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        SELECT
+            0 AS Result,
+            @WorkflowId AS WorkflowId,
+            0 AS SavedRows,
+            ERROR_MESSAGE() AS Message;
+    END CATCH
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_WorkflowUserAction_Save]
+(
+    @WorkflowId INT,
+    @regid INT,
+    @uid INT = NULL,
+    @UserActionsXml XML = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS
+        (
+            SELECT 1
+            FROM dbo.Pms_tbl_Workflow
+            WHERE id=@WorkflowId
+              AND regid=@regid
+              AND ISNULL(archive,0)=0
+        )
+            RAISERROR('Workflow not found for Action Conditions.',16,1);
+
+        DELETE FROM dbo.Pms_tbl_WorkflowUserAction
+        WHERE WorkflowId=@WorkflowId
+          AND regid=@regid;
+
+        IF @UserActionsXml IS NOT NULL
+           AND @UserActionsXml.exist('/UserActions/UserAction')=1
+        BEGIN
+            /* Parent branch and nested Action branch must be valid. */
+            IF EXISTS
+            (
+                SELECT 1
+                FROM @UserActionsXml.nodes('/UserActions/UserAction') T(C)
+                WHERE UPPER(ISNULL(NULLIF(
+                          T.C.value('string((@Type)[1])','NVARCHAR(20)'),'')
+                      ,'IF')) NOT IN ('IF','ELSEIF','ELSE')
+                   OR UPPER(ISNULL(NULLIF(
+                          T.C.value('string((@ActionType)[1])','NVARCHAR(20)'),'')
+                      ,'IF')) NOT IN ('IF','ELSEIF','ELSE')
+            )
+                RAISERROR('Invalid IF / ELSE IF / ELSE type in Action Conditions.',16,1);
+
+            /* First nested Action of every outer branch must be IF. */
+            IF EXISTS
+            (
+                SELECT 1
+                FROM
+                (
+                    SELECT
+                        ISNULL(TRY_CONVERT(INT,NULLIF(
+                            T.C.value('string((@SrNo)[1])','NVARCHAR(20)'),'')
+                        ),1) AS SrNo,
+                        ISNULL(TRY_CONVERT(INT,NULLIF(
+                            T.C.value('string((@SequenceNo)[1])','NVARCHAR(20)'),'')
+                        ),1) AS SequenceNo,
+                        UPPER(ISNULL(NULLIF(
+                            T.C.value('string((@ActionType)[1])','NVARCHAR(20)'),'')
+                        ,'IF')) AS ActionType
+                    FROM @UserActionsXml.nodes('/UserActions/UserAction') T(C)
+                ) X
+                WHERE X.SequenceNo=1
+                  AND X.ActionType<>'IF'
+            )
+                RAISERROR('First Action Condition must be IF.',16,1);
+
+            /* QC ACTION: IF / ELSE IF / ELSE all require a valid master value. */
+            IF OBJECT_ID('dbo.Pms_tbl_SimpleMasterList','U') IS NULL
+                RAISERROR('QC Action master dbo.Pms_tbl_SimpleMasterList is missing.',16,1);
+
+            IF EXISTS
+            (
+                SELECT 1
+                FROM @UserActionsXml.nodes('/UserActions/UserAction') T(C)
+                WHERE TRY_CONVERT(INT,NULLIF(
+                          T.C.value('string((@ActionId)[1])','NVARCHAR(30)'),'')
+                      ) IS NULL
+                   OR NOT EXISTS
+                   (
+                       SELECT 1
+                       FROM dbo.Pms_tbl_SimpleMasterList SM
+                       WHERE SM.id=TRY_CONVERT(INT,NULLIF(
+                                 T.C.value('string((@ActionId)[1])','NVARCHAR(30)'),'')
+                             )
+                         AND SM.regid=@regid
+                         AND ISNULL(SM.status,1)=1
+                         AND ISNULL(SM.archive,0)=0
+                   )
+            )
+                RAISERROR('Invalid QC Action selected in Action Conditions.',16,1);
+
+            /* NEXT STATUS: existing validation unchanged. */
+            IF OBJECT_ID('dbo.Pms_tbl_Projectstatus','U') IS NULL
+                RAISERROR('PMS Status master dbo.Pms_tbl_Projectstatus is missing.',16,1);
+
+            IF EXISTS
+            (
+                SELECT 1
+                FROM @UserActionsXml.nodes('/UserActions/UserAction') T(C)
+                WHERE TRY_CONVERT(INT,NULLIF(
+                          T.C.value('string((@NextStatusId)[1])','NVARCHAR(30)'),'')
+                      ) IS NOT NULL
+                  AND NOT EXISTS
+                  (
+                      SELECT 1
+                      FROM dbo.Pms_tbl_Projectstatus PS
+                      WHERE PS.id=TRY_CONVERT(INT,NULLIF(
+                                T.C.value('string((@NextStatusId)[1])','NVARCHAR(30)'),'')
+                            )
+                        AND PS.regid=@regid
+                        AND ISNULL(PS.status,1)=1
+                        AND ISNULL(PS.archive,0)=0
+                  )
+            )
+                RAISERROR('Invalid Next Status selected in Action Conditions.',16,1);
+
+            /* Only one ELSE for each outer workflow branch. */
+            IF EXISTS
+            (
+                SELECT X.SrNo
+                FROM
+                (
+                    SELECT
+                        ISNULL(TRY_CONVERT(INT,NULLIF(
+                            T.C.value('string((@SrNo)[1])','NVARCHAR(20)'),'')
+                        ),1) AS SrNo,
+                        UPPER(ISNULL(NULLIF(
+                            T.C.value('string((@ActionType)[1])','NVARCHAR(20)'),'')
+                        ,'IF')) AS ActionType
+                    FROM @UserActionsXml.nodes('/UserActions/UserAction') T(C)
+                ) X
+                WHERE X.ActionType='ELSE'
+                GROUP BY X.SrNo
+                HAVING COUNT(*)>1
+            )
+                RAISERROR('Only one ELSE is allowed in Action Conditions for each workflow branch.',16,1);
+
+            /* ELSE must remain last. */
+            IF EXISTS
+            (
+                SELECT 1
+                FROM
+                (
+                    SELECT
+                        ISNULL(TRY_CONVERT(INT,NULLIF(
+                            T.C.value('string((@SrNo)[1])','NVARCHAR(20)'),'')
+                        ),1) AS SrNo,
+                        ISNULL(TRY_CONVERT(INT,NULLIF(
+                            T.C.value('string((@SequenceNo)[1])','NVARCHAR(20)'),'')
+                        ),1) AS SequenceNo,
+                        UPPER(ISNULL(NULLIF(
+                            T.C.value('string((@ActionType)[1])','NVARCHAR(20)'),'')
+                        ,'IF')) AS ActionType
+                    FROM @UserActionsXml.nodes('/UserActions/UserAction') T(C)
+                ) E
+                WHERE E.ActionType='ELSE'
+                  AND EXISTS
+                  (
+                      SELECT 1
+                      FROM
+                      (
+                          SELECT
+                              ISNULL(TRY_CONVERT(INT,NULLIF(
+                                  T2.C.value('string((@SrNo)[1])','NVARCHAR(20)'),'')
+                              ),1) AS SrNo,
+                              ISNULL(TRY_CONVERT(INT,NULLIF(
+                                  T2.C.value('string((@SequenceNo)[1])','NVARCHAR(20)'),'')
+                              ),1) AS SequenceNo
+                          FROM @UserActionsXml.nodes('/UserActions/UserAction') T2(C)
+                      ) N
+                      WHERE N.SrNo=E.SrNo
+                        AND N.SequenceNo>E.SequenceNo
+                  )
+            )
+                RAISERROR('Action Conditions ELSE must be the last item.',16,1);
+
+            INSERT INTO dbo.Pms_tbl_WorkflowUserAction
+            (
+                WorkflowId,SrNo,BranchType,SequenceNo,ActionBranchType,
+                ActionId,NextStatusId,AssignToType,TakenById,DesignationId,
+                IsEmail,IsWhatsApp,IsBell,IsRemarkRequired,
+                regid,uid,status,archive,cdate,modifieddate
+            )
+            SELECT
+                @WorkflowId,
+                ISNULL(TRY_CONVERT(INT,NULLIF(
+                    T.C.value('string((@SrNo)[1])','NVARCHAR(20)'),'')
+                ),1),
+                UPPER(ISNULL(NULLIF(
+                    T.C.value('string((@Type)[1])','NVARCHAR(20)'),'')
+                ,'IF')),
+                ISNULL(TRY_CONVERT(INT,NULLIF(
+                    T.C.value('string((@SequenceNo)[1])','NVARCHAR(20)'),'')
+                ),1),
+                UPPER(ISNULL(NULLIF(
+                    T.C.value('string((@ActionType)[1])','NVARCHAR(20)'),'')
+                ,'IF')),
+                /* IMPORTANT: do not force ELSE ActionId to NULL. */
+                TRY_CONVERT(INT,NULLIF(
+                    T.C.value('string((@ActionId)[1])','NVARCHAR(30)'),'')
+                ),
+                TRY_CONVERT(INT,NULLIF(
+                    T.C.value('string((@NextStatusId)[1])','NVARCHAR(30)'),'')
+                ),
+                /* Existing separate Assign To Type behavior preserved. */
+                CASE
+                    WHEN NULLIF(LTRIM(RTRIM(
+                        T.C.value('string((@AssignToType)[1])','NVARCHAR(30)')
+                    )),'') IS NOT NULL
+                        THEN UPPER(LTRIM(RTRIM(
+                            T.C.value('string((@AssignToType)[1])','NVARCHAR(30)')
+                        )))
+                    WHEN TRY_CONVERT(INT,NULLIF(
+                             T.C.value('string((@TakenById)[1])','NVARCHAR(30)'),'')
+                         ) IS NOT NULL
+                      OR TRY_CONVERT(INT,NULLIF(
+                             T.C.value('string((@DesignationId)[1])','NVARCHAR(30)'),'')
+                         ) IS NOT NULL
+                        THEN 'DEPARTMENT'
+                    ELSE 'NO_ASSIGNMENT'
+                END,
+                /* TakenById remains DepartmentId only. */
+                CASE
+                    WHEN
+                        CASE
+                            WHEN NULLIF(LTRIM(RTRIM(
+                                T.C.value('string((@AssignToType)[1])','NVARCHAR(30)')
+                            )),'') IS NOT NULL
+                                THEN UPPER(LTRIM(RTRIM(
+                                    T.C.value('string((@AssignToType)[1])','NVARCHAR(30)')
+                                )))
+                            WHEN TRY_CONVERT(INT,NULLIF(
+                                     T.C.value('string((@TakenById)[1])','NVARCHAR(30)'),'')
+                                 ) IS NOT NULL
+                              OR TRY_CONVERT(INT,NULLIF(
+                                     T.C.value('string((@DesignationId)[1])','NVARCHAR(30)'),'')
+                                 ) IS NOT NULL
+                                THEN 'DEPARTMENT'
+                            ELSE 'NO_ASSIGNMENT'
+                        END = 'DEPARTMENT'
+                    THEN TRY_CONVERT(INT,NULLIF(
+                        T.C.value('string((@TakenById)[1])','NVARCHAR(30)'),'')
+                    )
+                    ELSE NULL
+                END,
+                CASE
+                    WHEN
+                        CASE
+                            WHEN NULLIF(LTRIM(RTRIM(
+                                T.C.value('string((@AssignToType)[1])','NVARCHAR(30)')
+                            )),'') IS NOT NULL
+                                THEN UPPER(LTRIM(RTRIM(
+                                    T.C.value('string((@AssignToType)[1])','NVARCHAR(30)')
+                                )))
+                            WHEN TRY_CONVERT(INT,NULLIF(
+                                     T.C.value('string((@TakenById)[1])','NVARCHAR(30)'),'')
+                                 ) IS NOT NULL
+                              OR TRY_CONVERT(INT,NULLIF(
+                                     T.C.value('string((@DesignationId)[1])','NVARCHAR(30)'),'')
+                                 ) IS NOT NULL
+                                THEN 'DEPARTMENT'
+                            ELSE 'NO_ASSIGNMENT'
+                        END = 'DEPARTMENT'
+                    THEN TRY_CONVERT(INT,NULLIF(
+                        T.C.value('string((@DesignationId)[1])','NVARCHAR(30)'),'')
+                    )
+                    ELSE NULL
+                END,
+                CASE WHEN LOWER(ISNULL(NULLIF(
+                    T.C.value('string((@IsEmail)[1])','NVARCHAR(10)'),'')
+                ,'0')) IN ('1','true') THEN 1 ELSE 0 END,
+                CASE WHEN LOWER(ISNULL(NULLIF(
+                    T.C.value('string((@IsWhatsApp)[1])','NVARCHAR(10)'),'')
+                ,'0')) IN ('1','true') THEN 1 ELSE 0 END,
+                CASE WHEN LOWER(ISNULL(NULLIF(
+                    T.C.value('string((@IsBell)[1])','NVARCHAR(10)'),'')
+                ,'0')) IN ('1','true') THEN 1 ELSE 0 END,
+                CASE WHEN LOWER(ISNULL(NULLIF(
+                    T.C.value('string((@IsRemarkRequired)[1])','NVARCHAR(10)'),'')
+                ,'0')) IN ('1','true') THEN 1 ELSE 0 END,
+                @regid,@uid,1,0,GETDATE(),NULL
+            FROM @UserActionsXml.nodes('/UserActions/UserAction') T(C);
+        END;
+
+        COMMIT TRANSACTION;
+
+        SELECT
+            1 AS Result,
+            @WorkflowId AS WorkflowId,
+            (
+                SELECT COUNT(1)
+                FROM dbo.Pms_tbl_WorkflowUserAction
+                WHERE WorkflowId=@WorkflowId
+                  AND regid=@regid
+                  AND ISNULL(status,1)=1
+                  AND ISNULL(archive,0)=0
+            ) AS SavedRows,
+            'Action Conditions saved successfully.' AS Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK TRANSACTION;
+        DECLARE @Err NVARCHAR(4000)=ERROR_MESSAGE();
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_WorkflowUserAction_GetByWorkflow]
+(
+    @WorkflowId INT,
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        UA.id,
+        UA.WorkflowId,
+        ISNULL(UA.SrNo,1) AS SrNo,
+        ISNULL(NULLIF(UA.BranchType,''),'IF') AS Type,
+        ISNULL(UA.SequenceNo,1) AS ActionSrNo,
+        ISNULL(
+            NULLIF(UA.ActionBranchType,''),
+            CASE WHEN ISNULL(UA.SequenceNo,1)=1 THEN 'IF' ELSE 'ELSEIF' END
+        ) AS ActionType,
+        UA.ActionId,
+        UA.NextStatusId,
+        CASE
+            WHEN UPPER(ISNULL(NULLIF(LTRIM(RTRIM(UA.AssignToType)),''),''))
+                 IN ('DEPARTMENT','OWNER','NO_ASSIGNMENT')
+                THEN UPPER(UA.AssignToType)
+            WHEN UA.TakenById IS NOT NULL OR UA.DesignationId IS NOT NULL
+                THEN 'DEPARTMENT'
+            ELSE 'NO_ASSIGNMENT'
+        END AS AssignToType,
+        UA.TakenById,
+        UA.DesignationId,
+        ISNULL(UA.IsEmail,0) AS IsEmail,
+        ISNULL(UA.IsWhatsApp,0) AS IsWhatsApp,
+        ISNULL(UA.IsBell,0) AS IsBell,
+        ISNULL(UA.IsRemarkRequired,0) AS IsRemarkRequired
+    FROM dbo.Pms_tbl_WorkflowUserAction UA
+    WHERE UA.WorkflowId=@WorkflowId
+      AND UA.regid=@regid
+      AND ISNULL(UA.status,1)=1
+      AND ISNULL(UA.archive,0)=0
+    ORDER BY ISNULL(UA.SrNo,1),ISNULL(UA.SequenceNo,1),UA.id;
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_Workflow_Delete]
+(
+    @WorkflowId INT,
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        UPDATE dbo.Pms_tbl_Workflow
+        SET status=0,archive=1,uid=@uid,modifieddate=GETDATE()
+        WHERE id=@WorkflowId AND regid=@regid AND ISNULL(archive,0)=0;
+
+        IF @@ROWCOUNT=0 RAISERROR('Workflow not found.',16,1);
+
+        UPDATE dbo.Pms_tbl_WorkflowCondition SET status=0,archive=1 WHERE WorkflowId=@WorkflowId AND regid=@regid;
+        UPDATE dbo.Pms_tbl_WorkflowAction SET status=0,archive=1 WHERE WorkflowId=@WorkflowId AND regid=@regid;
+
+        COMMIT TRANSACTION;
+        SELECT 1 Result, 'Workflow deleted successfully.' Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK TRANSACTION;
+        DECLARE @Err NVARCHAR(4000)=ERROR_MESSAGE();
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_WorkflowThenAction_DeleteByWorkflow]
+(
+    @WorkflowId INT,
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.Pms_tbl_WorkflowThenAction
+    SET status = 0,
+        archive = 1,
+        uid = @uid,
+        modifieddate = GETDATE()
+    WHERE WorkflowId = @WorkflowId
+      AND regid = @regid
+      AND ISNULL(archive,0) = 0;
+
+    SELECT 1 AS Result, 'THEN Action removed.' AS Message;
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_WorkflowUserAction_DeleteByWorkflow]
+(
+    @WorkflowId INT,
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.Pms_tbl_WorkflowUserAction
+    SET status = 0,
+        archive = 1,
+        uid = @uid,
+        modifieddate = GETDATE()
+    WHERE WorkflowId = @WorkflowId
+      AND regid = @regid
+      AND ISNULL(archive,0) = 0;
+
+    SELECT 1 AS Result, 'Workflow Action Conditions removed.' AS Message;
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_Workflow_ChangeStatus]
+(
+    @WorkflowId INT,
+    @IsActive BIT,
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.Pms_tbl_Workflow
+    SET status=@IsActive,
+        uid=@uid,
+        modifieddate=GETDATE()
+    WHERE id=@WorkflowId AND regid=@regid AND ISNULL(archive,0)=0;
+
+    IF @@ROWCOUNT=0
+        RAISERROR('Workflow not found.',16,1);
+
+    SELECT 1 Result, CASE WHEN @IsActive=1 THEN 'Workflow activated.' ELSE 'Workflow deactivated.' END Message;
+END
+GO

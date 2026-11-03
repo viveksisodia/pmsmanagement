@@ -1,0 +1,594 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+
+        #colorPicker {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">Project Head</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="myprojects.html" class="active">Projects</a>
+        <a href="myteam.html">Team</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-4 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Projects</div>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="ri-calendar-line text-muted" style="font-size: 20px;"></i>
+                            <span style="font-size: 15px;">2025-2026</span>
+                            <i class="ri-arrow-down-s-line" style="font-size: 18px;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-2-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Total Project</span></div>
+                                            <div class="tile-body">52</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-warning"><i class="bx bx-hourglass"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Inprogress</span></div>
+                                            <div class="tile-body">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-info"><i class="ri-share-forward-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Ready to Live</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-gray"><i class="bx bx-archive"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Hold</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <!--<div class="search_box me-2">
+                            <input type="text" class="form-control" id="" placeholder="Search...">
+                            <i class="ri-search-line"></i>
+                        </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <a href="myprojects.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="List View"><i class="ri-list-check"></i></a>
+                        <a href="myprojects-tiles.html" class="sub-soft-btn active" data-bs-toggle="tooltip" title="Tiles View"><i class="ri-layout-grid-fill"></i></a>
+                        <a href="myprojects-calendar.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Calendar"><i class="bx bx-calendar"></i></a>
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Filter"><i class="ri-filter-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Project</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-plus fs-16 align-middle me-1"></i> Add Project</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner pt-3">
+            <div class="project_tiles">
+                <div class="row">
+                    <div class="col-xxl-3 col-sm-3 project-card">
+                        <div class="card card-height-100" style="border-left-color:#ffc300;">
+                            <div class="card-body p-2">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <a href="" style="color:#3978de;">ID6427</a>
+                                                <div class="badge bg-info-subtle text-info priority">Medium</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <div class="btn-group d-block">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-warning priority"><i class='bx bxs-circle'></i> Open</a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='text-warning active' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                                            <li><a class='text-info' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;min-width:155px;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='' href='#'><i class="ri-parent-line fs-16 align-middle me-1"></i> Dependency</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-error-circle fs-16 align-middle me-1"></i> Add Issue</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Documents</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                                            <li><a class='' href='javascript:void(0);' id="text"><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Hold</a></li>
+                                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                                        </ul>
+                                                        <input type="color" id="colorPicker">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <h4 class="mb-1">Construction XYZ</h4>
+                                            <p class="text-muted mb-3">Milestone : 4</p>
+                                            <h5 class="text-danger mb-1">Critical</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top p-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <i class="ri-calendar-event-fill me-1 align-bottom"></i> 04/05/2026-25/05/2026
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="progress progress-md animated-progress" style="width:100px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width:85%;"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div>85%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-3 col-sm-3 project-card">
+                        <div class="card card-height-100" style="border-left-color:#3978de;">
+                            <div class="card-body p-2">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <a href="" style="color:#3978de;">ID6428</a>
+                                                <div class="badge bg-danger-subtle text-danger priority">High</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <div class="btn-group d-block">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-success priority"><i class='bx bxs-circle'></i> Completed</a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                                            <li><a class='text-info' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                                            <li><a class='text-success active' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;min-width:155px;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='' href='#'><i class="ri-parent-line fs-16 align-middle me-1"></i> Dependency</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-error-circle fs-16 align-middle me-1"></i> Add Issue</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Documents</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                                            <li><a class='' href='javascript:void(0);' id="text"><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Hold</a></li>
+                                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                                        </ul>
+                                                        <input type="color" id="colorPicker">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <h4 class="mb-1">Construction ABC</h4>
+                                            <p class="text-muted mb-3">Milestone : 4</p>
+                                            <h5 class="text-warning mb-1">Moderate</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top p-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <i class="ri-calendar-event-fill me-1 align-bottom"></i> 04/05/2026-25/05/2026
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="progress progress-md animated-progress" style="width:100px;">
+                                                    <div class="progress-bar bg-warning" role="progressbar" style="width:30%;"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div>30%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-3 col-sm-3 project-card">
+                        <div class="card card-height-100" style="border-left-color:#ff2b2f;">
+                            <div class="card-body p-2">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <a href="" style="color:#3978de;">ID6427</a>
+                                                <div class="badge bg-info-subtle text-info priority">Medium</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <div class="btn-group d-block">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-warning priority"><i class='bx bxs-circle'></i> Open</a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='text-warning active' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                                            <li><a class='text-info' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;min-width:155px;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='' href='#'><i class="ri-parent-line fs-16 align-middle me-1"></i> Dependency</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-error-circle fs-16 align-middle me-1"></i> Add Issue</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Documents</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                                            <li><a class='' href='javascript:void(0);' id="text"><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Hold</a></li>
+                                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                                        </ul>
+                                                        <input type="color" id="colorPicker">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <h4 class="mb-1">Construction XYZ</h4>
+                                            <p class="text-muted mb-3">Milestone : 4</p>
+                                            <h5 class="text-danger mb-1">Critical</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top p-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <i class="ri-calendar-event-fill me-1 align-bottom"></i> 04/05/2026-25/05/2026
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="progress progress-md animated-progress" style="width:100px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width:85%;"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div>85%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-3 col-sm-3 project-card">
+                        <div class="card card-height-100" style="border-left-color:#8a38f5;">
+                            <div class="card-body p-2">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <a href="" style="color:#3978de;">ID6428</a>
+                                                <div class="badge bg-danger-subtle text-danger priority">High</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <div class="btn-group d-block">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-success priority"><i class='bx bxs-circle'></i> Completed</a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                                            <li><a class='text-info' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                                            <li><a class='text-success active' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;min-width:155px;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='' href='#'><i class="ri-parent-line fs-16 align-middle me-1"></i> Dependency</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-error-circle fs-16 align-middle me-1"></i> Add Issue</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Documents</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                                            <li><a class='' href='javascript:void(0);' id="text"><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Hold</a></li>
+                                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                                        </ul>
+                                                        <input type="color" id="colorPicker">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <h4 class="mb-1">Construction ABC</h4>
+                                            <p class="text-muted mb-3">Milestone : 4</p>
+                                            <h5 class="text-warning mb-1">Moderate</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top p-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <i class="ri-calendar-event-fill me-1 align-bottom"></i> 04/05/2026-25/05/2026
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="progress progress-md animated-progress" style="width:100px;">
+                                                    <div class="progress-bar bg-warning" role="progressbar" style="width:30%;"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div>30%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xxl-3 col-sm-3 project-card">
+                        <div class="card card-height-100" style="border-left-color:#0cd71a;">
+                            <div class="card-body p-2">
+                                <div class="d-flex flex-column h-100">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <a href="" style="color:#3978de;">ID6427</a>
+                                                <div class="badge bg-info-subtle text-info priority">Medium</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <div class="d-flex gap-1 align-items-center">
+                                                <div class="btn-group d-block">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-warning priority"><i class='bx bxs-circle'></i> Open</a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='text-warning active' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                                            <li><a class='text-info' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                                    <div class="dropdown-menu p-0" style="border-radius:0;min-width:155px;">
+                                                        <ul class='sttus-list'>
+                                                            <li><a class='' href='#'><i class="ri-parent-line fs-16 align-middle me-1"></i> Dependency</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-error-circle fs-16 align-middle me-1"></i> Add Issue</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Documents</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                                            <li><a class='' href='javascript:void(0);' id="text"><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Hold</a></li>
+                                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                                        </ul>
+                                                        <input type="color" id="colorPicker">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex">
+                                        <div class="flex-grow-1">
+                                            <h4 class="mb-1">Construction XYZ</h4>
+                                            <p class="text-muted mb-3">Milestone : 4</p>
+                                            <h5 class="text-danger mb-1">Critical</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top p-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div>
+                                            <i class="ri-calendar-event-fill me-1 align-bottom"></i> 04/05/2026-25/05/2026
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="progress progress-md animated-progress" style="width:100px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width:85%;"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div>85%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+        const text = document.getElementById("text");
+        const colorPicker = document.getElementById("colorPicker");
+
+        // Open color picker only when text clicked
+        text.addEventListener("click", () => {
+            colorPicker.click();
+        });
+
+        // Change text color
+        colorPicker.addEventListener("input", (e) => {
+            text.style.color = e.target.value;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,396 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {background-color: #f1f5f7;}
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">Project Manager</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="javascript:void(0)">Dashboard</a>
+        <a href="myprojects.html">My Projects</a>
+        <a href="mytask.html" class="active">My Task</a>
+        <a href="javascript:void(0)">Task Logs</a>
+        <a href="javascript:void(0)">Received Project Items</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-4 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Task</div>
+                        <button class="sub-soft-btn me-3" data-bs-toggle="tooltip" title="+ Add Project"><i class="ri-add-line"></i></button>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="ri-arrow-left-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                            <i class="ri-calendar-line text-muted" style="font-size: 16px;"></i>
+                            <span style="font-size: 15px;">04/05/2025-10/05/2026</span>
+                            <i class="ri-arrow-right-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-2-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Open Task</span></div>
+                                            <div class="tile-body">40</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon bg-warning-subtle text-warning"><i class="bx bx-calendar-check"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Inprogress Task</span></div>
+                                            <div class="tile-body text-warning">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon bg-info-subtle text-info"><i class="ri-inbox-archive-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Reopen Task</span></div>
+                                            <div class="tile-body text-info">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon bg-success-subtle text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed Task</span></div>
+                                            <div class="tile-body text-success">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon bg-danger-subtle text-danger"><i class="ri-close-circle-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Cancelled Task</span></div>
+                                            <div class="tile-body text-danger">20</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <!--<div class="search_box me-2">
+                            <input type="text" class="form-control" id="" placeholder="Search...">
+                            <i class="ri-search-line"></i>
+                        </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <a href="mytask.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="List View"><i class="ri-list-check"></i></a>
+                        <a href="mytask-kanban.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Kanban View"><i class="las la-chart-bar2"></i></a>
+                        <a href="mytask-timesheet.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Timesheet"><i class="bx bx-server"></i></a>
+                        <a href="mytask-weekly.html" class="sub-soft-btn active" data-bs-toggle="tooltip" title="Weekly View"><i class="ri-time-line"></i></a>
+                        <a href="mytask-calendar.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Calendar"><i class="bx bx-calendar"></i></a>
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Filter"><i class="ri-filter-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Project</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-plus fs-16 align-middle me-1"></i> Add Project</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner pt-3">
+            <div class="table-responsive-new">
+                <table class="table table-hover table-striped tbl_new">
+                    <thead>
+                        <tr>
+                            <th class="color_border" style="text-align:right;width:40px;"><input type="checkbox" /></th>
+                            <th style="width: 40px;">Sr. No</th>
+                            <th>Task ID</th>
+                            <th>Task Name</th>
+                            <th>04 May</th>
+                            <th>05 May</th>
+                            <th>06 May</th>
+                            <th>07 May</th>
+                            <th>08 May</th>
+                            <th>09 May</th>
+                            <th>10 May</th>
+                            <th>Assigned Time</th>
+                            <th>Actual Time</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;">
+                                <div class="btn-group">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Move to Archive</a></li>
+                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td><a href="">TS5256</a></td>
+                            <td>Financing cost</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td class="assigned">14:00:00</td>
+                            <td class="actual">14:02:00</td>
+                        </tr>
+
+                        <tr>
+                            <td class="color_border" style="border-left-color:#3978de !important;">
+                                <div class="btn-group">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Move to Archive</a></li>
+                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>2</td>
+                            <td><a href="">TS5357</a></td>
+                            <td>Financing cost</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td class="assigned">14:00:00</td>
+                            <td class="actual">14:02:00</td>
+                        </tr>
+
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;">
+                                <div class="btn-group">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Move to Archive</a></li>
+                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>3</td>
+                            <td><a href="">TS5358</a></td>
+                            <td>Engineering cost</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td class="assigned">14:00:00</td>
+                            <td class="actual">14:02:00</td>
+                        </tr>
+
+                        <tr>
+                            <td class="color_border" style="border-left-color:#3978de !important;">
+                                <div class="btn-group">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Move to Archive</a></li>
+                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>4</td>
+                            <td><a href="">TS5359</a></td>
+                            <td>Other Task</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td class="assigned">14:00:00</td>
+                            <td class="actual">14:02:00</td>
+                        </tr>
+
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;">
+                                <div class="btn-group">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Move to Archive</a></li>
+                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>5</td>
+                            <td><a href="">TS5360</a></td>
+                            <td>Sub Task Other cost Estimation</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td>02:02:00</td>
+                            <td class="assigned" style="width:100px;">14:00:00</td>
+                            <td class="actual" style="width:100px;">14:02:00</td>
+                        </tr>                        
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" style="text-align:right;">Total Day Hours</th>
+                            <th>11:22:00</th>
+                            <th>11:22:00</th>
+                            <th>11:22:00</th>
+                            <th>11:22:00</th>
+                            <th>11:22:00</th>
+                            <th>11:22:00</th>
+                            <th>11:22:00</th>
+                            <th>90:02:00</th>
+                            <th>90:02:00</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <select class="form-select" ng-model="pageSize" ng-options="size for size in pageSizes" style="width:55px;"><option label="10" value="number:10" selected="selected">10</option><option label="20" value="number:20">20</option><option label="50" value="number:50">50</option><option label="100" value="number:100">100</option></select>
+                        <span class="text-muted" style="font-size:11px;">Records per page</span>
+                    </div>
+                </div>
+                <div class="col-sm-4 text-center" style="padding-top:7px;">
+                    <span class="text-muted" style="font-size:11px;">Showing 1 to 2 of 2 entries</span>
+                </div>
+                <div class="col-sm-4">
+                    <div class="pull-right">
+                        <dir-pagination-controls max-size="8" direction-links="true" boundary-links="true" class="ng-isolate-scope"><ul class="pagination justify-content-end mb-0"><li class="page-item disabled" ng-class="{disabled: pagination.current == 1}"><a class="page-link" href="" ng-click="setCurrent(1); $event.preventDefault()">«</a></li><!-- ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope active" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">1</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">2</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">3</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">4</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">5</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">6</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope disabled" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">...</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">96</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item" ng-class="{disabled: pagination.current == pagination.last}"><a class="page-link" href="" ng-click="setCurrent(pagination.last); $event.preventDefault()">»</a></li></ul></dir-pagination-controls>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+</body>
+</html>

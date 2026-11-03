@@ -1,0 +1,145 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {background-color: #f1f5f7;}
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">User</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="myprojects.html" class="active">Projects</a>
+        <a href="mytask.html">My Task</a>
+        <a href="javascript:void(0)">Task Logs</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-6 col-lg-6 col-md-6 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Projects</div>
+                        <div class="d-flex align-items-center gap-1 ms-3">
+                            <i class="ri-calendar-line text-muted" style="font-size: 20px;"></i>
+                            <span style="font-size: 15px;">04/05/2025-04/05/2026</span>
+                            <i class="ri-arrow-down-s-line" style="font-size: 18px;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xxl-6 col-lg-6 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <!--<div class="search_box me-2">
+                            <input type="text" class="form-control" id="" placeholder="Search...">
+                            <i class="ri-search-line"></i>
+                        </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-0">
+            <div class="table-responsive-new">
+                <table class="table table-hover table-striped tbl_new">
+                    <thead>
+                        <tr>
+                            <th class="color_border">Project Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;"><b>Federated Learning for Privacy-Preserving AI</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#3978de !important;"><b>Quantum Computing Applications</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ff2b2f !important;"><b>Edge Computing in IoT</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#8a38f5 !important;"><b>Blockchain for Supply Chain Transparency</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#0cd71a !important;"><b>Augmented Reality (AR) and Virtual reality (VR) in Education</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;"><b>Cybersecurity in the Age of AI</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#3978de !important;"><b>Digital Twins for Smart Cities</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ff2b2f !important;"><b>Ethical AI and Algorithmic Transparency</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#8a38f5 !important;"><b>Wearable Health Technology and Big Data Analytics</b></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#0cd71a !important;"><b>AI-driven Predictive Maintenance in Manufacturing</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+</body>
+</html>

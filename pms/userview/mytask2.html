@@ -1,0 +1,999 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {background-color: #f1f5f7;}
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">User</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <!--<a href="myprojects.html">Projects</a>-->
+        <a href="mytask.html" class="active">My Task</a>
+        <a href="task-logs.html">Task Logs</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-4 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Task</div>
+                        <div class="d-flex align-items-center gap-1 ms-3">
+                            <i class="ri-calendar-line text-muted" style="font-size: 20px;"></i>
+                            <span style="font-size: 15px;">04/05/2025-04/05/2026</span>
+                            <i class="ri-arrow-down-s-line" style="font-size: 18px;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-open-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Open</span></div>
+                                            <div class="tile-body">25</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-warning"><i class="bx bx-hourglass"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Work in Progress</span></div>
+                                            <div class="tile-body">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-info"><i class="bx bx-history"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Reopen</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <div class="btn-group d-block mt-1">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-info"><i class='bx bxs-circle'></i> WIP <i class="ri-arrow-down-s-line"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                    <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                    <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                    <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                    <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!--<div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                </ul>
+                            </div>
+                        </div>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-0">
+            <div class="table-responsive-new">
+                <table class="table table-hover table-striped tbl_new">
+                    <thead>
+                        <tr>
+                            <th class="color_border" style="text-align:right;"><input class="form-check-input" type="checkbox"></th>
+                            <th>Task</th>
+                            <th>Project Name</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Task Situation</th>
+                            <th>Total Completion</th>
+                            <th>Tags</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Timeline</th>
+                            <th>Assigned Time</th>
+                            <th style="min-width:160px;">Spent Time</th>
+                            <th>Project Head</th>
+                            <th style="min-width:120px;">Team</th>
+                            <th>Files</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;">
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>1.1 Financing Cost</td>
+                            <td><span data-bs-toggle="offcanvas" data-bs-target="#myprojectdetails">Construction XYZ</span></td>
+                            <td>Lorem Ipsum is simply dummy text.</td>
+                            <td><div class="badge bg-danger-subtle text-danger priority">High</div></td>
+                            <td>
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-info"><i class='bx bxs-circle'></i> WIP</a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                            <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-danger">Critical</td>
+                            <td>
+                                <div>
+                                    <div class="d-block mb-0">
+                                        <div style="font-size:11px !important;color:#777;">50%</div>
+                                    </div>
+                                    <div class="progress progress-md animated-progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width:50%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="d-flex gap-1">
+                                        <span class="badge bg-danger priority" style="background:#ff6a00;">Important</span>
+                                    </div>
+                                    <div><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#addtags" class="click-link"><i class="ri-add-line" data-bs-toggle="tooltip" title="Add Tag"></i></a></div>
+                                </div>
+                            </td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>02:00:00</td>
+                            <td>
+                                <div class="text-success d-flex align-items-center gap-1"><i class="bx bx-play-circle" style="font-size:18px;margin-top: 2px;"></i> <span>Start Timer</span></div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="javascript: void(0);" data-bs-toggle="tooltip" title="Erica Kernan" style="display:inline-block;">
+                                    <div class="avatar-xxs">
+                                        <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                    </div>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="avatar-group">
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-danger">
+                                                    D
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-primary">
+                                                    +2
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><a href="javascript:void(0);" style="font-size:22px;" data-bs-toggle="offcanvas" data-bs-target="#uploaddocuments"><i class="ri-file-text-line"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#3978de !important;">
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>1.2 Financing Cost</td>
+                            <td>Construction XYZ</td>
+                            <td>Lorem Ipsum is simply dummy text.</td>
+                            <td><div class="badge bg-info-subtle text-info priority">Medium</div></td>
+                            <td>
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-Open"><i class='bx bxs-circle'></i> Open</a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                            <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-warning">Moderate</td>
+                            <td>
+                                <div>
+                                    <div class="d-block mb-0">
+                                        <div style="font-size:11px !important;color:#777;">21%</div>
+                                    </div>
+                                    <div class="progress progress-md animated-progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width:21%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>02:00:00</td>
+                            <td>
+                                <div class="timer_wrapper">
+                                    <div class="text-danger d-flex align-items-center gap-1">
+                                        <i class="bx bx-stopwatch" style="font-size:18px;margin-top: 2px;"></i><span>01:12:34:370</span>
+                                    </div>
+                                    <div class="timer-content">
+                                        <button type="button"><i class="ri-stop-circle-fill text-danger" data-bs-toggle="tooltip" title="Stop Timer"></i></button>
+                                        <button type="button" style="display:none;"><i class="ri-play-circle-fill text-secondary" data-bs-toggle="tooltip" title="Resume Timer"></i></button>
+                                        <button type="button" style=""><i class="ri-pause-circle-fill text-warning" data-bs-toggle="tooltip" title="Pause Timer"></i></button>
+                                        <span class="ms-1">01</span>:<span>12</span>:<span>34</span>:<span>370</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="javascript: void(0);" data-bs-toggle="tooltip" title="Erica Kernan" style="display:inline-block;">
+                                    <div class="avatar-xxs">
+                                        <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                    </div>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="avatar-group">
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-danger">
+                                                    D
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-primary">
+                                                    +2
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><a href="javascript:void(0);" style="font-size:22px;" data-bs-toggle="offcanvas" data-bs-target="#uploaddocuments"><i class="ri-file-text-line"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;">
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>1.3 Financing Cost</td>
+                            <td>Construction XYZ</td>
+                            <td>Lorem Ipsum is simply dummy text.</td>
+                            <td><div class="badge bg-warning-subtle text-warning priority">Low</div></td>
+                            <td>
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-ready"><i class='bx bxs-circle'></i> Reopen</a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                            <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-secondary">Under Controlled</td>
+                            <td>
+                                <div>
+                                    <div class="d-block mb-0">
+                                        <div style="font-size:11px !important;color:#777;">50%</div>
+                                    </div>
+                                    <div class="progress progress-md animated-progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width:50%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="d-flex gap-1">
+                                        <span class="badge bg-danger priority" style="background:#ff6a00;">Important</span>
+                                    </div>
+                                    <div><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#addtags" class="click-link"><i class="ri-add-line" data-bs-toggle="tooltip" title="Add Tag"></i></a></div>
+                                </div>
+                            </td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>02:00:00</td>
+                            <td>
+                                <div class="text-success d-flex align-items-center gap-1"><i class="bx bx-play-circle" style="font-size:18px;margin-top: 2px;"></i> <span>Start Timer</span></div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="javascript: void(0);" data-bs-toggle="tooltip" title="Erica Kernan" style="display:inline-block;">
+                                    <div class="avatar-xxs">
+                                        <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                    </div>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="avatar-group">
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-danger">
+                                                    D
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-primary">
+                                                    +2
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><a href="javascript:void(0);" style="font-size:22px;" data-bs-toggle="offcanvas" data-bs-target="#uploaddocuments"><i class="ri-file-text-line"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#3978de !important;">
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>1.4 Financing Cost</td>
+                            <td>Construction XYZ</td>
+                            <td>Lorem Ipsum is simply dummy text.</td>
+                            <td><div class="badge bg-info-subtle text-info priority">Medium</div></td>
+                            <td>
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-Open"><i class='bx bxs-circle'></i> Open</a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                            <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-secondary">Under Controlled</td>
+                            <td>
+                                <div>
+                                    <div class="d-block mb-0">
+                                        <div style="font-size:11px !important;color:#777;">21%</div>
+                                    </div>
+                                    <div class="progress progress-md animated-progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width:21%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>02:00:00</td>
+                            <td>
+                                <div class="timer_wrapper">
+                                    <div class="text-danger d-flex align-items-center gap-1">
+                                        <i class="bx bx-stopwatch" style="font-size:18px;margin-top: 2px;"></i><span>01:12:34:370</span>
+                                    </div>
+                                    <div class="timer-content">
+                                        <button type="button"><i class="ri-stop-circle-fill text-danger" data-bs-toggle="tooltip" title="Stop Timer"></i></button>
+                                        <button type="button" style="display:none;"><i class="ri-play-circle-fill text-secondary" data-bs-toggle="tooltip" title="Resume Timer"></i></button>
+                                        <button type="button" style=""><i class="ri-pause-circle-fill text-warning" data-bs-toggle="tooltip" title="Pause Timer"></i></button>
+                                        <span class="ms-1">01</span>:<span>12</span>:<span>34</span>:<span>370</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="javascript: void(0);" data-bs-toggle="tooltip" title="Erica Kernan" style="display:inline-block;">
+                                    <div class="avatar-xxs">
+                                        <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                    </div>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="avatar-group">
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-danger">
+                                                    D
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-primary">
+                                                    +2
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><a href="javascript:void(0);" style="font-size:22px;" data-bs-toggle="offcanvas" data-bs-target="#uploaddocuments"><i class="ri-file-text-line"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;">
+                                <input class="form-check-input" type="checkbox">
+                            </td>
+                            <td>1.5 Financing Cost</td>
+                            <td>Construction XYZ</td>
+                            <td>Lorem Ipsum is simply dummy text.</td>
+                            <td><div class="badge bg-danger-subtle text-danger priority">High</div></td>
+                            <td>
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-info"><i class='bx bxs-circle'></i> WIP</a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> Open</a></li>
+                                            <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Reopen</a></li>
+                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                            <li><a class='text-danger' href='#'><i class='bx bxs-circle'></i> Cancelled</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-warning">Moderate</td>
+                            <td>
+                                <div>
+                                    <div class="d-block mb-0">
+                                        <div style="font-size:11px !important;color:#777;">50%</div>
+                                    </div>
+                                    <div class="progress progress-md animated-progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width:50%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="d-flex gap-1">
+                                        <span class="badge bg-danger priority" style="background:#ff6a00;">Important</span>
+                                    </div>
+                                    <div><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#addtags" class="click-link"><i class="ri-add-line" data-bs-toggle="tooltip" title="Add Tag"></i></a></div>
+                                </div>
+                            </td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026</td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>02:00:00</td>
+                            <td>
+                                <div class="text-success d-flex align-items-center gap-1"><i class="bx bx-play-circle" style="font-size:18px;margin-top: 2px;"></i> <span>Start Timer</span></div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="javascript: void(0);" data-bs-toggle="tooltip" title="Erica Kernan" style="display:inline-block;">
+                                    <div class="avatar-xxs">
+                                        <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                    </div>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="avatar-group">
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-danger">
+                                                    D
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-primary">
+                                                    +2
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><a href="javascript:void(0);" style="font-size:22px;" data-bs-toggle="offcanvas" data-bs-target="#uploaddocuments"><i class="ri-file-text-line"></i></a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="uploaddocuments">
+        <div class="offcanvas-header justify-content-between border-bottom p-2">
+            <h5 class="offcanvas-title">Upload Documents</h5>
+            <button type="button" class="sub-soft-btn danger fs-18" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ri-close-fill"></i></button>
+        </div>
+        <div class="offcanvas-body p-0 overflow-hidden">
+            <div data-simplebar style="height: calc(100vh - 10px);">
+                <div class="p-3">
+                    <div id="dropzone" class="dropzone">
+                        <input type="file" id="fileInput" multiple hidden>
+                        <div class="mb-2">
+                            <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                        </div>
+                        <h3>Drop files here or click to upload</h3>
+                    </div>
+                    <table class="table table-hover table-striped tbl_new tbl_fileup">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Uploaded by</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end canvas_lg_screen" id="myprojectdetails" data-bs-backdrop="static" tabindex="-1" data-bs-scroll="false">
+        <div class="offcanvas-header justify-content-between border-bottom p-2">
+            <h5 class="offcanvas-title">Construction XYZ</h5>
+            <!--<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>-->
+            <div class="hstack gap-1">
+                <button type="button" onclick="fsFunction()" class="sub-soft-btn fsr fs-18"><i class="ri-fullscreen-fill"></i></button>
+                <button type="button" onclick="fseFunction()" class="sub-soft-btn fsre fs-18"><i class="ri-fullscreen-exit-fill"></i></button>
+                <button type="button" class="sub-soft-btn danger fs-18" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ri-close-fill"></i></button>
+            </div>
+        </div>
+        <div class="offcanvas-body p-0 overflow-hidden">
+            <div data-simplebar style="height: calc(100vh - 45px);">
+                <div class="p-3">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addtags" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center" style="border-bottom:1px solid #ddd;padding:10px;">
+                    <h4 style="font-size:18px;margin:0;">Add Tags</h4>
+                    <button type="button" class="sub-soft-btn danger" data-bs-dismiss="modal" aria-label="Close"><i class="ri-close-line"></i></button>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="d-flex gap-2 align-items-center justify-content-between">
+                        <div class="d-flex gap-2 justify-content-between" style="width:100%;">
+                            <div style="width:100%;">
+                                <input type="text" class="form-control" placeholder="Tag Name" />
+                            </div>
+                            <div>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bx bx-color-fill"></i></span>
+                                    <input type="text" data-jscolor="{}" class="jscolor form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="sub-soft-btn" data-bs-toggle="tooltip" title="+ Add"><i class="ri-add-line"></i></button>
+                        </div>
+                    </div>
+                    <div class="pt-3 pb-3">
+                        <div class="input-line">
+                            <div class="search__wrap position-relative">
+                                <div class="tag-input">
+                                    <span class="tag" data-value="Small" style="background:#ff6a00;color:#fff;">Important <i class="ri-close-line"></i></span>
+                                    <span class="tag" data-value="Small" style="background:#3978de;color:#fff;">Urgent <i class="ri-close-line"></i></span>
+                                    <span class="tag" data-value="Small" style="background:#ffd800;color:#000;">Editable <i class="ri-close-line"></i></span>
+
+                                    <input type="text" id="parametervalue1" class="search__input" placeholder="Search tag" />
+                                    <span class="search__arrow"><i class="ri-arrow-down-s-fill "></i></span>
+
+
+                                </div>
+
+
+                                <div class="dropdown_bl search__dropdown">
+                                    <a href="#" class="dropdown_bl__link">Important</a>
+                                    <a href="#" class="dropdown_bl__link">Urgent</a>
+                                    <a href="#" class="dropdown_bl__link">Design</a>
+                                    <a href="#" class="dropdown_bl__link">Immediate</a>
+                                    <a href="#" class="dropdown_bl__link">Editable</a>
+                                    <div class="dropdown_bl__no-record d-none">No record found</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--<div class="pt-3">
+                        <div class="d-flex gap-1">
+                            <span class="badge priority" style="background:#ff6a00;">Important</span>
+                            <span class="badge priority" style="background:#3978de;">Urgent</span>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script src="/pms/new/assets/js/jscolor.js"></script>
+    <script>
+    function fsFunction(){
+        var element = document.getElementById("myprojectdetails");
+        element.classList.add("canvas-fullscreen");
+    }
+    function fseFunction(){
+        var element = document.getElementById("myprojectdetails");
+        element.classList.remove("canvas-fullscreen");
+    }
+    </script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.querySelectorAll('.search__wrap').forEach(wrapper => {
+
+                const tagInput = wrapper.querySelector('.tag-input'); // optional
+                const input = wrapper.querySelector('.search__input');
+                const dropdown = wrapper.querySelector('.search__dropdown');
+                const arrow = wrapper.querySelector('.search__arrow');
+                const items = [...wrapper.querySelectorAll('.dropdown_bl__link:not(.search-more)')];
+                const noRecord = wrapper.querySelector('.dropdown_bl__no-record');
+
+                /* ✅ PLACEHOLDER FIX */
+                const originalPlaceholder = input.getAttribute('placeholder');
+                function updatePlaceholder() {
+                    if (!tagInput) return;
+                    const hasTags = tagInput.querySelectorAll('.tag').length > 0;
+                    input.placeholder = hasTags ? 'Search tag' : originalPlaceholder;
+                }
+
+                function openDropdown() {
+                    dropdown.style.display = 'block';
+                }
+
+                function closeDropdown() {
+                    dropdown.style.display = 'none';
+                }
+
+                function updateNoRecord() {
+                    const visible = items.some(i => i.style.display !== 'none');
+                    if (noRecord) {
+                        noRecord.classList.toggle('d-none', visible);
+                    }
+                }
+
+                function toggleTag(value) {
+                    if (!tagInput) return false;
+
+                    const existing = [...tagInput.querySelectorAll('.tag')]
+                        .find(tag => tag.dataset.value === value);
+
+                    const item = items.find(i => i.textContent.trim() === value);
+
+                    /* 🔁 REMOVE TAG */
+                    if (existing) {
+                        existing.remove();
+                        if (item) item.style.display = 'block';
+                        updateNoRecord();
+                        updatePlaceholder(); // ✅
+                        return true;
+                    }
+
+                    /* ➕ ADD TAG */
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.dataset.value = value;
+                    tag.innerHTML = `${value} <i class="ri-close-line"></i>`;
+
+                    tag.querySelector('i').onclick = () => {
+                        tag.remove();
+                        if (item) item.style.display = 'block';
+                        updateNoRecord();
+                        updatePlaceholder(); // ✅
+                    };
+
+                    tagInput.insertBefore(tag, input);
+                    if (item) item.style.display = 'none';
+
+                    updateNoRecord();
+                    updatePlaceholder(); // ✅
+                    return true;
+                }
+
+                /* Open dropdown */
+                (tagInput || input).addEventListener('click', () => {
+                    input.focus();
+                    openDropdown();
+                });
+
+                if (arrow) {
+                    arrow.addEventListener('click', e => {
+                        e.stopPropagation();
+                        dropdown.style.display === 'block' ? closeDropdown() : openDropdown();
+                    });
+                }
+
+                /* 🔍 Search filter */
+                input.addEventListener('input', () => {
+                    const value = input.value.toLowerCase();
+                    let visibleCount = 0;
+
+                    items.forEach(item => {
+                        if (item.style.display === 'none') return;
+
+                        const match = item.textContent.toLowerCase().includes(value);
+                        item.style.display = match ? 'block' : 'none';
+                        if (match) visibleCount++;
+                    });
+
+                    if (noRecord) {
+                        noRecord.classList.toggle('d-none', visibleCount !== 0);
+                    }
+                });
+
+                /* Select / Unselect */
+                items.forEach(item => {
+                    item.addEventListener('click', e => {
+                        e.preventDefault();
+                        const value = item.textContent.trim();
+
+                        if (tagInput) {
+                            toggleTag(value);
+                            input.value = '';
+                            input.dispatchEvent(new Event('input'));
+                        } else {
+                            input.value = value;
+                            closeDropdown();
+                        }
+                    });
+                });
+
+                /* Click outside */
+                document.addEventListener('click', e => {
+                    if (!wrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                });
+
+                updatePlaceholder(); // ✅ initial state
+
+            });
+
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const dropzone = document.getElementById("dropzone");
+            const fileInput = document.getElementById("fileInput");
+            const fileTable = document.getElementById("fileTable");
+
+            let filesArray = [];
+
+            dropzone.addEventListener("click", () => fileInput.click());
+
+            fileInput.addEventListener("change", (e) => {
+                handleFiles(e.target.files);
+            });
+
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
+
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("dragover");
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
+                handleFiles(e.dataTransfer.files);
+            });
+
+            function getIcon(file) {
+                if (file.type.startsWith("image/")) return "<i class='ri-image-fill'></i>";
+                if (file.type.includes("pdf")) return "<i class='bx bxs-file-pdf' style='color:red;'></i>";
+                if (file.type.includes("zip")) return "<i class='ri-folder-zip-line'></i>";
+                if (file.type.includes("video")) return "<i class='ri-film-line'></i>";
+                if (file.type.includes("audio")) return "<i class='ri-volume-up-fill'></i>";
+                return "📁";
+            }
+
+            function handleFiles(files) {
+                Array.from(files).forEach(file => {
+                    filesArray.push(file);
+                });
+
+                renderTable();
+            }
+
+            function renderTable() {
+                fileTable.innerHTML = "";
+
+                filesArray.forEach((file, index) => {
+
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                <td>
+                  <span class="icon">${getIcon(file)}</span>
+                  ${file.name}
+                </td>
+                <td>
+                    <div class="d-flex align-items-center gap-2" style="display:inline-block;">
+                        <div class="avatar-xxs">
+                            <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                        </div>
+                        <div style="color:#000;line-height:1;">Erica Kernan<br><small>34534</small></div>
+                    </div>
+                </td>
+                <td><div class="d-flex align-items-center gap-2"><a href="javascript:void(0);" class="text-dark"><i class="ri-download-2-line"></i></a><a href="javascript:void(0);" class="text-dark"><i class="ri-eye-line"></i></a><a href="javascript:void(0);" data-index="${index}" class="delete text-danger"><i class="ri-delete-bin-line"></i></a></div></td>
+              `;
+
+                    fileTable.appendChild(row);
+
+                    uploadFile(file, row);
+                });
+
+                document.querySelectorAll(".delete").forEach(btn => {
+                    btn.addEventListener("click", (e) => {
+                        const index = e.target.dataset.index;
+                        filesArray.splice(index, 1);
+                        renderTable();
+                    });
+                });
+            }
+
+            function uploadFile(file, row) {
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(() => {
+                        row.querySelector(".status").textContent = "✔ Uploaded";
+                        row.querySelector(".status").style.color = "green";
+                    })
+                    .catch(() => {
+                        row.querySelector(".status").textContent = "✖ Failed";
+                        row.querySelector(".status").style.color = "red";
+                    });
+            }
+
+        });
+    </script>
+</body>
+</html>
