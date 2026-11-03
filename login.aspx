@@ -4,7 +4,7 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-<title>Absolute ERP1</title>
+<title>Absolute ERP</title>
 <link href="css/mis_css.css" rel="stylesheet" type="text/css" />
 <link href="css/styles.css" rel="stylesheet" type="text/css" />
 <link href="js/script.js" rel="stylesheet" type="text/javascript" />
