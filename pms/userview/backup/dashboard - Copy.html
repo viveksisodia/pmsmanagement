@@ -1,0 +1,885 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+    </style>
+    <style>
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 100%;
+            margin: 0;
+        }
+
+        .card {
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 10px 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.01);
+            margin-bottom:0;
+        }
+
+        .card-title {
+            font-size: 15px;
+            color: #000;
+            margin-bottom: 2px;
+        }
+
+        .metric-group {
+            position: absolute;
+            top: 40px;
+            left: 16px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .metric-value {
+            font-size: 25px;
+            font-weight: 600;
+            color: #000;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #000;
+            margin-top: 2px;
+        }
+
+        .chart-container {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gauge-container {
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+            max-height: 180px;
+            cursor: pointer;
+        }
+
+        .gauge-text-overlay {
+            position: relative;
+            margin-top: 0px;
+            bottom: 0px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a202c;
+            pointer-events: none;
+            z-index: 20;
+            text-align: center;
+        }
+
+        .legend-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            position: absolute;
+            bottom: 12px;
+            left: 16px;
+            z-index: 10;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .legend-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .hours-legend-top {
+            display: flex;
+            gap: 10px;
+            position: absolute;
+            top: 12px;
+            right: 16px;
+        }
+
+        #global-chart-tooltip {
+            position: fixed;
+            background: rgba(26, 32, 44, 0.98);
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 999999;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            left: 0;
+            top: 0;
+            transform: translate3d(0, 0, 0);
+            will-change: transform, opacity;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">User</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <!--<a href="myprojects.html">Projects</a>-->
+        <a href="mytask.html">My Task</a>
+        <a href="task-logs.html">Task Logs</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-6 col-lg-6 col-md-6 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Dashboard</div>
+
+                    </div>
+                </div>
+
+                <div class="col-xxl-6 col-lg-6 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <div class="d-flex align-items-center gap-1 me-2">
+                            <i class="ri-calendar-line text-muted" style="font-size: 16px;"></i>
+                            <span style="font-size: 15px;">04/05/2025</span>
+                            <i class="ri-arrow-down-s-line" style="font-size: 20px;line-height: 1;"></i>
+                        </div>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-3">
+            <div class="row">
+                <div class="col-xl-12 mb-3">
+                    <div class="card pms-widget">
+                        <div class="card-body p-0">
+                            <div class="row row-cols-md-3 row-cols-1">
+                                <div class="col col-lg border-end">
+                                    <div class="">
+                                        <a href="#">
+                                            <div class="tile">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div>
+                                                        <div class="tile-icon"><i class="ri-folder-2-line"></i></div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="tile-heading"><span>Open</span></div>
+                                                        <div class="tile-body">40</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col col-lg border-end">
+                                    <div class="mt-2 mt-md-0">
+                                        <a href="#">
+                                            <div class="tile">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div>
+                                                        <div class="tile-icon bg-warning-subtle text-warning"><i class="bx bx-calendar-check"></i></div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="tile-heading"><span>Work in Progress</span></div>
+                                                        <div class="tile-body text-warning">60</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col col-lg border-end">
+                                    <div class="mt-2 mt-md-0">
+                                        <a href="#">
+                                            <div class="tile">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div>
+                                                        <div class="tile-icon bg-info-subtle text-info"><i class="ri-inbox-archive-line"></i></div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="tile-heading"><span>Reopen</span></div>
+                                                        <div class="tile-body text-info">60</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col col-lg border-end">
+                                    <div class="mt-2 mt-lg-0">
+                                        <a href="#">
+                                            <div class="tile">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div>
+                                                        <div class="tile-icon bg-success-subtle text-success"><i class="bx bx-check-circle"></i></div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="tile-heading"><span>Completed</span></div>
+                                                        <div class="tile-body text-success">60</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col col-lg">
+                                    <div class="mt-2 mt-lg-0">
+                                        <a href="#">
+                                            <div class="tile">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div>
+                                                        <div class="tile-icon bg-danger-subtle text-danger"><i class="ri-close-circle-line"></i></div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="tile-heading"><span>Cancelled</span></div>
+                                                        <div class="tile-body text-danger">20</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="global-chart-tooltip"></div>
+
+            <div class="dashboard-grid">
+                <!-- 1. Subtask Status -->
+                <div class="card">
+                    <div class="card-title">Subtask Status</div>
+                    <div class="metric-group">
+                        <div class="metric-value">52</div>
+                        <div class="metric-label">Total Subtask</div>
+                    </div>
+                    <div class="legend-container">
+                        <div class="legend-item"><span class="legend-dot" style="background: #ff9f55;"></span>Open</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #ffcc4d;"></span>Work In Progress</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #b983ff;"></span>Reopen</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #2ddeb3;"></span>Completed</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="statusChart" class="chart-canvas" style="margin-left:80px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- 2. Subtask Priority -->
+                <div class="card">
+                    <div class="card-title">Subtask Priority</div>
+                    <div class="metric-group">
+                        <div class="metric-value">52</div>
+                        <div class="metric-label">Total Subtask</div>
+                    </div>
+                    <div class="legend-container">
+                        <div class="legend-item"><span class="legend-dot" style="background: #ff5c5c;"></span>High (30)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #3ba3ff;"></span>Medium (14)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #ffcc4d;"></span>Low (8)</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="priorityChart" class="chart-canvas" style="margin-left:50px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- 3. Task Efficiency -->
+                <div class="card">
+                    <div class="card-title">Task Efficiency</div>
+                    <div class="chart-container gauge-container">
+                        <canvas id="taskEfficiencyGauge" class="chart-canvas" style="max-height:165px;"></canvas>
+                        <div class="gauge-text-overlay">60%</div>
+                    </div>
+                </div>
+
+                <!-- 4. Subtask Hours -->
+                <div class="card">
+                    <div class="card-title">Subtask Hours</div>
+                    <div class="hours-legend-top">
+                        <div class="legend-item"><span class="legend-dot" style="background: #00c07f;"></span>Assigned</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #0088ff;"></span>Spent</div>
+                        <select class="form-select" style="padding:2px 25px 2px 5px;border-radius: 0;font-size:11px;">
+                            <option>This Week</option>
+                            <option>Today</option>
+                        </select>
+                    </div>
+                    <div class="chart-container" style="align-items: flex-end;">
+                        <canvas id="hoursChart" style="width: 100%;"></canvas>
+                    </div>
+                </div>
+
+                <!-- 5. Issues -->
+                <div class="card">
+                    <div class="card-title">Issues</div>
+                    <div class="legend-container">
+                        <div class="legend-item"><span class="legend-dot" style="background: #ff5c5c;"></span>Issues (14)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #3ba3ff;"></span>Resolved (38)</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="issuesChart" class="chart-canvas" style="margin-left:50px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- 6. Time Efficiency -->
+                <div class="card">
+                    <div class="card-title">Time Efficiency</div>
+                    <div class="chart-container gauge-container">
+                        <canvas id="timeEfficiencyGauge" class="chart-canvas" style="max-height:165px;"></canvas>
+                        <div class="gauge-text-overlay">75%</div>
+                    </div>
+                </div>
+                <!-- 7. Tags -->
+                <div class="card">
+                    <div class="card-title">Tags</div>
+                    <div class="table-responsive">
+                        <table class="table align-middle tbl-tag mt-1 mb-1">
+                            <thead>
+                                <tr>
+                                    <th>Tag Name</th>
+                                    <th>Number of Subtask</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#ffcc4d;">Important</span></td>
+                                    <td>
+                                        32
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#ff9092;">Immediate</span></td>
+                                    <td>
+                                        68
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#bf8eff;">Hold</span></td>
+                                    <td>
+                                        52
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#85b4ff;">Leave It</span></td>
+                                    <td>
+                                        86
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge priority" style="background:#6deb76;">Resolved</span></td>
+                                    <td>
+                                        100
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+        (function () {
+            let animationProgress = 0;
+            const animationDuration = 750;
+            let startTime = null;
+
+            const priorityValues = [30, 14, 8];
+            const priorityColors = ['#ff999a', '#a5c7ff', '#ffe696'];
+
+            const issuesValues = [14, 38];
+            const issuesColors = ['#ff999a', '#a5c7ff'];
+
+            const assignedHoursArray = [7.2, 6.0, 5.2, 7.5, 7.1, 7.3, 7.2, 0.4];
+            const spentHoursArray = [5.8, 5.4, 4.8, 7.5, 6.9, 7.1, 7.5, 0.0];
+
+            const hoverStates = {
+                statusChart: { index: -1 },
+                priorityChart: { index: -1 },
+                taskEfficiencyGauge: { index: -1 },
+                hoursChart: { index: -1, type: null },
+                issuesChart: { index: -1 },
+                timeEfficiencyGauge: { index: -1 }
+            };
+
+            function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+
+            function getDprContext(canvasId) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return null;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                return { canvas, ctx, dpr };
+            }
+
+            function syncCanvasSize(canvas, ctx, dpr) {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.scale(dpr, dpr);
+                return rect;
+            }
+
+            function showGlobalTooltip(text, clientX, clientY) {
+                const tooltip = document.getElementById('global-chart-tooltip');
+                if (!tooltip) return;
+                tooltip.innerHTML = text;
+                tooltip.style.opacity = '1';
+                tooltip.style.transform = `translate3d(${clientX + 10}px, ${clientY - 25}px, 0)`;
+            }
+
+            function hideGlobalTooltip() {
+                const tooltip = document.getElementById('global-chart-tooltip');
+                if (tooltip) tooltip.style.opacity = '0';
+            }
+
+            const bubbleData = [
+                { value: '25', xRatio: 0.58, yRatio: 0.32, maxR: 52, color: '#ffe7d8', textColor: '#f96e18', fontSize: 40 },
+                { value: '14', xRatio: 0.83, yRatio: 0.50, maxR: 40, color: '#d5ffd7', textColor: '#00cc0e', fontSize: 30 },
+                { value: '3', xRatio: 0.65, yRatio: 0.80, maxR: 32, color: '#fff4d1', textColor: '#f3bb00', fontSize: 26 },
+                { value: '2', xRatio: 0.46, yRatio: 0.72, maxR: 25, color: '#ebdbff', textColor: '#8a38f5', fontSize: 18 }
+            ];
+
+            function drawBubbles() {
+                const layout = getDprContext('statusChart');
+                if (!layout) return;
+                const rect = syncCanvasSize(layout.canvas, layout.ctx, layout.dpr);
+                const ctx = layout.ctx;
+
+                bubbleData.forEach((b, idx) => {
+                    const cx = rect.width * b.xRatio;
+                    const cy = rect.height * b.yRatio;
+                    const baseRadius = b.maxR * animationProgress;
+                    const isHovered = hoverStates.statusChart.index === idx;
+                    const r = isHovered ? baseRadius + 3 : baseRadius;
+
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.fillStyle = b.color;
+                    ctx.fill();
+
+                    if (isHovered) {
+                        ctx.restore();
+                    }
+
+                    // Custom individual typography mapping execution step
+                    if (animationProgress > 0.4 && r > 5) {
+                        ctx.save();
+
+                        // Applies individual target parameters directly out of the dataset matrix
+                        ctx.fillStyle = b.textColor;
+
+                        // Scales the independent base font size matching the animation track multiplier
+                        const scaledFontSize = Math.max(8, Math.floor(b.fontSize * animationProgress));
+                        ctx.font = `500 ${scaledFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(b.value, cx, cy);
+                        ctx.restore();
+                    }
+                });
+            }
+
+            function drawDoughnutChart(canvasId, values, colors, centerTotal, centerLabel) {
+                const layout = getDprContext(canvasId);
+                if (!layout) return;
+                const rect = syncCanvasSize(layout.canvas, layout.ctx, layout.dpr);
+                const ctx = layout.ctx;
+
+                const cx = rect.width / 2;
+                const cy = rect.height / 2;
+                const baseRadius = Math.min(rect.width, rect.height) * 0.48;
+                const thickness = baseRadius * 0.20;
+
+                let startAngle = -Math.PI / 2;
+                const total = values.reduce((a, b) => a + b, 0);
+
+                values.forEach((val, i) => {
+                    const fullSlice = (val / total) * (Math.PI * 2);
+                    const currentSlice = fullSlice * animationProgress;
+                    const isHovered = hoverStates[canvasId].index === i;
+                    const r = isHovered ? baseRadius + 3 : baseRadius;
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, startAngle, startAngle + currentSlice);
+                    ctx.arc(cx, cy, r - thickness, startAngle + currentSlice, startAngle, true);
+                    ctx.closePath();
+                    ctx.fillStyle = colors[i];
+                    ctx.fill();
+
+                    startAngle += fullSlice;
+                });
+
+                if (centerTotal !== undefined && animationProgress > 0.5) {
+                    ctx.save();
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 26px -apple-system, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(centerTotal, cx, cy - 5);
+
+                    ctx.fillStyle = '#000';
+                    ctx.font = '500 11px -apple-system, sans-serif';
+                    ctx.fillText(centerLabel, cx, cy + 12);
+                    ctx.restore();
+                }
+            }
+
+            function drawGaugeChart(canvasId, value) {
+                const layout = getDprContext(canvasId);
+                if (!layout) return;
+                const rect = syncCanvasSize(layout.canvas, layout.ctx, layout.dpr);
+                const ctx = layout.ctx;
+
+                const cx = rect.width / 2;
+                const cy = rect.height - 10;
+                const radius = Math.min(rect.width, rect.height) * 0.80;
+
+                // Reduced from 0.18 to a sleek 0.08 ratio thickness
+                const thickness = radius * 0.13;
+
+                const segments = [25, 25, 25, 25];
+                const segmentColors = ['#ff999a', '#ffe696', '#a5c7ff', '#c5f8c8'];
+
+                let startAngle = Math.PI;
+                segments.forEach((seg, i) => {
+                    const sliceAngle = (seg / 100) * Math.PI * animationProgress;
+                    const isHovered = hoverStates[canvasId].index === i;
+                    const r = isHovered ? radius + 3 : radius;
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, startAngle, startAngle + sliceAngle);
+                    ctx.arc(cx, cy, r - thickness, startAngle + sliceAngle, startAngle, true);
+                    ctx.closePath();
+                    ctx.fillStyle = segmentColors[i];
+                    ctx.fill();
+                    startAngle += (seg / 100) * Math.PI;
+                });
+
+                const needleAngle = Math.PI + ((value * animationProgress) / 100) * Math.PI;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(needleAngle);
+
+                ctx.beginPath();
+                ctx.moveTo(0, -1.2);
+                ctx.lineTo(radius - 2, 0);
+                ctx.lineTo(0, 1.2);
+                ctx.fillStyle = '#000';
+                ctx.fill();
+
+                ctx.fillStyle = '#000';
+                ctx.fillRect(-8, -2.5, 16, 5);
+                ctx.restore();
+            }
+
+            const barLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const yTicks = ['08:00:00', '06:00:00', '04:00:00', '02:00:00', '00:00:00'];
+
+            function drawBars() {
+                const layout = getDprContext('hoursChart');
+                if (!layout) return;
+                const rect = syncCanvasSize(layout.canvas, layout.ctx, layout.dpr);
+                const ctx = layout.ctx;
+
+                const padLeft = 55, padBottom = 15, padTop = 20;
+                const chartWidth = rect.width - padLeft - 0;
+                const chartHeight = rect.height - padBottom - padTop;
+
+                ctx.lineWidth = 1;
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.font = '500 10px sans-serif';
+
+                for (let i = 0; i < 5; i++) {
+                    const y = padTop + (chartHeight / 4) * i;
+                    ctx.strokeStyle = '#f1f5f9';
+                    ctx.beginPath();
+                    ctx.moveTo(padLeft, y);
+                    ctx.lineTo(rect.width - 10, y);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#000';
+                    ctx.fillText(yTicks[i], padLeft - 8, y);
+                }
+
+                const colWidth = chartWidth / 7;
+                barLabels.forEach((label, i) => {
+                    const colX = padLeft + (i * colWidth) + (colWidth * 0.15);
+                    const barW = colWidth * 0.22;
+
+                    const hAssigned = ((assignedHoursArray[i] / 8) * chartHeight) * animationProgress;
+                    const hSpent = ((spentHoursArray[i] / 8) * chartHeight) * animationProgress;
+
+                    const isAssignedHovered = hoverStates.hoursChart.index === i && hoverStates.hoursChart.type === 'assigned';
+                    const isSpentHovered = hoverStates.hoursChart.index === i && hoverStates.hoursChart.type === 'spent';
+
+                    ctx.fillStyle = isAssignedHovered ? '#70a2f3' : '#8bb7ff';
+                    ctx.fillRect(colX, padTop + chartHeight - hAssigned, barW, hAssigned);
+
+                    ctx.fillStyle = isSpentHovered ? '#a6eaa9' : '#c5f8c8';
+                    ctx.fillRect(colX + barW + 2, padTop + chartHeight - hSpent, barW, hSpent);
+
+                    ctx.fillStyle = '#000';
+                    ctx.font = '500 10px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(label, colX + barW + 1, rect.height - 4);
+                });
+            }
+
+            function renderAllCharts() {
+                drawBubbles();
+                drawDoughnutChart('priorityChart', priorityValues, priorityColors, "52", "Total");
+                drawGaugeChart('taskEfficiencyGauge', 60);
+                drawBars();
+                drawDoughnutChart('issuesChart', issuesValues, issuesColors, "52", "Total Issues");
+                drawGaugeChart('timeEfficiencyGauge', 75);
+            }
+
+            function hookInteractions(canvasId, hitTestFn) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    hitTestFn(e.clientX - rect.left, e.clientY - rect.top, rect, e.clientX, e.clientY);
+                });
+
+                canvas.addEventListener('mouseleave', () => {
+                    if (hoverStates[canvasId].type !== undefined) {
+                        hoverStates[canvasId].index = -1; hoverStates[canvasId].type = null;
+                    } else { hoverStates[canvasId].index = -1; }
+                    hideGlobalTooltip();
+                    renderAllCharts();
+                });
+            }
+
+            window.addEventListener('load', () => {
+                requestAnimationFrame(function step(t) {
+                    if (!startTime) startTime = t;
+                    const elapsed = t - startTime;
+                    if (elapsed >= animationDuration) {
+                        animationProgress = 1;
+                        renderAllCharts();
+                    } else {
+                        animationProgress = easeOutCubic(elapsed / animationDuration);
+                        renderAllCharts();
+                        requestAnimationFrame(step);
+                    }
+                });
+
+                hookInteractions('statusChart', (mx, my, rect, clX, clY) => {
+                    let activeIdx = -1;
+                    bubbleData.forEach((b, idx) => {
+                        const cx = rect.width * b.xRatio;
+                        const cy = rect.height * b.yRatio;
+                        if (Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2) <= b.maxR) activeIdx = idx;
+                    });
+                    if (activeIdx !== hoverStates.statusChart.index) {
+                        hoverStates.statusChart.index = activeIdx;
+                        renderAllCharts();
+                    }
+                    const statusLabels = ["Open", "Completed", "Work In Progress", "Reopen"];
+                    if (activeIdx !== -1) showGlobalTooltip(`<strong>${statusLabels[activeIdx]}: ${bubbleData[activeIdx].value}</strong>`, clX, clY);
+                    else hideGlobalTooltip();
+                });
+
+                function processDoughnutHover(canvasId, values, labels) {
+                    hookInteractions(canvasId, (mx, my, rect, clX, clY) => {
+                        const cx = rect.width / 2;
+                        const cy = rect.height / 2;
+                        const dist = Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2);
+                        const radius = Math.min(rect.width, rect.height) * 0.44;
+
+                        let activeIdx = -1;
+                        if (dist <= radius && dist >= radius * 0.5) {
+                            let angle = Math.atan2(my - cy, mx - cx);
+                            if (angle < 0) angle += Math.PI * 2;
+                            let checkAngle = (angle + Math.PI / 2) % (Math.PI * 2);
+
+                            let targetStart = 0;
+                            const total = values.reduce((a, b) => a + b, 0);
+                            values.forEach((val, i) => {
+                                const slice = (val / total) * (Math.PI * 2);
+                                if (checkAngle >= targetStart && checkAngle <= targetStart + slice) activeIdx = i;
+                                targetStart += slice;
+                            });
+                        }
+                        if (activeIdx !== hoverStates[canvasId].index) {
+                            hoverStates[canvasId].index = activeIdx;
+                            renderAllCharts();
+                        }
+                        if (activeIdx !== -1) showGlobalTooltip(`<strong>${labels[activeIdx]}: ${values[activeIdx]}</strong>`, clX, clY);
+                        else hideGlobalTooltip();
+                    });
+                }
+
+                processDoughnutHover('priorityChart', priorityValues, ["High", "Medium", "Low"]);
+                processDoughnutHover('issuesChart', issuesValues, ["Issues", "Resolved"]);
+
+                function processGaugeHover(canvasId, zoneLabels) {
+                    hookInteractions(canvasId, (mx, my, rect, clX, clY) => {
+                        const cx = rect.width / 2;
+                        const cy = rect.height - 4;
+                        const dx = mx - cx;
+                        const dy = my - cy;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const radius = Math.min(rect.width, rect.height) * 0.85;
+
+                        let activeIdx = -1;
+                        if (dist <= radius && dist >= radius * 0.5 && dy <= 0) {
+                            let angle = Math.atan2(dy, dx);
+                            if (angle < 0) angle += Math.PI * 2;
+
+                            if (angle >= Math.PI && angle <= Math.PI * 2) {
+                                const sectorAngle = (angle - Math.PI) / (Math.PI / 4);
+                                activeIdx = Math.min(3, Math.floor(sectorAngle));
+                            }
+                        }
+
+                        if (activeIdx !== hoverStates[canvasId].index) {
+                            hoverStates[canvasId].index = activeIdx;
+                            renderAllCharts();
+                        }
+
+                        if (activeIdx !== -1) showGlobalTooltip(`<strong>${zoneLabels[activeIdx]}</strong>`, clX, clY);
+                        else hideGlobalTooltip();
+                    });
+                }
+
+                processGaugeHover('taskEfficiencyGauge', ['Low', 'Average', 'Good', 'Excellent']);
+                processGaugeHover('timeEfficiencyGauge', ['Low', 'Average', 'Good', 'Excellent']);
+
+                hookInteractions('hoursChart', (mx, my, rect, clX, clY) => {
+                    const padLeft = 55, padBottom = 15, padTop = 10;
+                    const chartWidth = rect.width - padLeft - 10;
+                    const chartHeight = rect.height - padBottom - padTop;
+                    const colWidth = chartWidth / 7;
+
+                    let activeIdx = -1, type = null;
+
+                    if (mx >= padLeft && mx <= rect.width - 10 && my >= padTop && my <= rect.height - padBottom) {
+                        const i = Math.floor((mx - padLeft) / colWidth);
+                        if (i >= 0 && i < 7) {
+                            const colX = padLeft + (i * colWidth) + (colWidth * 0.12);
+                            const barW = colWidth * 0.28;
+                            const hAssigned = (assignedHoursArray[i] / 8) * chartHeight;
+                            const hSpent = (spentHoursArray[i] / 8) * chartHeight;
+
+                            if (mx >= colX && mx <= colX + barW && my >= (padTop + chartHeight - hAssigned)) {
+                                activeIdx = i; type = 'assigned';
+                            }
+                            else if (mx >= colX + barW + 2 && mx <= colX + (barW * 2) + 2 && my >= (padTop + chartHeight - hSpent)) {
+                                activeIdx = i; type = 'spent';
+                            }
+                        }
+                    }
+
+                    if (activeIdx !== hoverStates.hoursChart.index || type !== hoverStates.hoursChart.type) {
+                        hoverStates.hoursChart.index = activeIdx; hoverStates.hoursChart.type = type;
+                        renderAllCharts();
+                    }
+
+                    if (activeIdx !== -1) showGlobalTooltip(barLabels[activeIdx] + " " + type + ": <strong>" + (type === 'assigned' ? assignedHoursArray[activeIdx] : spentHoursArray[activeIdx]) + " hrs</strong>", clX, clY);
+                    else hideGlobalTooltip();
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1356 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <link href="/pms/new/assets/css/drag-task.css" rel="stylesheet" />
+    <script src="/pms/new/assets/js/chart.js"></script>
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+
+        #colorPicker {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 99999;
+        }
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">Project Manager</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="myprojects.html">Projects</a>
+        <a href="mytask.html">Task</a>
+        <a href="myteam.html" class="active">Team</a>
+        <!--<a href="mytask.html">My Task</a>
+    <a href="javascript:void(0)">Task Logs</a>
+    <a href="javascript:void(0)">Received Project Items</a>-->
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-6 col-lg-6 col-md-6 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">My Team</div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <div class="form-group">
+                            <div class="search__wrap position-relative">
+                                <input type="text" style="font-size:13px;" class="form-control search__input p-0" placeholder="Search Project" value="All Project" autocomplete="off">
+                                <span class="search__arrow"><i class="ri-arrow-down-s-fill"></i></span>
+                                <div class="dropdown_bl search__dropdown shadow-sm">
+                                    <a href="#" class="dropdown_bl__link">All Project</a>
+                                    <a href="#" class="dropdown_bl__link">Project ABC</a>
+                                    <a href="#" class="dropdown_bl__link">Construction XYZ</a>
+                                    <a href="#" class="dropdown_bl__link">Marketing ABC</a>
+                                    <a href="#" class="dropdown_bl__link">Project XYZ</a>
+                                    <div class="dropdown_bl__no-record d-none">No record found</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--<div class="search_box me-2">
+                            <input type="text" class="form-control" id="" placeholder="Search...">
+                            <i class="ri-search-line"></i>
+                        </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Filter"><i class="ri-filter-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Project</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-plus fs-16 align-middle me-1"></i> Add Project</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-0">
+            <div class="wrapperteamassign">
+
+                <!-- LEFT FIXED SECTION -->
+                <div class="left-section">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    <div class="header-date">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <i class="ri-arrow-left-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                                            <i class="ri-calendar-line text-muted" style="font-size: 16px;"></i>
+                                            <span style="font-size: 15px;">04/05/2026</span>
+                                            <i class="ri-arrow-right-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=12">
+                                        <div>
+                                            <div class="name">Atish Saha</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=32">
+                                        <div>
+                                            <div class="name">Amit Kumar</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=45">
+                                        <div>
+                                            <div class="name">Rajeev Singh</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=15">
+                                        <div>
+                                            <div class="name">Ashok Sharma</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=12">
+                                        <div>
+                                            <div class="name">Atish Saha</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=32">
+                                        <div>
+                                            <div class="name">Amit Kumar</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=45">
+                                        <div>
+                                            <div class="name">Rajeev Singh</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="employee">
+                                        <img src="https://i.pravatar.cc/100?img=15">
+                                        <div>
+                                            <div class="name">Ashok Sharma</div>
+                                            <div class="id">34534</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- SCROLLABLE TIME SECTION -->
+                <div class="timeline-section">
+
+                    <table class="timeline-table">
+
+                        <thead>
+                            <tr>
+                                <th>09 AM</th>
+                                <th>10 AM</th>
+                                <th>11 AM</th>
+                                <th>12 PM</th>
+                                <th>01 PM</th>
+                                <th>02 PM</th>
+                                <th>03 PM</th>
+                                <th>04 PM</th>
+                                <th>05 PM</th>
+                                <th>06 PM</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:14%; width:80%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:0%; width:100%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:10%; width:50%;">
+                                        </div>
+
+                                        <div class="availability"
+                                             style="left:80%; width:20%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:30%; width:45%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:14%; width:80%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:0%; width:100%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:10%; width:50%;">
+                                        </div>
+
+                                        <div class="availability"
+                                             style="left:80%; width:20%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="10">
+                                    <div class="time-grid">
+                                        <div class="availability"
+                                             style="left:30%; width:45%;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- RIGHT FIXED SECTION -->
+                <div class="right-section">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Total Available<br /> Time</th>
+                                <th>Assign</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <tr>
+                                <td class="available-time">01:00 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+
+                            <tr>
+                                <td class="available-time">08:30 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+
+                            <tr>
+                                <td class="available-time">02:30 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+
+                            <tr>
+                                <td class="available-time">05:30 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="available-time">01:00 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+
+                            <tr>
+                                <td class="available-time">08:30 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+
+                            <tr>
+                                <td class="available-time">02:30 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+
+                            <tr>
+                                <td class="available-time">05:30 Hrs</td>
+                                <td class="assign"><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#assignedtask"><i class="ri-user-add-line"></i></a></td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- GRAPH PANEL -->
+                <div class="graph-panel">
+
+                    <div class="graph-title">
+                        Team available graph
+                    </div>
+
+                    <div class="pie-wrapper">
+
+                        <canvas id="myPieChart" width="400" height="400"></canvas>
+
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="d-flex justify-content-between align-items-center" style="border-bottom:1px solid #ddd;padding:10px;background:#fff;">
+                <div class="d-flex align-items-center gap-3">
+                    <div><i class="ri-checkbox-blank-fill" style="color:#cbd9e5;font-size:14px;"></i> Planned</div>
+                    <div><i class="ri-checkbox-blank-line" style="color:#ddd;font-size:14px;"></i> Available</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="assignedtask" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center" style="border-bottom:1px solid #ddd;padding-top:10px;padding-bottom:10px;">
+                    <h4 style="font-size:18px;margin:0;">Assign Task</h4>
+                    <button type="button" class="sub-soft-btn danger" data-bs-dismiss="modal" aria-label="Close"><i class="ri-close-line"></i></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="wrapper">
+                        <!-- LEFT -->
+                        <div class="user-panel">
+
+                            <div class="user-header">
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="ri-arrow-left-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                                    <i class="ri-calendar-line text-muted" style="font-size: 16px;"></i>
+                                    <span style="font-size: 15px;">04/05/2026</span>
+                                    <i class="ri-arrow-right-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                                </div>
+                            </div>
+                            <div id="users"></div>
+                        </div>
+
+                        <!-- CENTER -->
+
+                        <div class="timeline-wrapper">
+
+                            <div class="timeline-header" id="header"></div>
+
+                            <div id="timeline"></div>
+
+                        </div>
+
+                        <!-- RIGHT -->
+
+                        <div class="task-panel">
+
+                            <div class="task-header">
+                                <div class="form-group" style="width:100%;">
+                                    <div class="search__wrap position-relative">
+                                        <input type="text" class="form-control search__input" placeholder="Search Project" value="Project XYZ" autocomplete="off">
+                                        <span class="search__arrow"><i class="ri-arrow-down-s-fill"></i></span>
+                                        <div class="dropdown_bl search__dropdown shadow-sm">
+                                            <a href="#" class="dropdown_bl__link">Project ABC</a>
+                                            <a href="#" class="dropdown_bl__link">Construction XYZ</a>
+                                            <a href="#" class="dropdown_bl__link">Marketing ABC</a>
+                                            <a href="#" class="dropdown_bl__link">Project XYZ</a>
+                                            <div class="dropdown_bl__no-record d-none">No record found</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span style="display:inline-block;">
+                                        <input type="checkbox" class="btn-check" id="btn-check-outlined" checked>
+                                        <label class="btn-outline-sp" for="btn-check-outlined">Milestone 1</label>
+                                        <input type="checkbox" class="btn-check" id="btn-check-2-outlined">
+                                        <label class="btn-outline-sp" for="btn-check-2-outlined">Milestone 2</label>
+                                        <input type="checkbox" class="btn-check" id="btn-check-3-outlined">
+                                        <label class="btn-outline-sp" for="btn-check-3-outlined">Milestone 3</label>
+                                        <input type="checkbox" class="btn-check" id="btn-check-6-outlined" checked>
+                                        <label class="btn-outline-sp" for="btn-check-6-outlined">Milestone 4</label>
+                                    </span>
+                                </div>
+                                <div>Tasks</div>
+                            </div>
+
+                            <div class="task-list" id="taskList"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center" style="border-top:1px solid #ddd;padding-top:10px;padding-bottom:10px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div><i class="ri-checkbox-blank-fill" style="color:#cbd9e5;font-size:14px;"></i> Planned</div>
+                        <div><i class="ri-checkbox-blank-line" style="color:#ddd;font-size:14px;"></i> Available</div>
+                    </div>
+                    <button type="button" class="btn btn-primary"><i class="ri-user-follow-line"></i> Assign</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/interact.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+        const text = document.getElementById("text");
+        const colorPicker = document.getElementById("colorPicker");
+
+        // Open color picker only when text clicked
+        text.addEventListener("click", () => {
+            colorPicker.click();
+        });
+
+        // Change text color
+        colorPicker.addEventListener("input", (e) => {
+            text.style.color = e.target.value;
+        });
+    </script>
+    <script>
+
+        /* HEADER */
+
+        const header =
+            document.getElementById('header');
+
+        const hours = [
+            "09", "10", "11", "12", "01", "02", "03", "04",
+            "05", "06", "07", "08", "09", "10", "11", "12",
+            "01", "02", "03", "04", "05", "06", "07", "08",
+            "09", "10", "11", "12", "01", "02", "03", "04",
+            "05", "06", "07", "08", "09", "10", "11", "12",
+            "01", "02", "03", "04", "05", "06", "07", "08"
+        ];
+
+        const periods = [
+            "AM", "AM", "AM", "PM", "PM", "PM", "PM", "PM",
+            "PM", "PM", "PM", "PM", "PM", "PM", "PM", "AM",
+            "AM", "AM", "AM", "AM", "AM", "AM", "AM", "AM",
+            "AM", "AM", "AM", "PM", "PM", "PM", "PM", "PM",
+            "PM", "PM", "PM", "PM", "PM", "PM", "PM", "AM",
+            "AM", "AM", "AM", "AM", "AM", "AM", "AM", "AM"
+        ];
+
+        hours.forEach((hour, index) => {
+
+            header.innerHTML += `
+                            <div class="time-col">
+                                ${hour}
+                                <span>${periods[index]}</span>
+                            </div>
+                        `;
+        });
+
+        /* USERS */
+
+        const users = [
+            "Atish Saha"
+        ];
+
+        const tasks = [
+            { left: 40, width: 280, title: "1.1 Task Financing cost" },
+        ];
+
+        const plannedBlocks = [
+            { left: 20, width: 420 }
+        ];
+
+        const sideTasks = [
+            "Marketing Task",
+            "Testing Module",
+            "Frontend Work",
+            "Design System"
+        ];
+
+        const usersWrap =
+            document.getElementById('users');
+
+        const timeline =
+            document.getElementById('timeline');
+
+        const taskList =
+            document.getElementById('taskList');
+
+        /* CREATE USERS */
+
+        users.forEach((user, index) => {
+
+            usersWrap.innerHTML += `
+                            <div class="user-row">
+                                <img src="https://i.pravatar.cc/40?img=${index + 3}">
+                                <div>${user}</div>
+                                <div class="user-id">34534</div>
+                            </div>
+                        `;
+
+            const row =
+                document.createElement('div');
+
+            row.className =
+                'timeline-row';
+
+            /* AVAILABLE */
+
+            const available =
+                document.createElement('div');
+
+            available.className =
+                'available-strip';
+
+            row.appendChild(available);
+
+            /* PLANNED */
+
+            const planned =
+                document.createElement('div');
+
+            planned.className =
+                'planned-time';
+
+            planned.style.left =
+                plannedBlocks[index].left + 'px';
+
+            planned.style.width =
+                plannedBlocks[index].width + 'px';
+
+            row.appendChild(planned);
+
+            /* GRID */
+
+            const grid =
+                document.createElement('div');
+
+            grid.className = 'grid';
+
+            for (let i = 0; i < 48; i++) {
+
+                grid.innerHTML += `<div></div>`;
+            }
+
+            row.appendChild(grid);
+
+            /* TASK */
+
+            const task =
+                document.createElement('div');
+
+            task.className =
+                'task-bar drag-item';
+
+            task.style.left =
+                tasks[index].left + 'px';
+
+            task.style.width =
+                tasks[index].width + 'px';
+
+            task.innerHTML = `
+                            <div class="d-flex gap-1 align-items-center">
+                            <div class="left-icon"><i class="bx bx-grid-vertical"></i></div>
+                            <div class="task-name">
+                                ${tasks[index].title}
+                            </div>
+                            </div>
+                            <div class="text-danger"><i class="ri-close-line"></i></div>
+
+                            <div class="resize-handle"></div>
+                        `;
+
+            row.appendChild(task);
+
+            timeline.appendChild(row);
+
+        });
+
+        /* RIGHT TASKS */
+
+        function renderRightTasks() {
+
+            taskList.innerHTML = '';
+
+            sideTasks.forEach(task => {
+
+                taskList.innerHTML += `
+                                <div class="task-card external-task">
+                                    <div class="left-icon"><i class="bx bx-grid-vertical"></i></div>
+                                    <input type="checkbox">
+                                    <strong>2 hrs</strong>
+                                    <div class="task-title">${task}</div>
+                                    <div class="task-icons">
+                                        <span class="text-success"><i class="bx bx-check-circle"></i></span>
+                                        <span class="text-danger"><i class="ri-close-line"></i></span>
+                                    </div>
+                                </div>
+                            `;
+            });
+
+            enableRightDrag();
+        }
+
+        renderRightTasks();
+
+        /* CHECK AVAILABLE */
+
+        function isAvailableArea(
+            row,
+            left,
+            width
+        ) {
+
+            const planned =
+                row.querySelector('.planned-time');
+
+            const plannedLeft =
+                parseInt(planned.style.left);
+
+            const plannedWidth =
+                parseInt(planned.style.width);
+
+            const plannedRight =
+                plannedLeft + plannedWidth;
+
+            const taskLeft = left;
+
+            const taskRight =
+                left + width;
+
+            return !(
+                taskLeft < plannedRight &&
+                taskRight > plannedLeft
+            );
+        }
+
+        /* MOVE TASK */
+
+        function moveToRow(target, event) {
+
+            const rows =
+                document.querySelectorAll(
+                    '.timeline-row'
+                );
+
+            let droppedRow = null;
+
+            rows.forEach(row => {
+
+                const rect =
+                    row.getBoundingClientRect();
+
+                if (
+                    event.client.y > rect.top &&
+                    event.client.y < rect.bottom
+                ) {
+                    droppedRow = row;
+                }
+            });
+
+            if (droppedRow) {
+
+                const rowRect =
+                    droppedRow.getBoundingClientRect();
+
+                let left =
+                    event.client.x -
+                    rowRect.left;
+
+                if (left < 0) {
+                    left = 0;
+                }
+
+                const width =
+                    target.offsetWidth;
+
+                if (
+                    isAvailableArea(
+                        droppedRow,
+                        left,
+                        width
+                    )
+                ) {
+
+                    droppedRow.appendChild(target);
+
+                    target.style.left =
+                        left + 'px';
+
+                    target.style.top =
+                        '12px';
+
+                    target.style.transform =
+                        'translate(0px,0px)';
+
+                    target.dataset.x = 0;
+                    target.dataset.y = 0;
+
+                } else {
+
+                    target.style.transform =
+                        'translate(0px,0px)';
+
+                    alert(
+                        'Drop only in available area'
+                    );
+                }
+            }
+        }
+
+        /* CENTER DRAG */
+
+        function enableSheetTask() {
+
+            interact('.drag-item')
+
+                .draggable({
+
+                    listeners: {
+
+                        start(event) {
+
+                            event.target.classList
+                                .add('dragging');
+                        },
+
+                        move(event) {
+
+                            const target =
+                                event.target;
+
+                            let x =
+                                (parseFloat(
+                                    target.dataset.x
+                                ) || 0)
+                                + event.dx;
+
+                            let y =
+                                (parseFloat(
+                                    target.dataset.y
+                                ) || 0)
+                                + event.dy;
+
+                            target.style.transform =
+                                `translate(${x}px,${y}px)`;
+
+                            target.dataset.x = x;
+                            target.dataset.y = y;
+                        },
+
+                        end(event) {
+
+                            const target =
+                                event.target;
+
+                            target.classList
+                                .remove('dragging');
+
+                            moveToRow(target, event);
+                        }
+                    }
+                })
+
+                .resizable({
+
+                    edges: { right: true },
+
+                    listeners: {
+
+                        move(event) {
+
+                            const target =
+                                event.target;
+
+                            const row =
+                                target.parentElement;
+
+                            const left =
+                                parseInt(
+                                    target.style.left
+                                );
+
+                            const newWidth =
+                                event.rect.width;
+
+                            if (
+                                isAvailableArea(
+                                    row,
+                                    left,
+                                    newWidth
+                                )
+                            ) {
+
+                                target.style.width =
+                                    newWidth + 'px';
+                            }
+                        }
+                    }
+                });
+
+        }
+
+        enableSheetTask();
+
+        /* RIGHT TO CENTER */
+
+        function enableRightDrag() {
+
+            interact('.external-task')
+
+                .draggable({
+
+                    listeners: {
+
+                        start(event) {
+
+                            const original =
+                                event.target;
+
+                            event.interaction.original =
+                                original;
+
+                            const task =
+                                document.createElement('div');
+
+                            task.className =
+                                'task-bar drag-item dragging';
+
+                            task.style.width =
+                                '240px';
+
+                            task.innerHTML = `
+                                    <div class="d-flex gap-1 align-items-center">
+                                    <div class="left-icon"><i class="bx bx-grid-vertical"></i></div>
+                                    <div class="task-name">
+                                        ${original.querySelector('.task-title').innerText}
+                                    </div>
+                                    </div>
+
+                                    <div class="text-danger"><i class="ri-close-line"></i></div>
+
+                                    <div class="resize-handle"></div>
+                                `;
+
+                            document.body
+                                .appendChild(task);
+
+                            event.interaction.task =
+                                task;
+
+                            task.style.position =
+                                'fixed';
+
+                            task.style.left =
+                                event.client.x + 'px';
+
+                            task.style.top =
+                                event.client.y + 'px';
+                        },
+
+                        move(event) {
+
+                            const task =
+                                event.interaction.task;
+
+                            task.style.left =
+                                (
+                                    parseFloat(task.style.left)
+                                    + event.dx
+                                ) + 'px';
+
+                            task.style.top =
+                                (
+                                    parseFloat(task.style.top)
+                                    + event.dy
+                                ) + 'px';
+                        },
+
+                        end(event) {
+
+                            const task =
+                                event.interaction.task;
+
+                            const rows =
+                                document.querySelectorAll(
+                                    '.timeline-row'
+                                );
+
+                            let droppedRow = null;
+
+                            rows.forEach(row => {
+
+                                const rect =
+                                    row.getBoundingClientRect();
+
+                                if (
+                                    event.client.y > rect.top &&
+                                    event.client.y < rect.bottom
+                                ) {
+                                    droppedRow = row;
+                                }
+                            });
+
+                            if (droppedRow) {
+
+                                const rowRect =
+                                    droppedRow
+                                        .getBoundingClientRect();
+
+                                let left =
+                                    event.client.x -
+                                    rowRect.left;
+
+                                if (left < 0) {
+                                    left = 0;
+                                }
+
+                                const width =
+                                    task.offsetWidth;
+
+                                if (
+                                    isAvailableArea(
+                                        droppedRow,
+                                        left,
+                                        width
+                                    )
+                                ) {
+
+                                    droppedRow
+                                        .appendChild(task);
+
+                                    task.style.position =
+                                        'absolute';
+
+                                    task.style.left =
+                                        left + 'px';
+
+                                    task.style.top =
+                                        '12px';
+
+                                    task.classList
+                                        .remove('dragging');
+
+                                    const taskName =
+                                        event.interaction.original
+                                            .querySelector(
+                                                '.task-title'
+                                            ).innerText;
+
+                                    const index =
+                                        sideTasks.indexOf(
+                                            taskName
+                                        );
+
+                                    if (index > -1) {
+
+                                        sideTasks.splice(
+                                            index,
+                                            1
+                                        );
+                                    }
+
+                                    event.interaction.original
+                                        .remove();
+
+                                    enableSheetTask();
+
+                                } else {
+
+                                    task.remove();
+
+                                    alert(
+                                        'Drop only in available area'
+                                    );
+                                }
+
+                            } else {
+
+                                task.remove();
+                            }
+                        }
+                    }
+                });
+
+        }
+
+        /* REMOVE TASK */
+
+        document.addEventListener(
+            'click',
+            function (e) {
+
+                if (
+                    e.target.classList
+                        .contains('close')
+                ) {
+
+                    const task =
+                        e.target.parentElement;
+
+                    const taskName =
+                        task.querySelector(
+                            '.task-name'
+                        ).innerText;
+
+                    sideTasks.push(taskName);
+
+                    renderRightTasks();
+
+                    task.remove();
+                }
+
+            });
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.querySelectorAll('.search__wrap').forEach(wrapper => {
+
+                const input = wrapper.querySelector('.search__input');
+                const dropdown = wrapper.querySelector('.search__dropdown');
+                const arrow = wrapper.querySelector('.search__arrow');
+                const items = wrapper.querySelectorAll('.dropdown_bl__link:not(.search-more)');
+                const noRecord = wrapper.querySelector('.dropdown_bl__no-record');
+
+                let activeIndex = -1;
+
+                /* 🔥 STORE ORIGINAL TEXT */
+                items.forEach(item => {
+                    if (!item.dataset.original) {
+                        item.dataset.original = item.textContent.trim();
+                    }
+                });
+
+                /* ✅ OPEN DROPDOWN */
+                function openDropdown() {
+                    items.forEach(item => {
+                        item.style.display = 'block';
+                        item.innerHTML = item.dataset.original;
+                        item.classList.remove('active');
+                    });
+
+                    activeIndex = -1;
+
+                    if (noRecord) noRecord.classList.add('d-none');
+
+                    dropdown.style.display = 'block';
+                    wrapper.classList.add('open');
+                }
+
+                function closeDropdown() {
+                    dropdown.style.display = 'none';
+                    wrapper.classList.remove('open');
+                    activeIndex = -1;
+                }
+
+                input.addEventListener('focus', openDropdown);
+
+                if (arrow) {
+                    arrow.addEventListener('click', e => {
+                        e.stopPropagation();
+                        dropdown.style.display === 'block' ? closeDropdown() : openDropdown();
+                        input.focus();
+                    });
+                }
+
+                /* ✅ FILTER + BOLD */
+                input.addEventListener('input', () => {
+
+                    const value = input.value.toLowerCase();
+                    let visibleCount = 0;
+
+                    items.forEach(item => {
+
+                        const originalText = item.dataset.original;
+                        const lowerText = originalText.toLowerCase();
+
+                        if (value === '') {
+                            item.style.display = 'block';
+                            item.innerHTML = originalText;
+                            visibleCount++;
+                            return;
+                        }
+
+                        const index = lowerText.indexOf(value);
+
+                        if (index !== -1) {
+                            visibleCount++;
+                            item.style.display = 'block';
+
+                            const before = originalText.substring(0, index);
+                            const match = originalText.substring(index, index + value.length);
+                            const after = originalText.substring(index + value.length);
+
+                            item.innerHTML = before + '<strong>' + match + '</strong>' + after;
+                        } else {
+                            item.style.display = 'none';
+                        }
+
+                        item.classList.remove('active');
+                    });
+
+                    activeIndex = -1;
+
+                    if (noRecord) {
+                        noRecord.classList.toggle('d-none', visibleCount !== 0);
+                    }
+
+                });
+
+                /* ✅ KEYBOARD NAVIGATION */
+                input.addEventListener('keydown', (e) => {
+
+                    const visibleItems = Array.from(items).filter(item => item.style.display !== 'none');
+
+                    /* ✅ ESC KEY → CLOSE DROPDOWN */
+                    if (e.key === 'Escape') {
+                        closeDropdown();
+                        input.blur(); // optional: remove focus
+                        return;
+                    }
+
+                    if (!visibleItems.length) return;
+
+                    /* ✅ ARROW DOWN */
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        activeIndex++;
+                        if (activeIndex >= visibleItems.length) activeIndex = 0;
+                        setActive(visibleItems);
+                    }
+
+                    /* ✅ ARROW UP */
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        activeIndex--;
+                        if (activeIndex < 0) activeIndex = visibleItems.length - 1;
+                        setActive(visibleItems);
+                    }
+
+                    /* ✅ ENTER KEY */
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (activeIndex > -1) {
+                            input.value = visibleItems[activeIndex].dataset.original;
+                            closeDropdown();
+                        }
+                    }
+
+                });
+
+                function setActive(visibleItems) {
+                    visibleItems.forEach(item => item.classList.remove('active'));
+                    visibleItems[activeIndex].classList.add('active');
+                    visibleItems[activeIndex].scrollIntoView({ block: 'nearest' });
+                }
+
+                /* ✅ CLICK SELECT */
+                items.forEach(item => {
+                    item.addEventListener('click', e => {
+                        e.preventDefault();
+                        input.value = item.dataset.original;
+                        closeDropdown();
+                    });
+                });
+
+                /* ✅ CLICK OUTSIDE */
+                document.addEventListener('click', e => {
+                    if (!wrapper.contains(e.target)) {
+
+                        const currentValue = input.value.trim().toLowerCase();
+                        let isValid = false;
+
+                        items.forEach(item => {
+                            if (item.dataset.original.toLowerCase() === currentValue) {
+                                isValid = true;
+                            }
+                        });
+
+                        if (!isValid) input.value = '';
+
+                        closeDropdown();
+                    }
+                });
+
+            });
+
+        });
+    </script>
+    <script>
+        const ctx = document.getElementById('myPieChart');
+
+        // Time values
+        const timeData = ['01:00', '08:30', '02:30', '05:30', '01:00', '08:30', '02:30', '05:30'];
+
+        // Convert HH:MM to total minutes
+        const chartData = timeData.map(time => {
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours * 60 + minutes;
+        });
+
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Atish Saha', 'Amit Kumar', 'Rajeev Singh', 'Ashok Sharma', 'Atish Saha', 'Amit Kumar', 'Rajeev Singh', 'Ashok Sharma'],
+                datasets: [{
+                    data: chartData,
+                    backgroundColor: [
+                        '#ffc6f3',
+                        '#a0ffa6',
+                        '#acc1e2',
+                        '#c2cfd9',
+                        '#ff8375',
+                        '#d5b4ff',
+                        '#ffeba9',
+                        '#b4d1ff'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                animation: { duration: 1200 },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return timeData[context.dataIndex] + ' hrs';
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

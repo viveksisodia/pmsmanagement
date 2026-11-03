@@ -1,0 +1,427 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {background-color: #f1f5f7;}
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">Project Head</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="myprojects.html">Projects</a>
+        <a href="mytask.html" class="active">Task</a>
+        <a href="myteam.html">Team</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-4 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Task/Subtask</div>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="ri-calendar-line text-muted" style="font-size: 20px;"></i>
+                            <span style="font-size: 15px;">2025-2026</span>
+                            <i class="ri-arrow-down-s-line" style="font-size: 18px;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-secondary"><i class="ri-user-add-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Yet to be started</span></div>
+                                            <div class="tile-body">4</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-open-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Open</span></div>
+                                            <div class="tile-body">25</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-warning"><i class="bx bx-hourglass"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Work in Progress</span></div>
+                                            <div class="tile-body">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-info"><i class="bx bx-history"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Reopen</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <!--<div class="search_box me-2">
+                    <input type="text" class="form-control" id="" placeholder="Search...">
+                    <i class="ri-search-line"></i>
+                </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <a href="mytask.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="List View"><i class="ri-list-check"></i></a>
+                        <a href="mytask-kanban.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Kanban View"><i class="las la-chart-bar2"></i></a>
+                        <a href="mytask-timeline.html" class="sub-soft-btn active" data-bs-toggle="tooltip" title="Timesheet"><i class="bx bx-server"></i></a>
+                        <a href="mytask-calendar.html" class="sub-soft-btn" data-bs-toggle="tooltip" aria-label="Calendar" data-bs-original-title="Calendar"><i class="bx bx-calendar"></i></a>
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Filter"><i class="ri-filter-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class="sttus-list">
+                                    <li><a class="" href="#"><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-0">
+            <div class="gnt-app">
+
+                <!-- LEFT -->
+                <div class="gnt-left">
+                    <div class="gnt-left-head">
+                        <div>Task</div>
+                        <div>Assigned to</div>
+                        <div>Status</div>
+                        <div>Task Completion%</div>
+                    </div>
+                    <div id="leftRows"></div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="gnt-right">
+
+                    <div class="gnt-tl-head">
+                        <div class="gnt-months"></div>
+                        <div class="gnt-days" id="days"></div>
+                    </div>
+
+                    <div id="timelineRows"></div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+
+        /* =========================
+           CONFIG (ADD MONTHS HERE)
+        ========================= */
+
+        const DAY_WIDTH = 24;
+
+        const months = [
+            { name: "March 2026", days: 31 },
+            { name: "April 2026", days: 30 }
+        ];
+
+        const tasks = [
+            {
+                task: "1 Milestone",
+                level: 0,
+                avatars: [1, 2, 3],
+                status: "Open",
+                statusClass: "gnt-tpeach",
+                progress: 85,
+                start: 2,
+                duration: 35,
+                color: "gnt-peach"
+            },
+            {
+                task: " 1.1 Task",
+                level: 1,
+                avatar: 4,
+                status: "Completed",
+                statusClass: "gnt-tgreen",
+                progress: 100,
+                start: 4,
+                duration: 20,
+                color: "gnt-green"
+            },
+            {
+                task: "1.1.1 Subtask",
+                level: 2,
+                avatar: 5,
+                status: "Yet to be start",
+                statusClass: "gnt-tblue",
+                progress: 40,
+                start: 12,
+                duration: 20,
+                color: "gnt-blue"
+            },
+            {
+                task: "1.1.2 Subtask",
+                level: 2,
+                avatar: 5,
+                status: "In progress",
+                statusClass: "gnt-tyellow",
+                progress: 20,
+                start: 5,
+                duration: 25,
+                color: "gnt-yellow"
+            },
+            {
+                task: "1.1.3 Subtask",
+                level: 2,
+                avatar: 5,
+                status: "Reopen",
+                statusClass: "gnt-tpurple",
+                progress: 10,
+                start: 18,
+                duration: 15,
+                color: "gnt-purple"
+            },
+            {
+                task: "2 Milestone",
+                level: 0,
+                avatars: [1, 2, 3],
+                status: "Open",
+                statusClass: "gnt-tpeach",
+                progress: 85,
+                start: 2,
+                duration: 35,
+                color: "gnt-peach"
+            },
+            {
+                task: " 2.1 Task",
+                level: 1,
+                avatar: 4,
+                status: "Completed",
+                statusClass: "gnt-tgreen",
+                progress: 100,
+                start: 4,
+                duration: 20,
+                color: "gnt-green"
+            },
+            {
+                task: "2.1.1 Subtask",
+                level: 2,
+                avatar: 5,
+                status: "Yet to be start",
+                statusClass: "gnt-tblue",
+                progress: 40,
+                start: 10,
+                duration: 20,
+                color: "gnt-blue"
+            },
+            {
+                task: "2.1.2 Subtask",
+                level: 2,
+                avatar: 5,
+                status: "In progress",
+                statusClass: "gnt-tyellow",
+                progress: 20,
+                start: 5,
+                duration: 25,
+                color: "gnt-yellow"
+            }
+        ];
+
+        /* =========================
+           TOTAL CALCULATION
+        ========================= */
+
+        const totalDays = months.reduce((a, b) => a + b.days, 0);
+        const totalWidth = totalDays * DAY_WIDTH;
+
+        /* =========================
+           MONTH HEADER
+        ========================= */
+
+        const monthEl = document.querySelector(".gnt-months");
+
+        months.forEach(m => {
+            const div = document.createElement("div");
+            div.className = "gnt-month";
+            div.style.width = (m.days * DAY_WIDTH) + "px";
+            div.innerText = m.name;
+            monthEl.appendChild(div);
+        });
+
+        /* =========================
+           DAYS
+        ========================= */
+
+        const daysEl = document.getElementById("days");
+        daysEl.style.gridTemplateColumns = `repeat(${totalDays}, ${DAY_WIDTH}px)`;
+
+        months.forEach(m => {
+            for (let i = 1; i <= m.days; i++) {
+                const s = document.createElement("span");
+                s.innerText = String(i).padStart(2, "0");
+                daysEl.appendChild(s);
+            }
+        });
+
+        /* =========================
+           SET WIDTHS
+        ========================= */
+
+        document.querySelector(".gnt-tl-head").style.width = totalWidth + "px";
+
+        /* =========================
+           TASKS
+        ========================= */
+
+        const leftRows = document.getElementById("leftRows");
+        const timelineRows = document.getElementById("timelineRows");
+
+        tasks.forEach(t => {
+
+            /* LEFT */
+            const row = document.createElement("div");
+            row.className = "gnt-left-row";
+
+            const avatars = t.avatars
+                ? t.avatars.map(i => `<img src="https://i.pravatar.cc/40?img=${i}" style="width:28px;height:28px;border-radius:50%;margin-left:-6px;">`).join("")
+                : `<img src="https://i.pravatar.cc/40?img=${t.avatar}" style="width:28px;height:28px;border-radius:50%;margin-left:-6px;">`;
+
+            row.innerHTML = `
+            <div style="padding-left:${t.level * 20}px">${t.task}</div>
+            <div style="display:flex">${avatars}</div>
+            <div class="${t.statusClass}">${t.status}</div>
+            <div>
+                <div class="gnt-pbox">
+                    <div class="gnt-pct">${t.progress}%</div>
+
+                    <div class="gnt-pbar">
+                        <div class="gnt-pfill"
+                        style="width:${t.progress}%;
+                        background:${t.progress === 100 ? '#00c12b' : '#f3b400'};">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--<div>${t.progress}%</div>-->
+        `;
+
+            leftRows.appendChild(row);
+
+            /* RIGHT */
+            const tr = document.createElement("div");
+            tr.className = "gnt-tl-row";
+            tr.style.width = totalWidth + "px";
+
+            tr.innerHTML = `
+            <div class="gnt-tl">
+                <div class="gnt-bar ${t.color}"
+                    style="left:${(t.start - 1) * DAY_WIDTH}px;
+                    width:${t.duration * DAY_WIDTH}px;">
+                    ${t.duration} days
+                </div>
+            </div>
+        `;
+
+            timelineRows.appendChild(tr);
+        });
+
+    </script>
+</body>
+</html>

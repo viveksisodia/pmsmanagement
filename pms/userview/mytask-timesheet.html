@@ -1,0 +1,594 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {background-color: #f1f5f7;}
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">User</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <!--<a href="myprojects.html">Projects</a>-->
+        <a href="mytask.html" class="active">My Task</a>
+        <a href="task-logs.html">Task Logs</a>
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-4 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Task</div>
+                        <div class="d-flex align-items-center gap-1 ms-3">
+                            <i class="ri-arrow-left-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                            <i class="ri-calendar-line text-muted" style="font-size: 16px;"></i>
+                            <span style="font-size: 15px;">04 May, Monday</span>
+                            <i class="ri-arrow-right-s-line" style="font-size: 20px;line-height: 1;cursor:pointer;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-open-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Open</span></div>
+                                            <div class="tile-body">25</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-warning"><i class="bx bx-hourglass"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Work in Progress</span></div>
+                                            <div class="tile-body">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-info"><i class="bx bx-history"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Reopen</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <!--<div class="search_box me-2">
+        <input type="text" class="form-control" id="" placeholder="Search...">
+        <i class="ri-search-line"></i>
+    </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <a href="mytask.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="List View"><i class="ri-list-check"></i></a>
+                        <a href="mytask-kanban.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Kanban View"><i class="las la-chart-bar2"></i></a>
+                        <a href="mytask-timesheet.html" class="sub-soft-btn active" data-bs-toggle="tooltip" title="Timesheet"><i class="bx bx-server"></i></a>
+                        <a href="mytask-weekly.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Weekly View"><i class="ri-time-line"></i></a>
+                        <a href="mytask-calendar.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Calendar"><i class="bx bx-calendar"></i></a>
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Filter"><i class="ri-filter-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-0">
+            <div class="gantt-wrapper">
+
+                <div class="gantt-scroll">
+
+                    <div class="gantt">
+                        <div class="gantt-row header">
+                            <div class="left-fixed">
+                                <div class="cell edt" style="background: rgb(236, 243, 247);"><input class="form-check-input" type="checkbox"></div>
+                                <div class="cell taskname" style="background: rgb(236, 243, 247);">Task</div>
+                                <div class="cell taskname" style="background: rgb(236, 243, 247);">Project Name</div>
+                                <div class="cell assigned" style="background: rgb(236, 243, 247);">
+                                    Assigned Time
+                                </div>
+                            </div>
+                            <div class="timeline-area">
+                                <div class="time-header" id="timeHeader"></div>
+                            </div>
+                            <div class="right-fixed">
+                                <div class="cell actual" style="background: rgb(236, 243, 247);">
+                                    Actual Time
+                                </div>
+                            </div>
+
+                        </div>
+                        <div id="rows"></div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+
+        let cellWidth = 90;
+
+        const hours = [
+            '6am', '7am', '8am', '9am',
+            '10am', '11am', '12pm', '1pm',
+            '2pm', '3pm', '4pm', '5pm',
+            '6pm', '7pm', '8pm', '9pm'
+        ];
+
+        const tasks = [
+
+            {
+                name: '1.1 Financing Cost',
+                project: 'Construction XYZ',
+                assigned: '02:00:00',
+                start: 4,
+                duration: 2,
+                actual: '02:02:00',
+                color: 'bar-blue',
+                dot: 'red'
+            },
+
+            {
+                name: '1.2 Financing Cost',
+                project: 'Construction XYZ',
+                assigned: '03:00:00',
+                start: 7,
+                duration: 3,
+                actual: '03:01:00',
+                color: 'bar-purple',
+                dot: 'blue'
+            },
+
+            {
+                name: '1.3 Financing Cost',
+                project: 'Construction XYZ',
+                assigned: '02:00:00',
+                start: 10,
+                duration: 2,
+                actual: 'WIP',
+                color: 'bar-green',
+                dot: 'yellow'
+            }
+
+        ];
+
+        /* HEADER */
+
+        function renderHeader() {
+
+            const header =
+                document.getElementById('timeHeader');
+
+            header.innerHTML = '';
+
+            hours.forEach(hour => {
+
+                header.innerHTML += `
+            <div class="time-col"
+            style="
+            width:${cellWidth}px;
+            min-width:${cellWidth}px;
+            ">
+                ${hour}
+            </div>
+            `;
+
+            });
+
+        }
+
+        /* TASKS */
+
+        function renderTasks() {
+
+            const rows =
+                document.getElementById('rows');
+
+            rows.innerHTML = '';
+
+            tasks.forEach((task, index) => {
+
+                rows.innerHTML += `
+
+            <div class="gantt-row">
+
+                <div class="left-fixed">
+                    <div class="cell edt">                        
+                        <input class="form-check-input" type="checkbox">
+                    </div>                   
+
+                    <div class="cell taskname">
+
+                        <div class="task-flex">
+
+                            <span class="dot ${task.dot}">
+                            </span>
+
+                            ${task.name}
+
+                        </div>
+
+                    </div>
+
+                    <div class="cell taskname">
+                       <b>${task.project}</b>
+                    </div>
+                    <div class="cell assigned">
+                        ${task.assigned}
+                    </div>
+                </div>
+                <div class="timeline-area">
+
+                    <div class="timeline-grid">
+
+                        <!-- SHIFT -->
+
+                        <div class="shift-time"></div>
+
+                        <!-- TASK -->
+
+                        <div class="task-bar ${task.color}"
+                        style="
+                        left:${task.start * cellWidth}px;
+                        width:${task.duration * cellWidth}px;
+                        ">
+
+                            ${task.actual}
+
+                            <div class="resize"></div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="right-fixed">
+                    <div class="cell actual
+                    ${task.actual === 'WIP'
+                        ? 'green-text'
+                    : 'red-text'}">
+                    <div class="timer_wrapper">
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="bx bx-stopwatch" style="font-size:18px;"></i><span>${task.actual}</span>
+                        </div>
+                    </div>
+                    <i class="bx bx-progress ms-2" style="font-size:18px;"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+            `;
+
+            });
+
+            updateGrid();
+            dragBars();
+            resizeBars();
+
+        }
+
+        /* UPDATE GRID */
+
+        function updateGrid() {
+
+            document.querySelectorAll('.timeline-grid')
+                .forEach(grid => {
+
+                    grid.style.setProperty(
+                        '--cell-width',
+                        cellWidth + 'px'
+                    );
+
+                    /*
+                    TIMELINE START = 6AM
+
+                    9:30AM = 3.5 cells
+                    6PM    = 12 cells
+                    */
+
+                    const shiftStart =
+                        3.5 * cellWidth;
+
+                    const shiftEnd =
+                        12.5 * cellWidth;
+
+                    const shift =
+                        grid.querySelector('.shift-time');
+
+                    shift.style.left =
+                        shiftStart + 'px';
+
+                    shift.style.width =
+                        (shiftEnd - shiftStart) + 'px';
+
+                });
+
+        }
+
+        /* ADD TASK */
+
+        function addTask() {
+
+            const task = {
+
+                id: 'TS' + Math.floor(Math.random() * 9999),
+
+                name:
+                    document.getElementById('taskName').value,
+
+                start: Number(
+                    document.getElementById('start').value
+                ),
+
+                duration: Number(
+                    document.getElementById('duration').value
+                ),
+
+                assigned:
+                    document.getElementById('assigned').value,
+
+                actual: 'WIP',
+
+                color:
+                    document.getElementById('color').value,
+
+                dot: 'blue'
+
+            };
+
+            tasks.push(task);
+
+            renderTasks();
+
+        }
+
+        /* DRAG */
+
+        function dragBars() {
+
+            const bars =
+                document.querySelectorAll('.task-bar');
+
+            bars.forEach(bar => {
+
+                let isDragging = false;
+
+                let startX;
+                let startLeft;
+
+                bar.addEventListener('mousedown', (e) => {
+
+                    if (
+                        e.target.classList.contains('resize')
+                    ) return;
+
+                    isDragging = true;
+
+                    startX = e.clientX;
+
+                    startLeft =
+                        parseInt(bar.style.left);
+
+                });
+
+                document.addEventListener('mousemove', (e) => {
+
+                    if (!isDragging) return;
+
+                    let dx =
+                        e.clientX - startX;
+
+                    let left =
+                        startLeft + dx;
+
+                    left =
+                        Math.round(left / cellWidth)
+                        * cellWidth;
+
+                    if (left < 0) left = 0;
+
+                    bar.style.left =
+                        left + 'px';
+
+                });
+
+                document.addEventListener('mouseup', () => {
+
+                    isDragging = false;
+
+                });
+
+            });
+
+        }
+
+        /* RESIZE */
+
+        function resizeBars() {
+
+            const handles =
+                document.querySelectorAll('.resize');
+
+            handles.forEach(handle => {
+
+                let resizing = false;
+
+                let startX;
+                let startWidth;
+
+                handle.addEventListener('mousedown', (e) => {
+
+                    resizing = true;
+
+                    startX = e.clientX;
+
+                    startWidth = parseInt(
+                        window.getComputedStyle(
+                            handle.parentElement
+                        ).width
+                    );
+
+                    e.stopPropagation();
+
+                });
+
+                document.addEventListener('mousemove', (e) => {
+
+                    if (!resizing) return;
+
+                    let dx =
+                        e.clientX - startX;
+
+                    let width =
+                        startWidth + dx;
+
+                    width =
+                        Math.round(width / cellWidth)
+                        * cellWidth;
+
+                    if (width < cellWidth)
+                        width = cellWidth;
+
+                    handle.parentElement.style.width =
+                        width + 'px';
+
+                });
+
+                document.addEventListener('mouseup', () => {
+
+                    resizing = false;
+
+                });
+
+            });
+
+        }
+
+        /* ZOOM */
+
+        function zoomIn() {
+
+            cellWidth += 10;
+
+            renderHeader();
+            renderTasks();
+
+        }
+
+        function zoomOut() {
+
+            if (cellWidth <= 50) return;
+
+            cellWidth -= 10;
+
+            renderHeader();
+            renderTasks();
+
+        }
+
+        /* INIT */
+
+        renderHeader();
+        renderTasks();
+
+    </script>
+</body>
+</html>

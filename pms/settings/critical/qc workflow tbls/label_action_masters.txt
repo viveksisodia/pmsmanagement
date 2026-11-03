@@ -1,0 +1,563 @@
+IF OBJECT_ID('dbo.Pms_tbl_CriticalLevelMaster','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalLevelMaster
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        LevelName NVARCHAR(50) NOT NULL,
+        LevelCode NVARCHAR(30) NOT NULL,
+        DisplayOrder INT NOT NULL DEFAULT(0),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0)
+    );
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='PROJECT')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder) VALUES('Project','PROJECT',1);
+IF NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='MILESTONE')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder) VALUES('Milestone','MILESTONE',2);
+IF NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='TASK')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder) VALUES('Task','TASK',3);
+IF NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='SUBTASK')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder) VALUES('Sub Task','SUBTASK',4);
+GO
+
+/* ============================================================
+   PMS ACTION MASTER - CRUD PROCEDURES
+   Table expected: dbo.Pms_tbl_ActionMaster
+   ============================================================ */
+CREATE TABLE [dbo].[Pms_tbl_SimpleMasterList](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[MasterName] [nvarchar](150) NOT NULL,
+	[TableName] [nvarchar](200) NOT NULL,
+	[regid] [int] NULL,
+	[uid] [int] NULL,
+	[status] [bit] NULL,
+	[archive] [bit] NULL,
+	[cdate] [datetime] NULL,
+	[modifieddate] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_SimpleMasterList] ADD  DEFAULT ((1)) FOR [status]
+GO
+
+ALTER TABLE [dbo].[Pms_tbl_SimpleMasterList] ADD  DEFAULT ((0)) FOR [archive]
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_SimpleMaster_List]
+(
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        id,
+        MasterName,
+
+        /* Return display date as plain text.
+           Do not expose DateTime to Angular, because JavaScriptSerializer
+           would return /Date(...)/ and browser timezone can shift it. */
+        CASE
+            WHEN cdate IS NULL THEN ''
+            ELSE CONVERT(VARCHAR(10), cdate, 105)
+                 + ' '
+                 + CONVERT(VARCHAR(5), cdate, 108)
+        END AS DisplayDate
+
+    FROM dbo.Pms_tbl_SimpleMasterList
+    WHERE regid = @regid
+      AND ISNULL(status,1) = 1
+      AND ISNULL(archive,0) = 0
+    ORDER BY id DESC;
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_SimpleMaster_Create]
+(
+    @id INT = 0,
+    @MasterName NVARCHAR(150),
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        SET @MasterName = LTRIM(RTRIM(ISNULL(@MasterName,'')));
+
+        IF @MasterName = ''
+        BEGIN
+            RAISERROR('Master Name is required.',16,1);
+        END;
+
+        /* PMS business time: UTC + 05:30.
+           Independent from server/browser physical timezone. */
+        DECLARE @BusinessNow DATETIME;
+        SET @BusinessNow = DATEADD(MINUTE,330,GETUTCDATE());
+
+
+        /* =====================================================
+           UPDATE
+           -----------------------------------------------------
+           Only MasterName changes.
+           Physical TableName is intentionally NOT renamed.
+           This avoids breaking references/data already using it.
+           ===================================================== */
+        IF ISNULL(@id,0) > 0
+        BEGIN
+            UPDATE dbo.Pms_tbl_SimpleMasterList
+            SET
+                MasterName = @MasterName,
+                uid = @uid,
+                modifieddate = @BusinessNow
+            WHERE id = @id
+              AND regid = @regid
+              AND ISNULL(archive,0) = 0;
+
+            IF @@ROWCOUNT = 0
+            BEGIN
+                RAISERROR('Master not found.',16,1);
+            END;
+
+            COMMIT TRANSACTION;
+
+            SELECT
+                1 AS Result,
+                @id AS id,
+                'Master updated successfully.' AS Message;
+
+            RETURN;
+        END;
+
+
+        /* =====================================================
+           INSERT - clean master name for safe physical table name
+           ===================================================== */
+        DECLARE @CleanName NVARCHAR(150) = '';
+        DECLARE @i INT = 1;
+        DECLARE @ch NCHAR(1);
+
+        WHILE @i <= LEN(@MasterName)
+        BEGIN
+            SET @ch = SUBSTRING(@MasterName,@i,1);
+
+            IF @ch LIKE '[A-Za-z0-9]'
+            BEGIN
+                SET @CleanName = @CleanName + @ch;
+            END;
+
+            SET @i = @i + 1;
+        END;
+
+        IF ISNULL(@CleanName,'') = ''
+        BEGIN
+            RAISERROR(
+                'Master Name must contain letters or numbers.',
+                16,
+                1
+            );
+        END;
+
+        IF LEN(@CleanName) > 100
+        BEGIN
+            SET @CleanName = LEFT(@CleanName,100);
+        END;
+
+
+        DECLARE @BaseTableName NVARCHAR(200);
+        DECLARE @FinalTableName NVARCHAR(200);
+        DECLARE @Counter INT = 1;
+
+        SET @BaseTableName = 'Pms_tbl_' + @CleanName;
+        SET @FinalTableName = @BaseTableName;
+
+        /* Same physical name -> add 2,3,4... */
+        WHILE OBJECT_ID('dbo.' + @FinalTableName,'U') IS NOT NULL
+        BEGIN
+            SET @Counter = @Counter + 1;
+            SET @FinalTableName =
+                @BaseTableName + CAST(@Counter AS NVARCHAR(20));
+        END;
+
+
+        /* =====================================================
+           Create actual master table.
+           Only one business column: Name.
+           Remaining columns are PMS system columns.
+           ===================================================== */
+        DECLARE @Sql NVARCHAR(MAX);
+
+        SET @Sql =
+        N'CREATE TABLE dbo.' + QUOTENAME(@FinalTableName) + N'
+        (
+            id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            Name NVARCHAR(250) NULL,
+            regid INT NULL,
+            uid INT NULL,
+            status BIT NULL DEFAULT 1,
+            archive BIT NULL DEFAULT 0,
+            cdate DATETIME NULL DEFAULT (DATEADD(MINUTE,330,GETUTCDATE())),
+            modifieddate DATETIME NULL
+        );';
+
+        EXEC sp_executesql @Sql;
+
+
+        INSERT INTO dbo.Pms_tbl_SimpleMasterList
+        (
+            MasterName,
+            TableName,
+            regid,
+            uid,
+            status,
+            archive,
+            cdate
+        )
+        VALUES
+        (
+            @MasterName,
+            @FinalTableName,
+            @regid,
+            @uid,
+            1,
+            0,
+            @BusinessNow
+        );
+
+        DECLARE @NewId INT;
+        SET @NewId = CAST(SCOPE_IDENTITY() AS INT);
+
+        COMMIT TRANSACTION;
+
+        /* TableName is intentionally not returned to UI. */
+        SELECT
+            1 AS Result,
+            @NewId AS id,
+            'Master saved successfully.' AS Message;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @Err NVARCHAR(4000);
+        SET @Err = ERROR_MESSAGE();
+
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+CREATE OR ALTER   PROCEDURE [dbo].[usp_Pms_SimpleMaster_Delete]
+(
+    @id INT,
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @BusinessNow DATETIME;
+        SET @BusinessNow = DATEADD(MINUTE,330,GETUTCDATE());
+
+        UPDATE dbo.Pms_tbl_SimpleMasterList
+        SET
+            status = 0,
+            archive = 1,
+            uid = @uid,
+            modifieddate = @BusinessNow
+        WHERE id = @id
+          AND regid = @regid
+          AND ISNULL(archive,0) = 0;
+
+        IF @@ROWCOUNT = 0
+        BEGIN
+            RAISERROR('Master not found.',16,1);
+        END;
+
+        /* IMPORTANT:
+           Physical generated table is NOT dropped here.
+           This prevents accidental loss of master data/references. */
+
+        COMMIT TRANSACTION;
+
+        SELECT
+            1 AS Result,
+            'Master deleted successfully.' AS Message;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @Err NVARCHAR(4000);
+        SET @Err = ERROR_MESSAGE();
+
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+
+
+===============================
+*Critical Label
+================================
+/* 1. Critical Label Master */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalLabel','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalLabel
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        CriticalLabel NVARCHAR(100) NOT NULL,
+        ColorCode NVARCHAR(20) NOT NULL CONSTRAINT DF_CriticalLabel_Color DEFAULT('#28a745'),
+        Severity INT NOT NULL CONSTRAINT DF_CriticalLabel_Severity DEFAULT(1),
+        DisplayOrder INT NOT NULL CONSTRAINT DF_CriticalLabel_Display DEFAULT(0),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL CONSTRAINT DF_CriticalLabel_Status DEFAULT(1),
+        archive BIT NOT NULL CONSTRAINT DF_CriticalLabel_Archive DEFAULT(0),
+        cdate DATETIME2(0) NOT NULL CONSTRAINT DF_CriticalLabel_CDate DEFAULT(GETDATE()),
+        modifieddate DATETIME2(0) NULL
+    );
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_CriticalLabel_Save]
+(
+    @id INT=0,
+    @CriticalLabel NVARCHAR(100),
+    @ColorCode NVARCHAR(20),
+    @Severity INT,
+    @DisplayOrder INT=0,
+    @regid INT,
+    @uid INT=NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF ISNULL(LTRIM(RTRIM(@CriticalLabel)),'')=''
+    BEGIN
+        RAISERROR('Critical label is required.',16,1);
+        RETURN;
+    END
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM dbo.Pms_tbl_CriticalLabel
+        WHERE CriticalLabel=@CriticalLabel
+          AND regid=@regid
+          AND archive=0
+          AND id<>ISNULL(@id,0)
+    )
+    BEGIN
+        RAISERROR('Critical label already exists.',16,1);
+        RETURN;
+    END
+
+    IF ISNULL(@id,0)=0
+    BEGIN
+        INSERT INTO dbo.Pms_tbl_CriticalLabel
+        (
+            CriticalLabel,
+            ColorCode,
+            Severity,
+            DisplayOrder,
+            regid,
+            uid,
+            status,
+            archive
+        )
+        VALUES
+        (
+            @CriticalLabel,
+            ISNULL(NULLIF(@ColorCode,''),'#28a745'),
+            ISNULL(@Severity,1),
+            ISNULL(@DisplayOrder,0),
+            @regid,
+            @uid,
+            1,
+            0
+        );
+
+        SELECT
+            CAST(SCOPE_IDENTITY() AS INT) AS id,
+            'Saved successfully.' AS Message;
+
+        RETURN;
+    END
+
+    UPDATE dbo.Pms_tbl_CriticalLabel
+    SET
+        CriticalLabel=@CriticalLabel,
+        ColorCode=ISNULL(NULLIF(@ColorCode,''),'#28a745'),
+        Severity=ISNULL(@Severity,1),
+        DisplayOrder=ISNULL(@DisplayOrder,0),
+        uid=@uid,
+        modifieddate=GETDATE()
+    WHERE id=@id
+      AND regid=@regid
+      AND archive=0;
+
+    IF @@ROWCOUNT=0
+    BEGIN
+        RAISERROR('Critical label not found for current company.',16,1);
+        RETURN;
+    END
+
+    SELECT
+        @id AS id,
+        'Updated successfully.' AS Message;
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_CriticalLabel_Delete]
+(
+    @id INT,
+    @regid INT,
+    @uid INT=NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF ISNULL(@id,0)=0
+    BEGIN
+        SELECT 0 AS Result,'Invalid critical label.' AS Message;
+        RETURN;
+    END
+
+    IF NOT EXISTS
+    (
+        SELECT 1 FROM dbo.Pms_tbl_CriticalLabel
+        WHERE id=@id AND regid=@regid AND archive=0
+    )
+    BEGIN
+        SELECT 0 AS Result,'Critical label not found for current company.' AS Message;
+        RETURN;
+    END
+
+    IF EXISTS
+    (
+        SELECT 1 FROM dbo.Pms_tbl_CriticalRule
+        WHERE CriticalLabelId=@id AND regid=@regid AND archive=0
+    )
+    BEGIN
+        SELECT 0 AS Result,'This Critical Label is used as a rule result. Change or delete that rule first.' AS Message;
+        RETURN;
+    END
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM dbo.Pms_tbl_CriticalRuleCondition C
+        INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=C.RuleId
+        WHERE C.ChildCriticalLabelId=@id
+          AND R.regid=@regid
+          AND R.archive=0
+          AND C.archive=0
+    )
+    BEGIN
+        SELECT 0 AS Result,'This Critical Label is used in a Child condition. Change or delete that rule first.' AS Message;
+        RETURN;
+    END
+
+    UPDATE dbo.Pms_tbl_CriticalLabel
+    SET status=0,archive=1,uid=@uid,modifieddate=GETDATE()
+    WHERE id=@id AND regid=@regid AND archive=0;
+
+    IF @@ROWCOUNT>0 SELECT 1 AS Result,'Critical label deleted successfully.' AS Message;
+    ELSE SELECT 0 AS Result,'Critical label could not be deleted.' AS Message;
+END
+GO
+CREATE OR ALTER PROCEDURE [dbo].[usp_Pms_Critical_GetMasters]
+(
+    @regid INT,
+    @uid INT=NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLabel WHERE regid=@regid)
+    BEGIN
+        INSERT dbo.Pms_tbl_CriticalLabel
+        (CriticalLabel,ColorCode,Severity,DisplayOrder,regid,uid,status,archive)
+        SELECT G.CriticalLabel,G.ColorCode,G.Severity,G.DisplayOrder,@regid,@uid,1,0
+        FROM dbo.Pms_tbl_CriticalLabel G
+        WHERE G.regid IS NULL AND G.status=1 AND G.archive=0;
+    END
+
+    /* 1 labels */
+    SELECT id,CriticalLabel,ColorCode,Severity,DisplayOrder
+    FROM dbo.Pms_tbl_CriticalLabel
+    WHERE status=1 AND archive=0 AND regid=@regid
+    ORDER BY DisplayOrder,Severity,CriticalLabel;
+
+    /* 2 levels */
+    SELECT id,LevelName,LevelCode
+    FROM dbo.Pms_tbl_CriticalLevelMaster
+    WHERE status=1 AND archive=0
+      AND LevelCode IN ('PROJECT','MILESTONE','TASK','SUBTASK')
+    ORDER BY CASE LevelCode
+        WHEN 'PROJECT' THEN 1
+        WHEN 'MILESTONE' THEN 2
+        WHEN 'TASK' THEN 3
+        WHEN 'SUBTASK' THEN 4
+        ELSE 99 END;
+
+    /* 3 self fields */
+    SELECT id,FieldName,FieldKey,DataType,SourceType
+    FROM dbo.Pms_tbl_CriticalFieldMaster
+    WHERE status=1 AND archive=0
+      AND FieldKey IN
+      ('STATUS','PRIORITY','COMPLETION_PERCENT','DURATION_PERCENT','PROGRESS_DIFFERENCE_PERCENT')
+    ORDER BY DisplayOrder;
+
+    /* 4 operators */
+    SELECT id,OperatorName,OperatorSymbol
+    FROM dbo.Pms_tbl_CriticalOperatorMaster
+    WHERE status=1 AND archive=0
+      AND OperatorSymbol IN ('=','!=','>','<','>=','<=','BETWEEN','IN','NOT IN')
+    ORDER BY DisplayOrder;
+
+    /* 5 logical operators */
+    SELECT id,OperatorName
+    FROM dbo.Pms_tbl_CriticalLogicalOperator
+    WHERE status=1 AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* 6 legacy actions - retained only for current C# result-set indexes */
+    SELECT id,ActionName,ActionCode
+    FROM dbo.Pms_tbl_CriticalActionMaster
+    WHERE status=1 AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* 7 status */
+    SELECT id AS ValueId,ProjectStatus AS ValueText
+    FROM dbo.Pms_tbl_Projectstatus
+    WHERE status=1 AND archive=0 AND regid=@regid
+    ORDER BY ProjectStatus;
+
+    /* 8 priority */
+    SELECT id AS ValueId,name AS ValueText
+    FROM dbo.Pms_tbl_Priority
+    WHERE status=1 AND archive=0 AND regid=@regid
+    ORDER BY name;
+END
+GO

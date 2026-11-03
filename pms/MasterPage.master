@@ -1,0 +1,424 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="MasterPage" %>
+<!DOCTYPE html>
+<html lang="en" data-layout="horizontal" data-sidebar="dark" data-sidebar-size="lg" data-preloader="disable" data-theme="creative" data-bs-theme="light">
+<head runat="server">
+    <title>Project Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="" name="description">
+    <meta content="" name="author">
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="/pms/assets/images/favicon.png">
+    <link rel="stylesheet" href="/pms/assets/libs/dragula/dragula.min.css">
+    <link href="/pms/assets/js/jquery.dataTables.min.css" rel="stylesheet" type="text/css">  
+    <link href="/pms/assets/libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css">
+    <script src="/pms/assets/js/layout.js"></script>
+    <link href="/pms/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/pms/assets/css/icons.min.css" rel="stylesheet" type="text/css">
+    <link href="/pms/assets/css/app.min.css" rel="stylesheet" type="text/css">
+    <link href="/pms/assets/css/custom.min.css" rel="stylesheet" type="text/css">
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+    <style>
+        .simplebar-content {height:100% !important;}
+    </style>
+</head>
+<body>
+<form id="form1" runat="server">
+     <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+    <div id="layout-wrapper">
+        <div class="app-menu navbar-menu">
+            <div id="scrollbar">
+                <ul class="navbar-nav" id="navbar-nav">
+                    <li class="nav-item" id="page1" runat="server">
+                        <a href="/" class="nav-link menu-link"><span class="bba">CRM</span></a>
+                    </li>
+                    <li class="nav-item" id="page2" runat="server">
+                        <%--<a href="/pms/Addproject.aspx" class="nav-link menu-link"><span class="bba">Project</span></a>--%>
+                        <a href="/pms/AddprojectAng.aspx" class="nav-link menu-link"><span class="bba">Project</span></a>
+                    </li>
+                   <%-- <li class="nav-item" id="page3" runat="server">
+                        <a href="/pms/team.aspx" class="nav-link menu-link"><span class="bba">Team</span></a>                            
+                    </li>--%>
+                    <li class="nav-item" id="page4" runat="server">
+                        <a href="/pms/Addmilestone.aspx" class="nav-link menu-link"><span class="bba">Milestone</span></a>
+                    </li>
+                    <%--<li class="nav-item" id="page5" runat="server">
+                        <a href="/pms/Addtasklist.aspx" class="nav-link menu-link"><span class="bba">Task List</span></a>
+                    </li>--%>
+                    <li class="nav-item" id="page6" runat="server">
+                        <a href="/pms/Add_Task.aspx" class="nav-link menu-link"><span class="bba">Task</span></a>
+                    </li>
+                     <li class="nav-item" id="page13" runat="server">
+                        <a href="/pms/AddSubtask.aspx" class="nav-link menu-link"><span class="bba">Sub Task</span></a>
+                    </li>
+                    <li class="nav-item" id="page7" runat="server">
+                        <a href="/pms/Addissues.aspx" class="nav-link menu-link"><span class="bba">Issues</span></a>
+                    </li>
+                   <%-- <li class="nav-item" id="page8" runat="server">
+                        <a href="/pms/documents.aspx" class="nav-link menu-link"><span class="bba">Documents</span></a>
+                    </li>--%>
+                    <li class="nav-item" id="page12" runat="server" visible="false">
+                        <a href="/pms/hr-management.aspx" class="nav-link menu-link"><span class="bba">Human Resource</span></a>
+                    </li>                    
+                  <%--  <li class="nav-item" id="page9" runat="server">
+                        <a href="/pms/reports.aspx" class="nav-link menu-link"><span class="bba">Reports</span></a>
+                    </li>
+                    <li class="nav-item" id="page10" runat="server">
+                        <a href="/pms/expenses.aspx" class="nav-link menu-link"><span class="bba">Expenses</span></a>
+                    </li>
+                    <li class="nav-item" id="page11" runat="server">
+                        <a href="/pms/purchase.aspx" class="nav-link menu-link"><span class="bba">Purchase</span></a>
+                    </li>--%>
+                </ul>
+            </div>
+        </div>
+        <!-- Left Sidebar End -->
+        <!-- Vertical Overlay-->
+        <div class="vertical-overlay"></div>
+        <header id="page-topbar">
+            <div class="layout-width">
+                <div class="navbar-header">
+                    <div class="d-flex">
+                        <!-- LOGO -->
+                        <div class="horizontal-logo">
+                            <a href="/" class="logo logo-dark">
+                                <img src="/pms/assets/images/logo-dark.png" alt="" height="32">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown ms-1 topbar-head-dropdown header-item">
+                            <button type="button" class="btn btn-icon btn-topbar btn-ghost-light rounded-circle user-name-text" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <img id="header-lang-img" src="/pms/assets/images/flags/us.svg" alt="Header Language" height="20" class="rounded">
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end">
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language py-2" data-lang="en" title="English">
+                                    <img src="/pms/assets/images/flags/us.svg" alt="user-image" class="me-2 rounded" height="18">
+                                    <span class="align-middle">English</span>
+                                </a>
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language" data-lang="sp" title="Spanish">
+                                    <img src="/pms/assets/images/flags/spain.svg" alt="user-image" class="me-2 rounded" height="18">
+                                    <span class="align-middle">Española</span>
+                                </a>
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language" data-lang="gr" title="German">
+                                    <img src="/pms/assets/images/flags/germany.svg" alt="user-image" class="me-2 rounded" height="18"> <span class="align-middle">Deutsche</span>
+                                </a>
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language" data-lang="it" title="Italian">
+                                    <img src="/pms/assets/images/flags/italy.svg" alt="user-image" class="me-2 rounded" height="18">
+                                    <span class="align-middle">Italiana</span>
+                                </a>
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language" data-lang="ru" title="Russian">
+                                    <img src="/pms/assets/images/flags/russia.svg" alt="user-image" class="me-2 rounded" height="18">
+                                    <span class="align-middle">русский</span>
+                                </a>
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language" data-lang="ch" title="Chinese">
+                                    <img src="/pms/assets/images/flags/china.svg" alt="user-image" class="me-2 rounded" height="18">
+                                    <span class="align-middle">中国人</span>
+                                </a>
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language" data-lang="fr" title="French">
+                                    <img src="/pms/assets/images/flags/french.svg" alt="user-image" class="me-2 rounded" height="18">
+                                    <span class="align-middle">français</span>
+                                </a>
+
+                                <a href="javascript:void(0);" class="dropdown-item notify-item language" data-lang="ar" title="Arabic">
+                                    <img src="/pms/assets/images/flags/ae.svg" alt="user-image" class="me-2 rounded" height="18">
+                                    <span class="align-middle">عربي</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ms-1 header-item d-none d-sm-flex">
+                            <button type="button" class="btn btn-icon btn-topbar btn-ghost-light rounded-circle user-name-text" data-toggle="fullscreen">
+                                <i class='ti ti-arrows-maximize fs-3xl'></i>
+                            </button>
+                        </div>
+                        <div class="ms-1 header-item d-sm-flex">
+                            <button type="button" class="btn btn-icon btn-topbar btn-ghost-light rounded-circle user-name-text" data-bs-toggle="offcanvas" data-bs-target="#setting" onclick="loadsrc('myModalsettings','/pms/settings/adddepartment.aspx')">
+                                <i class='ti ti-settings fs-3xl'></i>
+                            </button>
+                        </div>
+                        <div class="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
+                            <button type="button" class="btn btn-icon btn-topbar btn-ghost-light rounded-circle user-name-text" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+                                <i class='ti ti-bell-ringing fs-3xl'></i>
+                                <span class="position-absolute topbar-badge fs-3xs translate-middle badge rounded-pill bg-danger"><span class="notification-badge">0</span><span class="visually-hidden">unread messages</span></span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
+                                <div class="dropdown-head rounded-top">
+                                    <div class="p-3 border-bottom border-bottom-dashed">
+                                        <div class="row align-items-center">
+                                            <div class="col">
+                                                <h6 class="mb-0 fs-lg fw-semibold"> Notifications <span class="badge bg-danger-subtle text-danger fs-sm notification-badge">0</span></h6>
+                                                <p class="fs-md text-muted mt-1 mb-0">You have <span class="fw-semibold notification-unread">0</span> unread messages</p>
+                                            </div>
+                                            <div class="col-auto dropdown">
+                                                <a href="javascript:void(0);" data-bs-toggle="dropdown" class="link-secondary fs-md"><i class="bi bi-three-dots-vertical"></i></a>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#">All Clear</a></li>
+                                                    <li><a class="dropdown-item" href="#">Mark all as read</a></li>
+                                                    <li><a class="dropdown-item" href="#">Archive All</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="py-2 ps-2" id="notificationItemsTabContent">
+                                    <div data-simplebar style="max-height: 300px;" class="pe-2">                                            
+                                            
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown ms-sm-3 topbar-head-dropdown dropdown-hover-end header-item topbar-user">
+                            <button type="button" class="btn shadow-none btn-icon" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="d-flex align-items-center">
+                                    <img class="rounded-circle header-profile-user" src="/pms/assets/images/user.jpg" alt="user">
+                                </span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <!-- item-->
+                                <%--<h6 class="dropdown-header">Welcome Lewis!</h6>--%>
+                                 <h6 class="dropdown-header">
+                        <asp:Label ID="lblusername" runat="server"></asp:Label></h6>
+                               <%-- <a class="dropdown-item fs-sm" href="#"><i class="bi bi-person-circle text-muted align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                                <a class="dropdown-item fs-sm" href="#"><i class="bi bi-key text-muted align-middle me-1"></i> <span class="align-middle">Change Password</span></a>
+                                <a class="dropdown-item fs-sm" href="#"><i class="bi bi-gear text-muted align-middle me-1"></i> <span class="align-middle">Settings</span></a>--%>
+                                 <a class="dropdown-item" href="/crm/userprofile.aspx"><i class="bi bi-person-circle text-muted align-middle me-1"></i><span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href="/crm/userprofile.aspx?id=2"><i class="bi bi-key text-muted align-middle me-1"></i><span class="align-middle">Change Password</span></a>
+                   
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item fs-sm" href="/login.aspx"><i class="bi bi-box-arrow-right text-muted align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="wrapper"></div>
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="main-content">
+            <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+        
+            </asp:ContentPlaceHolder>
+        </div>
+    </div>
+<!-- JAVASCRIPT -->
+    <%--<script src="/pms/assets/js/jquery-3.7.0
+        "></script>--%>
+    <script src="/pms/assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/assets/libs/simplebar/simplebar.min.js"></script>
+    <script src="/pms/assets/js/plugins.js"></script>
+    <!-- prismjs plugin -->
+    <script src="/pms/assets/libs/prismjs/prism.js"></script>
+    <!-- App js -->
+    <%--<script src="/pms/assets/js/jquery.dataTables.min.js"></script>--%>
+    <script src="/pms/assets/js/app.js"></script>  
+<%--<script>
+    const table = new DataTable('.datatable', {  
+        scroll:  true,
+        scrollCollapse: true,
+        paging:         true,
+		searching:      true,
+    });
+</script>--%>
+<div class="offcanvas offcanvas-end canvas_lg_screen" id="setting" data-bs-backdrop="static" tabindex="-1" data-bs-scroll="false">
+    <div class="offcanvas-header border-bottom" style="padding:0px 15px;">
+        <ul class="nav nav-tabs-custom nav-tab-rpv border-0">
+            <li class="nav-item" 
+                role="presentation">
+               <%-- <a class="nav-link active" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/adddepartment.aspx')">Department</a>--%>
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/adddepartment.aspx')">Department</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/adddesignation.aspx')">Designation</a>
+            </li>
+
+
+            
+
+              <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Status_Master.aspx')">Status</a>
+            </li>
+
+
+               <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Priority_Master.aspx')">Priority</a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Tag_Master.aspx')">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/StageMasterCreate.aspx')">Stage</a>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/IssueTypeMaster.aspx')">Issue Type</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/ReplicabilityMaster.aspx')">Replicability</a>
+            </li>
+
+
+               <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/highlightcolor.aspx')">Highlight Edit Color</a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/weeklyoffsetup.aspx')">Manage Weekoff</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/holidaysetup.aspx')">Manage Holydays</a>
+            </li>
+           
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Templatemaster.aspx')">Manage Template</a>
+            </li>
+            <%--
+                 <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/StateMaster.aspx')">State</a>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/addrolesresponsibility.aspx')">Roles & Responsibility</a>
+            </li>--%>
+            <%--<li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/addindustry.aspx')">Industry</a>
+            </li>--%>
+        </ul>
+        <div class="hstack gap-2">
+            <button type="button" onclick="fs1Function()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsr"><i class="ph-arrows-out-simple-bold"></i></button>
+            <button type="button" onclick="fse1Function()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsre"><i class="ph-arrows-in-simple-bold"></i></button>
+            <button type="button" class="btn btn-danger btn-icon btn-sm rounded-circle btn-ios" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ph-x-bold"></i></button>
+        </div>
+    </div>
+    <div class="offcanvas-body p-0 overflow-hidden">
+        
+             <iframe id='myModalsettings' width="100%" height="100%" style="padding:0px 0px;" border="0px"></iframe>
+        
+    </div> 
+    <%--<div class="offcanvas-foorter border p-3 pt-1 pb-1 text-center"> 
+        <a href="javascript:void(0);" class="btn btn-success">Save</a>
+        <a href="javascript:void(0);" class="btn btn-danger" data-bs-dismiss="offcanvas" aria-label="Close">Close</a>
+    </div>--%>
+</div>
+<script>
+    var count11 = 1;
+    function loadsrc(val1, val2) {
+        count11++;
+        //alert(val1);
+        if (val2.includes("aspx?"))
+        {
+          document.getElementById(val1).src = val2 + "&count=" + count11;
+        }
+        else
+        {
+             document.getElementById(val1).src = val2 + "?count=" + count11;
+        }
+       
+        try {
+
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+function loadsrc_angold(val1, val2) {
+        count11++;
+        //alert(val1);
+        document.getElementById(val1).src="";            
+        
+       
+        try {
+document.getElementById(val1).src = val2;
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+function loadsrc_ang(frameId, url) {
+
+    let frame = document.getElementById(frameId);
+
+    if (frame) {
+        frame.src = "about:blank";   // force reset
+
+        setTimeout(function () {
+            frame.src = url + "&r=" + Date.now();
+        }, 50);
+    }
+}
+</script>
+
+
+   <%-- <script>
+    var count11 = 1;
+    function loadsrc2(val1, val2,type,val3) {
+        count11++;
+        //alert(val1);
+        document.getElementById("<%=lbltitlecal.ClientID%>").innerHTML = val2;
+        document.getElementById(val1).src = val2 + "?count=" + count11 +"&type="+type +"&id="+val3;
+        try {
+
+            //document.getElementById("").innerHTML = val3;
+            document.getElementById("<%=lbltitlecal.ClientID%>").innerHTML = val2;
+        }
+        catch (ex) {
+        }
+    }
+</script>--%>
+
+<script>
+    function fs1Function(){
+        var element = document.getElementById("setting");
+        element.classList.add("canvas-fullscreen");  
+    }
+    function fse1Function(){
+        var element = document.getElementById("setting");
+        element.classList.remove("canvas-fullscreen");
+    }
+</script>
+
+
+    <script>
+$('body').on('click', function (e) {
+        $('[data-bs-toggle=popover]').each(function () {
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                (($(this).popover('hide').data('bs.popover')||{}).inState||{}).click = false;
+            }
+        });
+    });
+</script>
+    <script>
+    $(function () {
+$('[data-toggle="tooltip"]').tooltip()
+    })
+$('[data-toggle-second="tooltip"]').tooltip();
+</script>
+
+   <%-- <script type="text/javascript" src="/pms/assets/js/moment.min.js"></script>
+<script type="text/javascript" src="/pms/assets/js/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/pms/assets/js/daterangepicker.css" />
+
+    <script>
+$(function() {
+  $('.timesheet-wrap').daterangepicker({
+    opens: 'center'
+  });
+});
+</script>--%>
+
+
+
+
+</form>
+</body>
+</html>

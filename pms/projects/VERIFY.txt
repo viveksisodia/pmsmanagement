@@ -1,0 +1,64 @@
+PMS Default helper/support synchronization verification
+Source: myprojects.aspx(10).cs
+Target: default.aspx.cs
+
+Requested 25 WebMethods (exact source method blocks):
+  OK: bindProjectdata
+  OK: bindstatuslist
+  OK: bindprioritylist
+  OK: binduserlist
+  OK: bindtaglist
+  OK: bindcustomerlist
+  OK: bindsolist
+  OK: bindcountrylist
+  OK: bindstatelist
+  OK: bindprojectfileslist
+  OK: getorojectdetails
+  OK: projectsummarydetails
+  OK: UpdateProject_Status
+  OK: UpdatePriority_Status
+  OK: updateOwner
+  OK: binduserlist_byrefid
+  OK: UpdateP_Team
+  OK: removeteambyid
+  OK: removecumulativeteam
+  OK: deleteproject
+  OK: checkduplicate
+  OK: saveproject
+  OK: bindProjectdata_byid
+  OK: UpdateExtendeddatedtls
+  OK: bind_projectdetails
+
+All source helper/method blocks synced except Page_Load: 57/57 exact
+
+Nested support classes synced: 23/23 compatible
+  OK: ProjectLookupCacheItem
+  OK: ProjectPersonCacheItem
+  OK: userlist
+  OK: countrylist
+  OK: prioritylist
+  OK: statelist
+  OK: statuslist
+  OK: lastextendeddetails
+  OK: extendedlist
+  OK: extendedlist_ret
+  OK: projectteams
+  OK: projectdata_countdetails
+  OK: projectdata_details
+  OK: newproject
+  OK: addprojectfiles
+  OK: taglist
+  OK: projectfiles
+  OK: ownerlist
+  OK: teamlist
+  OK: issuesdetails
+  OK: project_summary
+  OK: customerlist
+  OK: solist
+
+Compatibility retained for Default-only get_extendedhistory():
+  extendedlist.createdate (DateTime?) added because that Default-only method assigns cdate to it.
+  This fixes compiler error CS0117 shown at default.aspx.cs line 2511.
+
+Default-only methods preserved: savefilter, getfilter, checkadmin, get_extendedhistory, GetDateOnlyString, ParseDateOnly.
+Default Page_Load preserved (not replaced).

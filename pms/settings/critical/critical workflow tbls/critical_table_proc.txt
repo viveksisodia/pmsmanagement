@@ -1,0 +1,2547 @@
+IF OBJECT_ID('dbo.Pms_tbl_CriticalLabel','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalLabel
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        CriticalLabel NVARCHAR(100) NOT NULL,
+        ColorCode NVARCHAR(20) NOT NULL CONSTRAINT DF_CriticalLabel_Color DEFAULT('#28a745'),
+        Severity INT NOT NULL CONSTRAINT DF_CriticalLabel_Severity DEFAULT(1),
+        DisplayOrder INT NOT NULL CONSTRAINT DF_CriticalLabel_Display DEFAULT(0),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL CONSTRAINT DF_CriticalLabel_Status DEFAULT(1),
+        archive BIT NOT NULL CONSTRAINT DF_CriticalLabel_Archive DEFAULT(0),
+        cdate DATETIME2(0) NOT NULL CONSTRAINT DF_CriticalLabel_CDate DEFAULT(GETDATE()),
+        modifieddate DATETIME2(0) NULL
+    );
+END
+GO
+/* 3. Condition Field Master */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalFieldMaster','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalFieldMaster
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        FieldName NVARCHAR(150) NOT NULL,
+        FieldKey NVARCHAR(100) NOT NULL,
+        DataType NVARCHAR(30) NOT NULL,      -- MASTER / NUMBER / BOOLEAN / DATE
+        SourceType NVARCHAR(50) NULL,        -- PRIORITY / STATUS / NULL
+        DisplayOrder INT NOT NULL DEFAULT(0),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0)
+    );
+END
+GO
+
+DECLARE @Fields TABLE(FieldName NVARCHAR(150),FieldKey NVARCHAR(100),DataType NVARCHAR(30),SourceType NVARCHAR(50),DisplayOrder INT);
+INSERT @Fields VALUES
+('Status','STATUS','MASTER','STATUS',1),
+('Priority','PRIORITY','MASTER','PRIORITY',2),
+('Completion Percentage','COMPLETION_PERCENT','NUMBER',NULL,3),
+('Timeline Percentage','TIMELINE_PERCENT','NUMBER',NULL,4),
+('Duration Utilization Percentage','DURATION_PERCENT','NUMBER',NULL,5),
+('Overdue Days','OVERDUE_DAYS','NUMBER',NULL,6),
+('Planned Duration Days','PLANNED_DAYS','NUMBER',NULL,7),
+('Spent Hours','SPENT_HOURS','NUMBER',NULL,8),
+('Allocated Hours','ALLOCATED_HOURS','NUMBER',NULL,9),
+('Remaining Days','REMAINING_DAYS','NUMBER',NULL,10),
+('Critical Child Count','CRITICAL_CHILD_COUNT','NUMBER',NULL,11),
+('Critical Child Percentage','CRITICAL_CHILD_PERCENT','NUMBER',NULL,12),
+('Is Overdue','IS_OVERDUE','BOOLEAN',NULL,13);
+
+INSERT dbo.Pms_tbl_CriticalFieldMaster(FieldName,FieldKey,DataType,SourceType,DisplayOrder)
+SELECT F.FieldName,F.FieldKey,F.DataType,F.SourceType,F.DisplayOrder
+FROM @Fields F
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CriticalFieldMaster X WHERE X.FieldKey=F.FieldKey);
+GO
+
+/* 4. Operator Master */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalOperatorMaster','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalOperatorMaster
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        OperatorName NVARCHAR(100) NOT NULL,
+        OperatorSymbol NVARCHAR(30) NOT NULL,
+        DisplayOrder INT NOT NULL DEFAULT(0),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0)
+    );
+END
+GO
+
+DECLARE @Ops TABLE(OperatorName NVARCHAR(100),OperatorSymbol NVARCHAR(30),DisplayOrder INT);
+INSERT @Ops VALUES
+('Equal To','=',1),('Not Equal To','!=',2),('Greater Than','>',3),('Less Than','<',4),
+('Greater Than Or Equal','>=',5),('Less Than Or Equal','<=',6),('Between','BETWEEN',7),
+('In','IN',8),('Not In','NOT IN',9);
+
+INSERT dbo.Pms_tbl_CriticalOperatorMaster(OperatorName,OperatorSymbol,DisplayOrder)
+SELECT O.OperatorName,O.OperatorSymbol,O.DisplayOrder
+FROM @Ops O
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CriticalOperatorMaster X WHERE X.OperatorSymbol=O.OperatorSymbol);
+GO
+
+/* 5. Logical Operator Master */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalLogicalOperator','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalLogicalOperator
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        OperatorName NVARCHAR(20) NOT NULL,
+        DisplayOrder INT NOT NULL DEFAULT(0),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0)
+    );
+END
+GO
+
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLogicalOperator WHERE OperatorName='AND')
+    INSERT dbo.Pms_tbl_CriticalLogicalOperator(OperatorName,DisplayOrder) VALUES('AND',1);
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLogicalOperator WHERE OperatorName='OR')
+    INSERT dbo.Pms_tbl_CriticalLogicalOperator(OperatorName,DisplayOrder) VALUES('OR',2);
+GO
+
+/* 6. Action Master */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalActionMaster','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalActionMaster
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        ActionName NVARCHAR(150) NOT NULL,
+        ActionCode NVARCHAR(100) NOT NULL,
+        DisplayOrder INT NOT NULL DEFAULT(0),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0)
+    );
+END
+GO
+
+DECLARE @Actions TABLE(ActionName NVARCHAR(150),ActionCode NVARCHAR(100),DisplayOrder INT);
+INSERT @Actions VALUES
+('Set Critical Label','SET_CRITICAL_LABEL',1),
+('Change Priority','CHANGE_PRIORITY',2),
+('Notify Owner','NOTIFY_OWNER',3),
+('Notify Project Manager','NOTIFY_PROJECT_MANAGER',4),
+('Dashboard Alert','DASHBOARD_ALERT',5),
+('Send Email','EMAIL',6),
+('Create Follow Up','CREATE_FOLLOWUP',7),
+('Add Activity Log','ADD_ACTIVITY_LOG',8),
+('Prevent Closing','PREVENT_CLOSE',9);
+
+INSERT dbo.Pms_tbl_CriticalActionMaster(ActionName,ActionCode,DisplayOrder)
+SELECT A.ActionName,A.ActionCode,A.DisplayOrder
+FROM @Actions A
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CriticalActionMaster X WHERE X.ActionCode=A.ActionCode);
+GO
+
+/* 7. Rule Master */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalRule','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalRule
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        RuleName NVARCHAR(250) NOT NULL,
+        LevelId INT NOT NULL,
+        CriticalLabelId INT NOT NULL,
+        PriorityId INT NULL,
+        RulePriority INT NOT NULL DEFAULT(100),
+        StopProcessing BIT NOT NULL DEFAULT(1),
+        Description NVARCHAR(1000) NULL,
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0),
+        cdate DATETIME2(0) NOT NULL DEFAULT(GETDATE()),
+        modifieddate DATETIME2(0) NULL,
+        CONSTRAINT FK_Pms_CriticalRule_Level FOREIGN KEY(LevelId) REFERENCES dbo.Pms_tbl_CriticalLevelMaster(id),
+        CONSTRAINT FK_Pms_CriticalRule_Label FOREIGN KEY(CriticalLabelId) REFERENCES dbo.Pms_tbl_CriticalLabel(id)
+    );
+END
+GO
+
+/* 8. Rule Conditions */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalRuleCondition','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalRuleCondition
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        RuleId INT NOT NULL,
+        SequenceNo INT NOT NULL,
+        OpenBracket NVARCHAR(10) NULL,
+        FieldId INT NOT NULL,
+        OperatorId INT NOT NULL,
+        CompareValue NVARCHAR(500) NULL,
+        CompareValue2 NVARCHAR(500) NULL,
+        LogicalOperatorId INT NULL,
+        CloseBracket NVARCHAR(10) NULL,
+        GroupNo INT NOT NULL DEFAULT(1),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0),
+        CONSTRAINT FK_Pms_CriticalCondition_Rule FOREIGN KEY(RuleId) REFERENCES dbo.Pms_tbl_CriticalRule(id),
+        CONSTRAINT FK_Pms_CriticalCondition_Field FOREIGN KEY(FieldId) REFERENCES dbo.Pms_tbl_CriticalFieldMaster(id),
+        CONSTRAINT FK_Pms_CriticalCondition_Operator FOREIGN KEY(OperatorId) REFERENCES dbo.Pms_tbl_CriticalOperatorMaster(id),
+        CONSTRAINT FK_Pms_CriticalCondition_Logical FOREIGN KEY(LogicalOperatorId) REFERENCES dbo.Pms_tbl_CriticalLogicalOperator(id)
+    );
+END
+GO
+
+/* 9. Rule Actions */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalRuleAction','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalRuleAction
+    (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        RuleId INT NOT NULL,
+        ActionId INT NOT NULL,
+        ActionValue NVARCHAR(1000) NULL,
+        RecipientType NVARCHAR(100) NULL,
+        SequenceNo INT NOT NULL DEFAULT(1),
+        regid INT NULL,
+        uid INT NULL,
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0),
+        CONSTRAINT FK_Pms_CriticalRuleAction_Rule FOREIGN KEY(RuleId) REFERENCES dbo.Pms_tbl_CriticalRule(id),
+        CONSTRAINT FK_Pms_CriticalRuleAction_Action FOREIGN KEY(ActionId) REFERENCES dbo.Pms_tbl_CriticalActionMaster(id)
+    );
+END
+GO
+
+/* 10. Current Result */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalResult','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalResult
+    (
+        id BIGINT IDENTITY(1,1) PRIMARY KEY,
+        EntityType NVARCHAR(30) NOT NULL,
+        EntityId INT NOT NULL,
+        ProjectId INT NULL,
+        MilestoneId INT NULL,
+        TaskId INT NULL,
+        SubTaskId INT NULL,
+        CriticalLabelId INT NOT NULL,
+        MatchedRuleId INT NULL,
+        PriorityId INT NULL,
+        ProjectStatusId INT NULL,
+        TimelinePercent DECIMAL(10,2) NULL,
+        CompletionPercent DECIMAL(10,2) NULL,
+        DurationPercent DECIMAL(10,2) NULL,
+        OverdueDays INT NULL,
+        PlannedDays DECIMAL(10,2) NULL,
+        AllocatedHours DECIMAL(18,2) NULL,
+        SpentHours DECIMAL(18,2) NULL,
+        CriticalChildCount INT NULL,
+        CriticalChildPercent DECIMAL(10,2) NULL,
+        Reason NVARCHAR(MAX) NULL,
+        regid INT NULL,
+        uid INT NULL,
+        EvaluationDate DATETIME2(0) NOT NULL DEFAULT(GETDATE()),
+        status BIT NOT NULL DEFAULT(1),
+        archive BIT NOT NULL DEFAULT(0),
+        CONSTRAINT FK_Pms_CriticalResult_Label FOREIGN KEY(CriticalLabelId) REFERENCES dbo.Pms_tbl_CriticalLabel(id),
+        CONSTRAINT FK_Pms_CriticalResult_Rule FOREIGN KEY(MatchedRuleId) REFERENCES dbo.Pms_tbl_CriticalRule(id)
+    );
+END
+GO
+
+/* 11. History */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalHistory','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Pms_tbl_CriticalHistory
+    (
+        id BIGINT IDENTITY(1,1) PRIMARY KEY,
+        EntityType NVARCHAR(30) NOT NULL,
+        EntityId INT NOT NULL,
+        ProjectId INT NULL,
+        MilestoneId INT NULL,
+        TaskId INT NULL,
+        SubTaskId INT NULL,
+        RuleId INT NULL,
+        OldCriticalLabelId INT NULL,
+        NewCriticalLabelId INT NULL,
+        TimelinePercent DECIMAL(10,2) NULL,
+        CompletionPercent DECIMAL(10,2) NULL,
+        DurationPercent DECIMAL(10,2) NULL,
+        OverdueDays INT NULL,
+        Reason NVARCHAR(MAX) NULL,
+        regid INT NULL,
+        uid INT NULL,
+        cdate DATETIME2(0) NOT NULL DEFAULT(GETDATE())
+    );
+END
+GO
+
+
+/* =========================================================
+   11A. STANDARD regid / uid COLUMNS
+   All Critical Workflow tables keep:
+       regid INT NULL
+       uid   INT NULL
+
+   This block also manages databases where an older version
+   of these tables was already created.
+   ========================================================= */
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalLabel','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalLabel','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalLabel ADD regid INT NULL;
+    ELSE
+    BEGIN
+        DECLARE @dfCriticalLabelRegid NVARCHAR(128);
+        SELECT @dfCriticalLabelRegid = dc.name
+        FROM sys.default_constraints dc
+        INNER JOIN sys.columns c
+            ON c.default_object_id = dc.object_id
+        WHERE dc.parent_object_id = OBJECT_ID('dbo.Pms_tbl_CriticalLabel')
+          AND c.name = 'regid';
+
+        IF @dfCriticalLabelRegid IS NOT NULL
+            EXEC('ALTER TABLE dbo.Pms_tbl_CriticalLabel DROP CONSTRAINT [' + @dfCriticalLabelRegid + ']');
+
+        ALTER TABLE dbo.Pms_tbl_CriticalLabel ALTER COLUMN regid INT NULL;
+    END
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalLabel','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalLabel ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalLevelMaster','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalLevelMaster','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalLevelMaster ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalLevelMaster ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalLevelMaster','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalLevelMaster ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalFieldMaster','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalFieldMaster','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalFieldMaster ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalFieldMaster ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalFieldMaster','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalFieldMaster ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalOperatorMaster','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalOperatorMaster','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalOperatorMaster ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalOperatorMaster ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalOperatorMaster','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalOperatorMaster ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalLogicalOperator','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalLogicalOperator','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalLogicalOperator ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalLogicalOperator ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalLogicalOperator','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalLogicalOperator ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalActionMaster','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalActionMaster','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalActionMaster ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalActionMaster ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalActionMaster','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalActionMaster ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalRule','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalRule','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalRule ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalRule ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalRule','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalRule ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalRuleCondition','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalRuleAction','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleAction','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalRuleAction ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalRuleAction ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleAction','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalRuleAction ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalResult','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalResult','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalResult ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalResult ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalResult','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalResult ADD uid INT NULL;
+END
+GO
+
+IF OBJECT_ID('dbo.Pms_tbl_CriticalHistory','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalHistory','regid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalHistory ADD regid INT NULL;
+    ELSE
+        ALTER TABLE dbo.Pms_tbl_CriticalHistory ALTER COLUMN regid INT NULL;
+
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalHistory','uid') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalHistory ADD uid INT NULL;
+END
+GO
+
+
+/* =========================================================
+   RULE PRIORITY MASTER COLUMN
+   PriorityId is the actual PMS Priority master selection.
+   RulePriority remains internal evaluation order.
+   ========================================================= */
+IF OBJECT_ID('dbo.Pms_tbl_CriticalRule','U') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('dbo.Pms_tbl_CriticalRule','PriorityId') IS NULL
+        ALTER TABLE dbo.Pms_tbl_CriticalRule ADD PriorityId INT NULL;
+END
+GO
+
+/* 12. Indexes */
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='IX_Pms_CriticalRule_RegId_Level' AND object_id=OBJECT_ID('dbo.Pms_tbl_CriticalRule'))
+    CREATE INDEX IX_Pms_CriticalRule_RegId_Level ON dbo.Pms_tbl_CriticalRule(regid,LevelId,status,archive,RulePriority);
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='IX_Pms_CriticalCondition_Rule' AND object_id=OBJECT_ID('dbo.Pms_tbl_CriticalRuleCondition'))
+    CREATE INDEX IX_Pms_CriticalCondition_Rule ON dbo.Pms_tbl_CriticalRuleCondition(RuleId,SequenceNo,status,archive);
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='IX_Pms_CriticalAction_Rule' AND object_id=OBJECT_ID('dbo.Pms_tbl_CriticalRuleAction'))
+    CREATE INDEX IX_Pms_CriticalAction_Rule ON dbo.Pms_tbl_CriticalRuleAction(RuleId,SequenceNo,status,archive);
+IF NOT EXISTS(SELECT 1 FROM sys.indexes WHERE name='IX_Pms_CriticalResult_Entity' AND object_id=OBJECT_ID('dbo.Pms_tbl_CriticalResult'))
+    CREATE INDEX IX_Pms_CriticalResult_Entity ON dbo.Pms_tbl_CriticalResult(regid,EntityType,EntityId,status,archive);
+GO
+
+/* 13. Master data */
+IF OBJECT_ID('dbo.usp_Pms_Critical_GetMasters','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_Critical_GetMasters;
+GO
+
+CREATE PROCEDURE dbo.usp_Pms_Critical_GetMasters
+(
+    @regid INT,
+    @uid INT = NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    /* ---------------------------------------------------------
+       COMPANY CRITICAL LABELS
+       Default rows have regid NULL and work only as templates.
+       Copy each missing template into the logged-in company so
+       Edit/Update always works against regid=@regid.
+       --------------------------------------------------------- */
+
+    INSERT INTO dbo.Pms_tbl_CriticalLabel
+    (
+        CriticalLabel,
+        ColorCode,
+        Severity,
+        DisplayOrder,
+        regid,
+        uid,
+        status,
+        archive
+    )
+    SELECT
+        G.CriticalLabel,
+        G.ColorCode,
+        G.Severity,
+        G.DisplayOrder,
+        @regid,
+        @uid,
+        1,
+        0
+    FROM dbo.Pms_tbl_CriticalLabel G
+    WHERE G.regid IS NULL
+      AND G.status=1
+      AND G.archive=0
+      AND NOT EXISTS
+      (
+          SELECT 1
+          FROM dbo.Pms_tbl_CriticalLabel C
+          WHERE C.regid=@regid
+            AND C.status=1
+            AND C.archive=0
+            AND C.CriticalLabel=G.CriticalLabel
+      );
+
+    /* Company Critical Labels only */
+    SELECT
+        id,
+        CriticalLabel,
+        ColorCode,
+        Severity,
+        DisplayOrder
+    FROM dbo.Pms_tbl_CriticalLabel
+    WHERE status=1
+      AND archive=0
+      AND regid=@regid
+    ORDER BY DisplayOrder,Severity,CriticalLabel;
+
+    /* Apply Levels */
+    SELECT
+        id,
+        LevelName,
+        LevelCode
+    FROM dbo.Pms_tbl_CriticalLevelMaster
+    WHERE status=1
+      AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* Condition Fields */
+    SELECT
+        id,
+        FieldName,
+        FieldKey,
+        DataType,
+        SourceType
+    FROM dbo.Pms_tbl_CriticalFieldMaster
+    WHERE status=1
+      AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* Operators */
+    SELECT
+        id,
+        OperatorName,
+        OperatorSymbol
+    FROM dbo.Pms_tbl_CriticalOperatorMaster
+    WHERE status=1
+      AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* Logical Operators */
+    SELECT
+        id,
+        OperatorName
+    FROM dbo.Pms_tbl_CriticalLogicalOperator
+    WHERE status=1
+      AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* Actions */
+    SELECT
+        id,
+        ActionName,
+        ActionCode
+    FROM dbo.Pms_tbl_CriticalActionMaster
+    WHERE status=1
+      AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* Existing PMS Status Master - current company only */
+    SELECT
+        id AS ValueId,
+        ProjectStatus AS ValueText
+    FROM dbo.Pms_tbl_Projectstatus
+    WHERE status=1
+      AND archive=0
+      AND regid=@regid
+    ORDER BY ProjectStatus;
+
+    /* Existing PMS Priority Master - current company only */
+    SELECT
+        id AS ValueId,
+        name AS ValueText
+    FROM dbo.Pms_tbl_Priority
+    WHERE status=1
+      AND archive=0
+      AND regid=@regid
+    ORDER BY name;
+END
+GO
+
+/* 14. Dynamic values for Priority/Status */
+IF OBJECT_ID('dbo.usp_Pms_Critical_GetFieldValues','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_Critical_GetFieldValues;
+GO
+
+CREATE PROCEDURE dbo.usp_Pms_Critical_GetFieldValues
+(
+    @FieldId INT,
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @SourceType NVARCHAR(50);
+
+    SELECT
+        @SourceType=SourceType
+    FROM dbo.Pms_tbl_CriticalFieldMaster
+    WHERE id=@FieldId
+      AND status=1
+      AND archive=0;
+
+    IF @SourceType='PRIORITY'
+    BEGIN
+        SELECT
+            id AS ValueId,
+            name AS ValueText
+        FROM dbo.Pms_tbl_Priority
+        WHERE status=1
+          AND archive=0
+          AND regid=@regid
+        ORDER BY name;
+
+        RETURN;
+    END
+
+    IF @SourceType='STATUS'
+    BEGIN
+        SELECT
+            id AS ValueId,
+            ProjectStatus AS ValueText
+        FROM dbo.Pms_tbl_Projectstatus
+        WHERE status=1
+          AND archive=0
+          AND regid=@regid
+        ORDER BY ProjectStatus;
+
+        RETURN;
+    END
+
+    SELECT
+        CAST(NULL AS INT) AS ValueId,
+        CAST(NULL AS NVARCHAR(200)) AS ValueText
+    WHERE 1=0;
+END
+GO
+
+/* 15. Save label */
+IF OBJECT_ID('dbo.usp_Pms_CriticalLabel_Save','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_CriticalLabel_Save;
+GO
+
+CREATE PROCEDURE dbo.usp_Pms_CriticalLabel_Save
+(
+    @id INT=0,
+    @CriticalLabel NVARCHAR(100),
+    @ColorCode NVARCHAR(20),
+    @Severity INT,
+    @DisplayOrder INT=0,
+    @regid INT,
+    @uid INT=NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF ISNULL(LTRIM(RTRIM(@CriticalLabel)),'')=''
+    BEGIN
+        RAISERROR('Critical label is required.',16,1);
+        RETURN;
+    END
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM dbo.Pms_tbl_CriticalLabel
+        WHERE CriticalLabel=@CriticalLabel
+          AND regid=@regid
+          AND archive=0
+          AND id<>ISNULL(@id,0)
+    )
+    BEGIN
+        RAISERROR('Critical label already exists.',16,1);
+        RETURN;
+    END
+
+    IF ISNULL(@id,0)=0
+    BEGIN
+        INSERT INTO dbo.Pms_tbl_CriticalLabel
+        (
+            CriticalLabel,
+            ColorCode,
+            Severity,
+            DisplayOrder,
+            regid,
+            uid,
+            status,
+            archive
+        )
+        VALUES
+        (
+            @CriticalLabel,
+            ISNULL(NULLIF(@ColorCode,''),'#28a745'),
+            ISNULL(@Severity,1),
+            ISNULL(@DisplayOrder,0),
+            @regid,
+            @uid,
+            1,
+            0
+        );
+
+        SELECT
+            CAST(SCOPE_IDENTITY() AS INT) AS id,
+            'Saved successfully.' AS Message;
+
+        RETURN;
+    END
+
+    UPDATE dbo.Pms_tbl_CriticalLabel
+    SET
+        CriticalLabel=@CriticalLabel,
+        ColorCode=ISNULL(NULLIF(@ColorCode,''),'#28a745'),
+        Severity=ISNULL(@Severity,1),
+        DisplayOrder=ISNULL(@DisplayOrder,0),
+        uid=@uid,
+        modifieddate=GETDATE()
+    WHERE id=@id
+      AND regid=@regid
+      AND archive=0;
+
+    IF @@ROWCOUNT=0
+    BEGIN
+        RAISERROR('Critical label not found for current company.',16,1);
+        RETURN;
+    END
+
+    SELECT
+        @id AS id,
+        'Updated successfully.' AS Message;
+END
+GO
+
+/* 16. Save / update rule via XML */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_Save','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_Save;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_Save
+    @RuleId INT=0,
+    @RuleName NVARCHAR(250),
+    @LevelId INT,
+    @CriticalLabelId INT,
+    @PriorityId INT=NULL,
+    @RulePriority INT=100,
+    @StopProcessing BIT=1,
+    @Description NVARCHAR(1000)=NULL,
+    @regid INT,
+    @uid INT=NULL,
+    @ConditionsXml XML,
+    @ActionsXml XML=NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF ISNULL(LTRIM(RTRIM(@RuleName)),'')='' RAISERROR('Rule name is required.',16,1);
+        IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE id=@LevelId AND status=1 AND archive=0)
+            RAISERROR('Invalid apply level.',16,1);
+        IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLabel WHERE id=@CriticalLabelId AND status=1 AND archive=0)
+            RAISERROR('Invalid critical label.',16,1);
+        IF @ConditionsXml IS NULL OR @ConditionsXml.exist('/Conditions/Condition')=0
+            RAISERROR('At least one condition is required.',16,1);
+
+        IF ISNULL(@RuleId,0)=0
+        BEGIN
+            INSERT dbo.Pms_tbl_CriticalRule
+            (
+                RuleName,LevelId,CriticalLabelId,PriorityId,RulePriority,StopProcessing,
+                Description,regid,uid,status,archive
+            )
+            VALUES
+            (
+                @RuleName,@LevelId,@CriticalLabelId,@PriorityId,ISNULL(@RulePriority,100),
+                ISNULL(@StopProcessing,1),@Description,@regid,@uid,1,0
+            );
+            SET @RuleId=CAST(SCOPE_IDENTITY() AS INT);
+        END
+        ELSE
+        BEGIN
+            UPDATE dbo.Pms_tbl_CriticalRule
+            SET RuleName=@RuleName,
+                LevelId=@LevelId,
+                CriticalLabelId=@CriticalLabelId,
+                PriorityId=@PriorityId,
+                RulePriority=ISNULL(@RulePriority,100),
+                StopProcessing=ISNULL(@StopProcessing,1),
+                Description=@Description,
+                uid=@uid,
+                modifieddate=GETDATE()
+            WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+            IF @@ROWCOUNT=0 RAISERROR('Critical rule not found.',16,1);
+
+            DELETE dbo.Pms_tbl_CriticalRuleCondition WHERE RuleId=@RuleId;
+            DELETE dbo.Pms_tbl_CriticalRuleAction WHERE RuleId=@RuleId;
+        END
+
+        INSERT dbo.Pms_tbl_CriticalRuleCondition
+        (
+            RuleId,SequenceNo,OpenBracket,FieldId,OperatorId,CompareValue,
+            CompareValue2,LogicalOperatorId,CloseBracket,GroupNo,regid,uid,status,archive
+        )
+        SELECT
+            @RuleId,
+            T.C.value('@SequenceNo','INT'),
+            NULLIF(T.C.value('@OpenBracket','NVARCHAR(10)'),''),
+            T.C.value('@FieldId','INT'),
+            T.C.value('@OperatorId','INT'),
+            NULLIF(T.C.value('@CompareValue','NVARCHAR(500)'),''),
+            NULLIF(T.C.value('@CompareValue2','NVARCHAR(500)'),''),
+            TRY_CONVERT(INT,NULLIF(T.C.value('@LogicalOperatorId','NVARCHAR(20)'),''))
+            ,NULLIF(T.C.value('@CloseBracket','NVARCHAR(10)'),''),
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@GroupNo','NVARCHAR(20)'),'')),1),
+            @regid,@uid,
+            1,0
+        FROM @ConditionsXml.nodes('/Conditions/Condition') T(C);
+
+        IF @ActionsXml IS NOT NULL AND @ActionsXml.exist('/Actions/Action')=1
+        BEGIN
+            INSERT dbo.Pms_tbl_CriticalRuleAction
+            (
+                RuleId,ActionId,ActionValue,RecipientType,SequenceNo,regid,uid,status,archive
+            )
+            SELECT
+                @RuleId,
+                T.C.value('@ActionId','INT'),
+                NULLIF(T.C.value('@ActionValue','NVARCHAR(1000)'),''),
+                NULLIF(T.C.value('@RecipientType','NVARCHAR(100)'),''),
+                ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@SequenceNo','NVARCHAR(20)'),'')),1),
+                @regid,@uid,
+                1,0
+            FROM @ActionsXml.nodes('/Actions/Action') T(C);
+        END
+
+        COMMIT;
+        SELECT @RuleId RuleId,'Rule saved successfully.' Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK;
+        DECLARE @Err NVARCHAR(4000)=ERROR_MESSAGE();
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+
+/* 17. Rule list */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_List','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_List;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_List
+    @regid INT,
+    @LevelId INT=0
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        R.id,R.RuleName,R.LevelId,L.LevelName,L.LevelCode,
+        R.CriticalLabelId,CL.CriticalLabel,CL.ColorCode,CL.Severity,
+        R.PriorityId,P.name AS PriorityName,
+        R.RulePriority,R.StopProcessing,R.Description,R.status,R.cdate,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_CriticalRuleCondition C WHERE C.RuleId=R.id AND C.status=1 AND C.archive=0) ConditionCount,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_CriticalRuleAction A WHERE A.RuleId=R.id AND A.status=1 AND A.archive=0) ActionCount
+    FROM dbo.Pms_tbl_CriticalRule R
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalLabel CL ON CL.id=R.CriticalLabelId
+    LEFT JOIN dbo.Pms_tbl_Priority P
+        ON P.id=R.PriorityId
+       AND P.regid=@regid
+       AND P.status=1
+       AND P.archive=0
+    WHERE R.regid=@regid
+      AND R.archive=0
+      AND (ISNULL(@LevelId,0)=0 OR R.LevelId=@LevelId)
+    ORDER BY R.RulePriority,R.id;
+END
+GO
+
+/* 18. Rule details */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_GetById','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_GetById;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_GetById
+    @RuleId INT,
+    @regid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT id,RuleName,LevelId,CriticalLabelId,PriorityId,RulePriority,StopProcessing,Description,status
+    FROM dbo.Pms_tbl_CriticalRule
+    WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+    SELECT
+        C.id,C.SequenceNo,C.OpenBracket,C.FieldId,F.FieldName,F.FieldKey,F.DataType,F.SourceType,
+        C.OperatorId,O.OperatorName,O.OperatorSymbol,C.CompareValue,C.CompareValue2,
+        C.LogicalOperatorId,LO.OperatorName LogicalOperator,C.CloseBracket,C.GroupNo
+    FROM dbo.Pms_tbl_CriticalRuleCondition C
+    INNER JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=C.FieldId
+    INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=C.OperatorId
+    LEFT JOIN dbo.Pms_tbl_CriticalLogicalOperator LO ON LO.id=C.LogicalOperatorId
+    WHERE C.RuleId=@RuleId AND C.status=1 AND C.archive=0
+    ORDER BY C.SequenceNo;
+
+    SELECT
+        RA.id,RA.ActionId,AM.ActionName,AM.ActionCode,RA.ActionValue,RA.RecipientType,RA.SequenceNo
+    FROM dbo.Pms_tbl_CriticalRuleAction RA
+    INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=RA.ActionId
+    WHERE RA.RuleId=@RuleId AND RA.status=1 AND RA.archive=0
+    ORDER BY RA.SequenceNo;
+END
+GO
+
+/* 19. Soft delete */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_Delete','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_Delete;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_Delete
+    @RuleId INT,
+    @regid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.Pms_tbl_CriticalRule
+    SET status=0,archive=1,modifieddate=GETDATE()
+    WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+    SELECT CASE WHEN @@ROWCOUNT>0 THEN 1 ELSE 0 END Result,
+           CASE WHEN @@ROWCOUNT>0 THEN 'Rule deleted successfully.' ELSE 'Rule not found.' END Message;
+END
+GO
+
+/* 20. Activate / deactivate */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_ChangeStatus','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_ChangeStatus;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_ChangeStatus
+    @RuleId INT,
+    @regid INT,
+    @status BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE dbo.Pms_tbl_CriticalRule
+    SET status=@status,modifieddate=GETDATE()
+    WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+    SELECT @RuleId RuleId,@status status,'Status updated successfully.' Message;
+END
+GO
+
+/* 21. Load active rules for evaluator */
+IF OBJECT_ID('dbo.usp_Pms_Critical_GetActiveRules','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_Critical_GetActiveRules;
+GO
+CREATE PROCEDURE dbo.usp_Pms_Critical_GetActiveRules
+    @regid INT,
+    @LevelCode NVARCHAR(30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        R.id RuleId,R.RuleName,R.LevelId,L.LevelName,L.LevelCode,
+        R.CriticalLabelId,CL.CriticalLabel,CL.ColorCode,CL.Severity,
+        R.PriorityId,P.name AS PriorityName,
+        R.RulePriority,R.StopProcessing
+    FROM dbo.Pms_tbl_CriticalRule R
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalLabel CL ON CL.id=R.CriticalLabelId
+    LEFT JOIN dbo.Pms_tbl_Priority P
+        ON P.id=R.PriorityId
+       AND P.regid=@regid
+       AND P.status=1
+       AND P.archive=0
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND L.LevelCode=@LevelCode AND L.status=1 AND L.archive=0
+    ORDER BY R.RulePriority,R.id;
+
+    SELECT
+        C.RuleId,C.id ConditionId,C.SequenceNo,C.OpenBracket,C.FieldId,
+        F.FieldName,F.FieldKey,F.DataType,F.SourceType,
+        C.OperatorId,O.OperatorSymbol,C.CompareValue,C.CompareValue2,
+        C.LogicalOperatorId,LO.OperatorName LogicalOperator,C.CloseBracket,C.GroupNo
+    FROM dbo.Pms_tbl_CriticalRuleCondition C
+    INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=C.RuleId
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=C.FieldId
+    INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=C.OperatorId
+    LEFT JOIN dbo.Pms_tbl_CriticalLogicalOperator LO ON LO.id=C.LogicalOperatorId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND L.LevelCode=@LevelCode AND C.status=1 AND C.archive=0
+    ORDER BY R.RulePriority,C.RuleId,C.SequenceNo;
+
+    SELECT
+        RA.RuleId,RA.id RuleActionId,RA.ActionId,AM.ActionName,AM.ActionCode,
+        RA.ActionValue,RA.RecipientType,RA.SequenceNo
+    FROM dbo.Pms_tbl_CriticalRuleAction RA
+    INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=RA.RuleId
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=RA.ActionId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND L.LevelCode=@LevelCode AND RA.status=1 AND RA.archive=0
+    ORDER BY R.RulePriority,RA.RuleId,RA.SequenceNo;
+END
+GO
+
+/* 22. Save current result + status-change history */
+IF OBJECT_ID('dbo.usp_Pms_CriticalResult_Save','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalResult_Save;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalResult_Save
+    @EntityType NVARCHAR(30),
+    @EntityId INT,
+    @ProjectId INT=NULL,
+    @MilestoneId INT=NULL,
+    @TaskId INT=NULL,
+    @SubTaskId INT=NULL,
+    @CriticalLabelId INT,
+    @MatchedRuleId INT=NULL,
+    @PriorityId INT=NULL,
+    @ProjectStatusId INT=NULL,
+    @TimelinePercent DECIMAL(10,2)=NULL,
+    @CompletionPercent DECIMAL(10,2)=NULL,
+    @DurationPercent DECIMAL(10,2)=NULL,
+    @OverdueDays INT=NULL,
+    @PlannedDays DECIMAL(10,2)=NULL,
+    @AllocatedHours DECIMAL(18,2)=NULL,
+    @SpentHours DECIMAL(18,2)=NULL,
+    @CriticalChildCount INT=NULL,
+    @CriticalChildPercent DECIMAL(10,2)=NULL,
+    @Reason NVARCHAR(MAX)=NULL,
+    @regid INT,
+    @uid INT=NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @OldCriticalLabelId INT;
+
+        SELECT TOP 1 @OldCriticalLabelId=CriticalLabelId
+        FROM dbo.Pms_tbl_CriticalResult
+        WHERE regid=@regid AND EntityType=@EntityType AND EntityId=@EntityId
+          AND status=1 AND archive=0
+        ORDER BY id DESC;
+
+        UPDATE dbo.Pms_tbl_CriticalResult
+        SET status=0,archive=1
+        WHERE regid=@regid AND EntityType=@EntityType AND EntityId=@EntityId
+          AND status=1 AND archive=0;
+
+        INSERT dbo.Pms_tbl_CriticalResult
+        (
+            EntityType,EntityId,ProjectId,MilestoneId,TaskId,SubTaskId,
+            CriticalLabelId,MatchedRuleId,PriorityId,ProjectStatusId,
+            TimelinePercent,CompletionPercent,DurationPercent,OverdueDays,
+            PlannedDays,AllocatedHours,SpentHours,CriticalChildCount,CriticalChildPercent,
+            Reason,regid,uid,status,archive
+        )
+        VALUES
+        (
+            @EntityType,@EntityId,@ProjectId,@MilestoneId,@TaskId,@SubTaskId,
+            @CriticalLabelId,@MatchedRuleId,@PriorityId,@ProjectStatusId,
+            @TimelinePercent,@CompletionPercent,@DurationPercent,@OverdueDays,
+            @PlannedDays,@AllocatedHours,@SpentHours,@CriticalChildCount,@CriticalChildPercent,
+            @Reason,@regid,@uid,1,0
+        );
+
+        IF ISNULL(@OldCriticalLabelId,0)<>ISNULL(@CriticalLabelId,0)
+        BEGIN
+            INSERT dbo.Pms_tbl_CriticalHistory
+            (
+                EntityType,EntityId,ProjectId,MilestoneId,TaskId,SubTaskId,
+                RuleId,OldCriticalLabelId,NewCriticalLabelId,
+                TimelinePercent,CompletionPercent,DurationPercent,OverdueDays,
+                Reason,regid,uid
+            )
+            VALUES
+            (
+                @EntityType,@EntityId,@ProjectId,@MilestoneId,@TaskId,@SubTaskId,
+                @MatchedRuleId,@OldCriticalLabelId,@CriticalLabelId,
+                @TimelinePercent,@CompletionPercent,@DurationPercent,@OverdueDays,
+                @Reason,@regid,@uid
+            );
+        END
+
+        COMMIT;
+        SELECT 1 Result,'Critical result updated successfully.' Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK;
+        DECLARE @Err NVARCHAR(4000)=ERROR_MESSAGE();
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+
+/* 23. Current status */
+IF OBJECT_ID('dbo.usp_Pms_CriticalResult_Get','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalResult_Get;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalResult_Get
+    @EntityType NVARCHAR(30),
+    @EntityId INT,
+    @regid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1
+        R.id,R.EntityType,R.EntityId,R.ProjectId,R.MilestoneId,R.TaskId,R.SubTaskId,
+        R.CriticalLabelId,CL.CriticalLabel,CL.ColorCode,CL.Severity,
+        R.MatchedRuleId,CR.RuleName MatchedRule,
+        R.PriorityId,P.name PriorityName,
+        R.ProjectStatusId,PS.ProjectStatus,
+        R.TimelinePercent,R.CompletionPercent,R.DurationPercent,R.OverdueDays,
+        R.PlannedDays,R.AllocatedHours,R.SpentHours,
+        R.CriticalChildCount,R.CriticalChildPercent,R.Reason,R.EvaluationDate
+    FROM dbo.Pms_tbl_CriticalResult R
+    INNER JOIN dbo.Pms_tbl_CriticalLabel CL ON CL.id=R.CriticalLabelId
+    LEFT JOIN dbo.Pms_tbl_CriticalRule CR ON CR.id=R.MatchedRuleId
+    LEFT JOIN dbo.Pms_tbl_Priority P ON P.id=R.PriorityId
+    LEFT JOIN dbo.Pms_tbl_Projectstatus PS ON PS.id=R.ProjectStatusId
+    WHERE R.EntityType=@EntityType AND R.EntityId=@EntityId AND R.regid=@regid
+      AND R.status=1 AND R.archive=0
+    ORDER BY R.id DESC;
+END
+GO
+
+/* 24. History */
+IF OBJECT_ID('dbo.usp_Pms_CriticalHistory_Get','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalHistory_Get;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalHistory_Get
+    @EntityType NVARCHAR(30),
+    @EntityId INT,
+    @regid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        H.id,H.EntityType,H.EntityId,H.ProjectId,H.MilestoneId,H.TaskId,H.SubTaskId,
+        H.RuleId,R.RuleName,H.OldCriticalLabelId,OL.CriticalLabel OldCriticalLabel,OL.ColorCode OldColor,
+        H.NewCriticalLabelId,NL.CriticalLabel NewCriticalLabel,NL.ColorCode NewColor,
+        H.TimelinePercent,H.CompletionPercent,H.DurationPercent,H.OverdueDays,H.Reason,H.cdate
+    FROM dbo.Pms_tbl_CriticalHistory H
+    LEFT JOIN dbo.Pms_tbl_CriticalRule R ON R.id=H.RuleId
+    LEFT JOIN dbo.Pms_tbl_CriticalLabel OL ON OL.id=H.OldCriticalLabelId
+    LEFT JOIN dbo.Pms_tbl_CriticalLabel NL ON NL.id=H.NewCriticalLabelId
+    WHERE H.EntityType=@EntityType AND H.EntityId=@EntityId AND H.regid=@regid
+    ORDER BY H.id DESC;
+END
+GO
+
+
+/* 25. Verify regid / uid standard columns */
+SELECT
+    t.name AS TableName,
+    c.name AS ColumnName,
+    TYPE_NAME(c.user_type_id) AS DataType,
+    c.is_nullable AS IsNullable
+FROM sys.tables t
+INNER JOIN sys.columns c
+    ON c.object_id = t.object_id
+WHERE t.name IN
+(
+    'Pms_tbl_CriticalLabel',
+    'Pms_tbl_CriticalLevelMaster',
+    'Pms_tbl_CriticalFieldMaster',
+    'Pms_tbl_CriticalOperatorMaster',
+    'Pms_tbl_CriticalLogicalOperator',
+    'Pms_tbl_CriticalActionMaster',
+    'Pms_tbl_CriticalRule',
+    'Pms_tbl_CriticalRuleCondition',
+    'Pms_tbl_CriticalRuleAction',
+    'Pms_tbl_CriticalResult',
+    'Pms_tbl_CriticalHistory'
+)
+AND c.name IN ('regid','uid')
+ORDER BY t.name,c.name;
+GO
+
+PRINT 'PMS Critical Workflow database setup completed.';
+GO
+
+
+/* ============================================================================
+   LATEST HIERARCHY / CHILD ROLL-UP UPDATE
+   ============================================================================ */
+/* =====================================================================
+   PMS CRITICAL SETTING - HIERARCHY / CHILD ROLL-UP UPDATE
+   ---------------------------------------------------------------------
+   NON-DESTRUCTIVE UPDATE.
+
+   Supports separate rules for:
+       PROJECT -> Self + Milestone/Task/SubTask child results
+       MILESTONE -> Self + Task/SubTask child results
+       TASK -> Self + SubTask child results
+       SUBTASK -> Self only
+
+   Child condition examples:
+       SubTask Critical Count >= 1
+       Task Critical Percentage >= 50
+       Milestone Under Control Percentage = 100
+
+   IMPORTANT:
+   Run after your existing PMS Critical Workflow base script.
+   Existing rules are preserved. Existing condition rows are marked SELF.
+   ===================================================================== */
+SET NOCOUNT ON;
+GO
+
+/* ---------------------------------------------------------
+   1. Ensure all separate hierarchy levels exist and are active.
+   --------------------------------------------------------- */
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='PROJECT')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder,regid,uid,status,archive)
+    VALUES('Project','PROJECT',1,NULL,NULL,1,0);
+ELSE
+    UPDATE dbo.Pms_tbl_CriticalLevelMaster SET LevelName='Project',DisplayOrder=1,status=1,archive=0 WHERE LevelCode='PROJECT';
+GO
+
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='MILESTONE')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder,regid,uid,status,archive)
+    VALUES('Milestone','MILESTONE',2,NULL,NULL,1,0);
+ELSE
+    UPDATE dbo.Pms_tbl_CriticalLevelMaster SET LevelName='Milestone',DisplayOrder=2,status=1,archive=0 WHERE LevelCode='MILESTONE';
+GO
+
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='TASK')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder,regid,uid,status,archive)
+    VALUES('Task','TASK',3,NULL,NULL,1,0);
+ELSE
+    UPDATE dbo.Pms_tbl_CriticalLevelMaster SET LevelName='Task',DisplayOrder=3,status=1,archive=0 WHERE LevelCode='TASK';
+GO
+
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE LevelCode='SUBTASK')
+    INSERT dbo.Pms_tbl_CriticalLevelMaster(LevelName,LevelCode,DisplayOrder,regid,uid,status,archive)
+    VALUES('Sub Task','SUBTASK',4,NULL,NULL,1,0);
+ELSE
+    UPDATE dbo.Pms_tbl_CriticalLevelMaster SET LevelName='Sub Task',DisplayOrder=4,status=1,archive=0 WHERE LevelCode='SUBTASK';
+GO
+
+/* ---------------------------------------------------------
+   2. Extend rule-condition table for SELF / CHILD conditions.
+   --------------------------------------------------------- */
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','ConditionSource') IS NULL
+BEGIN
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition
+    ADD ConditionSource NVARCHAR(20) NULL;
+END
+GO
+
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','ChildLevelId') IS NULL
+BEGIN
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition
+    ADD ChildLevelId INT NULL;
+END
+GO
+
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','ChildCriticalLabelId') IS NULL
+BEGIN
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition
+    ADD ChildCriticalLabelId INT NULL;
+END
+GO
+
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','ChildMeasure') IS NULL
+BEGIN
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition
+    ADD ChildMeasure NVARCHAR(30) NULL;
+END
+GO
+
+/* Existing conditions are SELF conditions. */
+UPDATE dbo.Pms_tbl_CriticalRuleCondition
+SET ConditionSource='SELF'
+WHERE ISNULL(LTRIM(RTRIM(ConditionSource)),'')='';
+GO
+
+/* FieldId was originally NOT NULL. Child conditions do not use a Self field. */
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','FieldId') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition ALTER COLUMN FieldId INT NULL;
+END
+GO
+
+/* Helpful indexes for child conditions. */
+IF NOT EXISTS
+(
+    SELECT 1 FROM sys.indexes
+    WHERE name='IX_Pms_CriticalCondition_Child'
+      AND object_id=OBJECT_ID('dbo.Pms_tbl_CriticalRuleCondition')
+)
+BEGIN
+    CREATE INDEX IX_Pms_CriticalCondition_Child
+    ON dbo.Pms_tbl_CriticalRuleCondition
+    (RuleId,ConditionSource,ChildLevelId,ChildCriticalLabelId,ChildMeasure,status,archive);
+END
+GO
+
+/* ---------------------------------------------------------
+   3. Recommended self fields/operators.
+   --------------------------------------------------------- */
+UPDATE dbo.Pms_tbl_CriticalFieldMaster
+SET FieldName='Status',DataType='MASTER',SourceType='STATUS',DisplayOrder=1,status=1,archive=0
+WHERE FieldKey='STATUS';
+
+UPDATE dbo.Pms_tbl_CriticalFieldMaster
+SET FieldName='Priority',DataType='MASTER',SourceType='PRIORITY',DisplayOrder=2,status=1,archive=0
+WHERE FieldKey='PRIORITY';
+
+UPDATE dbo.Pms_tbl_CriticalFieldMaster
+SET FieldName='Completion %',DataType='NUMBER',SourceType=NULL,DisplayOrder=3,status=1,archive=0
+WHERE FieldKey='COMPLETION_PERCENT';
+
+UPDATE dbo.Pms_tbl_CriticalFieldMaster
+SET FieldName='Time Consumed %',DataType='NUMBER',SourceType=NULL,DisplayOrder=4,status=1,archive=0
+WHERE FieldKey='DURATION_PERCENT';
+GO
+
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalFieldMaster WHERE FieldKey='PROGRESS_DIFFERENCE_PERCENT')
+BEGIN
+    INSERT dbo.Pms_tbl_CriticalFieldMaster
+    (FieldName,FieldKey,DataType,SourceType,DisplayOrder,regid,uid,status,archive)
+    VALUES('Progress Difference %','PROGRESS_DIFFERENCE_PERCENT','NUMBER',NULL,5,NULL,NULL,1,0);
+END
+ELSE
+BEGIN
+    UPDATE dbo.Pms_tbl_CriticalFieldMaster
+    SET FieldName='Progress Difference %',DataType='NUMBER',SourceType=NULL,
+        DisplayOrder=5,status=1,archive=0
+    WHERE FieldKey='PROGRESS_DIFFERENCE_PERCENT';
+END
+GO
+
+DECLARE @RequiredOperators TABLE
+(
+    OperatorName NVARCHAR(100),
+    OperatorSymbol NVARCHAR(30),
+    DisplayOrder INT
+);
+INSERT @RequiredOperators VALUES
+('Equal To','=',1),
+('Not Equal To','!=',2),
+('Greater Than','>',3),
+('Less Than','<',4),
+('Greater Than Or Equal','>=',5),
+('Less Than Or Equal','<=',6),
+('Between','BETWEEN',7),
+('In','IN',8),
+('Not In','NOT IN',9);
+
+INSERT dbo.Pms_tbl_CriticalOperatorMaster
+(OperatorName,OperatorSymbol,DisplayOrder,regid,uid,status,archive)
+SELECT R.OperatorName,R.OperatorSymbol,R.DisplayOrder,NULL,NULL,1,0
+FROM @RequiredOperators R
+WHERE NOT EXISTS
+(
+    SELECT 1 FROM dbo.Pms_tbl_CriticalOperatorMaster O
+    WHERE O.OperatorSymbol=R.OperatorSymbol AND O.archive=0
+);
+GO
+
+/* ---------------------------------------------------------
+   4. Master loader - separate Project/Milestone/Task/SubTask.
+   Result-set order remains compatible with current C# page.
+   --------------------------------------------------------- */
+IF OBJECT_ID('dbo.usp_Pms_Critical_GetMasters','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_Critical_GetMasters;
+GO
+CREATE PROCEDURE dbo.usp_Pms_Critical_GetMasters
+(
+    @regid INT,
+    @uid INT=NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLabel WHERE regid=@regid)
+    BEGIN
+        INSERT dbo.Pms_tbl_CriticalLabel
+        (CriticalLabel,ColorCode,Severity,DisplayOrder,regid,uid,status,archive)
+        SELECT G.CriticalLabel,G.ColorCode,G.Severity,G.DisplayOrder,@regid,@uid,1,0
+        FROM dbo.Pms_tbl_CriticalLabel G
+        WHERE G.regid IS NULL AND G.status=1 AND G.archive=0;
+    END
+
+    /* 1 labels */
+    SELECT id,CriticalLabel,ColorCode,Severity,DisplayOrder
+    FROM dbo.Pms_tbl_CriticalLabel
+    WHERE status=1 AND archive=0 AND regid=@regid
+    ORDER BY DisplayOrder,Severity,CriticalLabel;
+
+    /* 2 levels */
+    SELECT id,LevelName,LevelCode
+    FROM dbo.Pms_tbl_CriticalLevelMaster
+    WHERE status=1 AND archive=0
+      AND LevelCode IN ('PROJECT','MILESTONE','TASK','SUBTASK')
+    ORDER BY CASE LevelCode
+        WHEN 'PROJECT' THEN 1
+        WHEN 'MILESTONE' THEN 2
+        WHEN 'TASK' THEN 3
+        WHEN 'SUBTASK' THEN 4
+        ELSE 99 END;
+
+    /* 3 self fields */
+    SELECT id,FieldName,FieldKey,DataType,SourceType
+    FROM dbo.Pms_tbl_CriticalFieldMaster
+    WHERE status=1 AND archive=0
+      AND FieldKey IN
+      ('STATUS','PRIORITY','COMPLETION_PERCENT','DURATION_PERCENT','PROGRESS_DIFFERENCE_PERCENT')
+    ORDER BY DisplayOrder;
+
+    /* 4 operators */
+    SELECT id,OperatorName,OperatorSymbol
+    FROM dbo.Pms_tbl_CriticalOperatorMaster
+    WHERE status=1 AND archive=0
+      AND OperatorSymbol IN ('=','!=','>','<','>=','<=','BETWEEN','IN','NOT IN')
+    ORDER BY DisplayOrder;
+
+    /* 5 logical operators */
+    SELECT id,OperatorName
+    FROM dbo.Pms_tbl_CriticalLogicalOperator
+    WHERE status=1 AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* 6 legacy actions - retained only for current C# result-set indexes */
+    SELECT id,ActionName,ActionCode
+    FROM dbo.Pms_tbl_CriticalActionMaster
+    WHERE status=1 AND archive=0
+    ORDER BY DisplayOrder;
+
+    /* 7 status */
+    SELECT id AS ValueId,ProjectStatus AS ValueText
+    FROM dbo.Pms_tbl_Projectstatus
+    WHERE status=1 AND archive=0 AND regid=@regid
+    ORDER BY ProjectStatus;
+
+    /* 8 priority */
+    SELECT id AS ValueId,name AS ValueText
+    FROM dbo.Pms_tbl_Priority
+    WHERE status=1 AND archive=0 AND regid=@regid
+    ORDER BY name;
+END
+GO
+
+/* ---------------------------------------------------------
+   5. Save/update hierarchy-aware rule.
+   --------------------------------------------------------- */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_Save','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_CriticalRule_Save;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_Save
+    @RuleId INT=0,
+    @RuleName NVARCHAR(250),
+    @LevelId INT,
+    @CriticalLabelId INT,
+    @PriorityId INT=NULL,              -- legacy; UI sends NULL
+    @RulePriority INT=1,
+    @StopProcessing BIT=1,
+    @Description NVARCHAR(1000)=NULL,
+    @regid INT,
+    @uid INT=NULL,
+    @ConditionsXml XML,
+    @ActionsXml XML=NULL               -- legacy compatibility
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @ParentLevelCode NVARCHAR(30);
+        SELECT @ParentLevelCode=LevelCode
+        FROM dbo.Pms_tbl_CriticalLevelMaster
+        WHERE id=@LevelId AND status=1 AND archive=0;
+
+        IF ISNULL(LTRIM(RTRIM(@RuleName)),'')=''
+            RAISERROR('Rule Name is required.',16,1);
+
+        IF ISNULL(@RulePriority,0)<1
+            RAISERROR('Rule Order must be 1 or greater.',16,1);
+
+        IF @ParentLevelCode NOT IN ('PROJECT','MILESTONE','TASK','SUBTASK')
+            RAISERROR('Apply On must be Project, Milestone, Task or Sub Task.',16,1);
+
+        IF NOT EXISTS
+        (
+            SELECT 1 FROM dbo.Pms_tbl_CriticalLabel
+            WHERE id=@CriticalLabelId AND regid=@regid AND status=1 AND archive=0
+        )
+            RAISERROR('Invalid Critical Label.',16,1);
+
+        IF @ConditionsXml IS NULL OR @ConditionsXml.exist('/Conditions/Condition')=0
+            RAISERROR('At least one condition is required.',16,1);
+
+        /* ConditionSource must be SELF or CHILD. Empty old input is treated as SELF. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode
+            ) S
+            WHERE S.SourceCode NOT IN ('SELF','CHILD')
+        )
+            RAISERROR('Invalid condition source.',16,1);
+
+        /* Every condition must use an active operator. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE NOT EXISTS
+            (
+                SELECT 1
+                FROM dbo.Pms_tbl_CriticalOperatorMaster O
+                WHERE O.id=TRY_CONVERT(INT,NULLIF(T.C.value('@OperatorId','NVARCHAR(30)'),''))
+                  AND O.status=1 AND O.archive=0
+            )
+        )
+            RAISERROR('One or more condition operators are invalid.',16,1);
+
+        /* SELF field validation. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@FieldId','NVARCHAR(30)'),'')) AS FieldId
+            ) X
+            WHERE X.SourceCode='SELF'
+              AND NOT EXISTS
+              (
+                  SELECT 1 FROM dbo.Pms_tbl_CriticalFieldMaster F
+                  WHERE F.id=X.FieldId AND F.status=1 AND F.archive=0
+                    AND F.FieldKey IN
+                    ('STATUS','PRIORITY','COMPLETION_PERCENT','DURATION_PERCENT','PROGRESS_DIFFERENCE_PERCENT')
+              )
+        )
+            RAISERROR('One or more Self condition fields are invalid.',16,1);
+
+        /* SELF operator validation. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@FieldId','NVARCHAR(30)'),'')) AS FieldId,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@OperatorId','NVARCHAR(30)'),'')) AS OperatorId
+            ) X
+            INNER JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=X.FieldId
+            INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=X.OperatorId
+            WHERE X.SourceCode='SELF'
+              AND
+              (
+                  (F.DataType='MASTER' AND O.OperatorSymbol NOT IN ('=','!=','IN','NOT IN'))
+                  OR
+                  (F.DataType='NUMBER' AND O.OperatorSymbol NOT IN ('=','!=','>','<','>=','<=','BETWEEN'))
+              )
+        )
+            RAISERROR('Selected operator is not valid for the selected Self field.',16,1);
+
+        /* CHILD is not valid on SubTask. */
+        IF @ParentLevelCode='SUBTASK'
+           AND EXISTS
+           (
+               SELECT 1 FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+               WHERE UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF'))='CHILD'
+           )
+            RAISERROR('Sub Task cannot contain Child conditions.',16,1);
+
+        /* CHILD level/label/measure/operator validation. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@ChildLevelId','NVARCHAR(30)'),'')) AS ChildLevelId,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@ChildCriticalLabelId','NVARCHAR(30)'),'')) AS ChildLabelId,
+                       UPPER(NULLIF(T.C.value('@ChildMeasure','NVARCHAR(30)'),'')) AS ChildMeasure,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@OperatorId','NVARCHAR(30)'),'')) AS OperatorId
+            ) X
+            LEFT JOIN dbo.Pms_tbl_CriticalLevelMaster CLV ON CLV.id=X.ChildLevelId AND CLV.status=1 AND CLV.archive=0
+            LEFT JOIN dbo.Pms_tbl_CriticalLabel CL ON CL.id=X.ChildLabelId AND CL.regid=@regid AND CL.status=1 AND CL.archive=0
+            LEFT JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=X.OperatorId AND O.status=1 AND O.archive=0
+            WHERE X.SourceCode='CHILD'
+              AND
+              (
+                  CLV.id IS NULL
+                  OR CL.id IS NULL
+                  OR X.ChildMeasure NOT IN ('COUNT','PERCENTAGE')
+                  OR O.OperatorSymbol NOT IN ('=','!=','>','<','>=','<=','BETWEEN')
+                  OR (@ParentLevelCode='PROJECT' AND CLV.LevelCode NOT IN ('MILESTONE','TASK','SUBTASK'))
+                  OR (@ParentLevelCode='MILESTONE' AND CLV.LevelCode NOT IN ('TASK','SUBTASK'))
+                  OR (@ParentLevelCode='TASK' AND CLV.LevelCode<>'SUBTASK')
+              )
+        )
+            RAISERROR('One or more Child conditions are invalid for the selected Apply On level.',16,1);
+
+        /* Value required for every condition. */
+        IF EXISTS
+        (
+            SELECT 1 FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE ISNULL(LTRIM(RTRIM(T.C.value('@CompareValue','NVARCHAR(500)'))),'')=''
+        )
+            RAISERROR('Condition value is required.',16,1);
+
+        /* BETWEEN second value required. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O
+                ON O.id=TRY_CONVERT(INT,NULLIF(T.C.value('@OperatorId','NVARCHAR(30)'),''))
+            WHERE O.OperatorSymbol='BETWEEN'
+              AND ISNULL(LTRIM(RTRIM(T.C.value('@CompareValue2','NVARCHAR(500)'))),'')=''
+        )
+            RAISERROR('Second value is required for BETWEEN.',16,1);
+
+        /* Numeric SELF values. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@FieldId','NVARCHAR(30)'),'')) AS FieldId
+            ) X
+            INNER JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=X.FieldId
+            WHERE X.SourceCode='SELF' AND F.DataType='NUMBER'
+              AND TRY_CONVERT(DECIMAL(18,4),T.C.value('@CompareValue','NVARCHAR(500)')) IS NULL
+        )
+            RAISERROR('Numeric Self condition contains an invalid value.',16,1);
+
+        /* Numeric SELF BETWEEN second value must also be numeric. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@FieldId','NVARCHAR(30)'),'')) AS FieldId,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@OperatorId','NVARCHAR(30)'),'')) AS OperatorId
+            ) X
+            INNER JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=X.FieldId
+            INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=X.OperatorId
+            WHERE X.SourceCode='SELF' AND F.DataType='NUMBER' AND O.OperatorSymbol='BETWEEN'
+              AND TRY_CONVERT(DECIMAL(18,4),T.C.value('@CompareValue2','NVARCHAR(500)')) IS NULL
+        )
+            RAISERROR('Numeric Self BETWEEN second value is invalid.',16,1);
+
+        /* CHILD values are numeric; percentage must be 0..100. */
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode,
+                       UPPER(NULLIF(T.C.value('@ChildMeasure','NVARCHAR(30)'),'')) AS ChildMeasure,
+                       TRY_CONVERT(DECIMAL(18,4),T.C.value('@CompareValue','NVARCHAR(500)')) AS NumValue
+            ) X
+            WHERE X.SourceCode='CHILD'
+              AND (X.NumValue IS NULL OR X.NumValue<0 OR (X.ChildMeasure='PERCENTAGE' AND X.NumValue>100))
+        )
+            RAISERROR('Child Count/Percentage value is invalid.',16,1);
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            CROSS APPLY
+            (
+                SELECT UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')) AS SourceCode,
+                       UPPER(NULLIF(T.C.value('@ChildMeasure','NVARCHAR(30)'),'')) AS ChildMeasure,
+                       TRY_CONVERT(DECIMAL(18,4),T.C.value('@CompareValue2','NVARCHAR(500)')) AS NumValue2,
+                       TRY_CONVERT(INT,NULLIF(T.C.value('@OperatorId','NVARCHAR(30)'),'')) AS OperatorId
+            ) X
+            INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=X.OperatorId
+            WHERE X.SourceCode='CHILD' AND O.OperatorSymbol='BETWEEN'
+              AND (X.NumValue2 IS NULL OR X.NumValue2<0 OR (X.ChildMeasure='PERCENTAGE' AND X.NumValue2>100))
+        )
+            RAISERROR('Child BETWEEN second value is invalid.',16,1);
+
+        IF ISNULL(@RuleId,0)=0
+        BEGIN
+            INSERT dbo.Pms_tbl_CriticalRule
+            (RuleName,LevelId,CriticalLabelId,PriorityId,RulePriority,StopProcessing,Description,regid,uid,status,archive)
+            VALUES(@RuleName,@LevelId,@CriticalLabelId,NULL,@RulePriority,ISNULL(@StopProcessing,1),@Description,@regid,@uid,1,0);
+            SET @RuleId=CAST(SCOPE_IDENTITY() AS INT);
+        END
+        ELSE
+        BEGIN
+            UPDATE dbo.Pms_tbl_CriticalRule
+            SET RuleName=@RuleName,
+                LevelId=@LevelId,
+                CriticalLabelId=@CriticalLabelId,
+                PriorityId=NULL,
+                RulePriority=@RulePriority,
+                StopProcessing=ISNULL(@StopProcessing,1),
+                Description=@Description,
+                uid=@uid,
+                modifieddate=GETDATE()
+            WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+            IF @@ROWCOUNT=0 RAISERROR('Critical rule not found.',16,1);
+
+            DELETE dbo.Pms_tbl_CriticalRuleCondition WHERE RuleId=@RuleId;
+            DELETE dbo.Pms_tbl_CriticalRuleAction WHERE RuleId=@RuleId;
+        END
+
+        INSERT dbo.Pms_tbl_CriticalRuleCondition
+        (
+            RuleId,SequenceNo,ConditionSource,OpenBracket,FieldId,
+            ChildLevelId,ChildCriticalLabelId,ChildMeasure,
+            OperatorId,CompareValue,CompareValue2,LogicalOperatorId,
+            CloseBracket,GroupNo,regid,uid,status,archive
+        )
+        SELECT
+            @RuleId,
+            T.C.value('@SequenceNo','INT'),
+            UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')),
+            NULLIF(T.C.value('@OpenBracket','NVARCHAR(10)'),''),
+            CASE WHEN UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF'))='SELF'
+                 THEN TRY_CONVERT(INT,NULLIF(T.C.value('@FieldId','NVARCHAR(30)'),'')) ELSE NULL END,
+            CASE WHEN UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF'))='CHILD'
+                 THEN TRY_CONVERT(INT,NULLIF(T.C.value('@ChildLevelId','NVARCHAR(30)'),'')) ELSE NULL END,
+            CASE WHEN UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF'))='CHILD'
+                 THEN TRY_CONVERT(INT,NULLIF(T.C.value('@ChildCriticalLabelId','NVARCHAR(30)'),'')) ELSE NULL END,
+            CASE WHEN UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF'))='CHILD'
+                 THEN UPPER(NULLIF(T.C.value('@ChildMeasure','NVARCHAR(30)'),'')) ELSE NULL END,
+            T.C.value('@OperatorId','INT'),
+            NULLIF(T.C.value('@CompareValue','NVARCHAR(500)'),''),
+            NULLIF(T.C.value('@CompareValue2','NVARCHAR(500)'),''),
+            TRY_CONVERT(INT,NULLIF(T.C.value('@LogicalOperatorId','NVARCHAR(20)'),'')),
+            NULLIF(T.C.value('@CloseBracket','NVARCHAR(10)'),''),
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@GroupNo','NVARCHAR(20)'),'')),1),
+            @regid,@uid,1,0
+        FROM @ConditionsXml.nodes('/Conditions/Condition') T(C);
+
+        COMMIT;
+        SELECT @RuleId AS RuleId,'Rule saved successfully.' AS Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK;
+        DECLARE @Err NVARCHAR(4000)=ERROR_MESSAGE();
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+
+/* ---------------------------------------------------------
+   6. Rule list.
+   --------------------------------------------------------- */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_List','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_CriticalRule_List;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_List
+    @regid INT,
+    @LevelId INT=0
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        R.id,R.RuleName,R.LevelId,L.LevelName,L.LevelCode,
+        R.CriticalLabelId,CL.CriticalLabel,CL.ColorCode,CL.Severity,
+        R.RulePriority,R.StopProcessing,R.Description,R.status,R.cdate,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_CriticalRuleCondition C
+         WHERE C.RuleId=R.id AND C.status=1 AND C.archive=0) AS ConditionCount,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_CriticalRuleCondition C
+         WHERE C.RuleId=R.id AND C.status=1 AND C.archive=0 AND C.ConditionSource='CHILD') AS ChildConditionCount
+    FROM dbo.Pms_tbl_CriticalRule R
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalLabel CL ON CL.id=R.CriticalLabelId
+    WHERE R.regid=@regid AND R.archive=0
+      AND L.LevelCode IN ('PROJECT','MILESTONE','TASK','SUBTASK')
+      AND (ISNULL(@LevelId,0)=0 OR R.LevelId=@LevelId)
+    ORDER BY R.RulePriority,R.id;
+END
+GO
+
+/* ---------------------------------------------------------
+   7. Rule details for edit.
+   --------------------------------------------------------- */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_GetById','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_CriticalRule_GetById;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_GetById
+    @RuleId INT,
+    @regid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT id,RuleName,LevelId,CriticalLabelId,PriorityId,RulePriority,StopProcessing,Description,status
+    FROM dbo.Pms_tbl_CriticalRule
+    WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+    SELECT
+        C.id,C.SequenceNo,ISNULL(C.ConditionSource,'SELF') AS ConditionSource,
+        C.OpenBracket,C.FieldId,F.FieldName,F.FieldKey,F.DataType,F.SourceType,
+        C.ChildLevelId,CLV.LevelName AS ChildLevelName,CLV.LevelCode AS ChildLevelCode,
+        C.ChildCriticalLabelId,CCL.CriticalLabel AS ChildCriticalLabel,CCL.ColorCode AS ChildCriticalColor,
+        C.ChildMeasure,
+        C.OperatorId,O.OperatorName,O.OperatorSymbol,C.CompareValue,C.CompareValue2,
+        C.LogicalOperatorId,LO.OperatorName AS LogicalOperator,C.CloseBracket,C.GroupNo
+    FROM dbo.Pms_tbl_CriticalRuleCondition C
+    LEFT JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=C.FieldId
+    LEFT JOIN dbo.Pms_tbl_CriticalLevelMaster CLV ON CLV.id=C.ChildLevelId
+    LEFT JOIN dbo.Pms_tbl_CriticalLabel CCL ON CCL.id=C.ChildCriticalLabelId
+    INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=C.OperatorId
+    LEFT JOIN dbo.Pms_tbl_CriticalLogicalOperator LO ON LO.id=C.LogicalOperatorId
+    WHERE C.RuleId=@RuleId AND C.status=1 AND C.archive=0
+    ORDER BY C.SequenceNo;
+
+    /* Empty action result set retained for current C# GetRule(). */
+    SELECT TOP 0
+        RA.id,RA.ActionId,AM.ActionName,AM.ActionCode,RA.ActionValue,RA.RecipientType,RA.SequenceNo
+    FROM dbo.Pms_tbl_CriticalRuleAction RA
+    INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=RA.ActionId;
+END
+GO
+
+/* ---------------------------------------------------------
+   8. Label delete must also respect child-condition usage.
+   --------------------------------------------------------- */
+IF OBJECT_ID('dbo.usp_Pms_CriticalLabel_Delete','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_CriticalLabel_Delete;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalLabel_Delete
+(
+    @id INT,
+    @regid INT,
+    @uid INT=NULL
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF ISNULL(@id,0)=0
+    BEGIN
+        SELECT 0 AS Result,'Invalid critical label.' AS Message;
+        RETURN;
+    END
+
+    IF NOT EXISTS
+    (
+        SELECT 1 FROM dbo.Pms_tbl_CriticalLabel
+        WHERE id=@id AND regid=@regid AND archive=0
+    )
+    BEGIN
+        SELECT 0 AS Result,'Critical label not found for current company.' AS Message;
+        RETURN;
+    END
+
+    IF EXISTS
+    (
+        SELECT 1 FROM dbo.Pms_tbl_CriticalRule
+        WHERE CriticalLabelId=@id AND regid=@regid AND archive=0
+    )
+    BEGIN
+        SELECT 0 AS Result,'This Critical Label is used as a rule result. Change or delete that rule first.' AS Message;
+        RETURN;
+    END
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM dbo.Pms_tbl_CriticalRuleCondition C
+        INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=C.RuleId
+        WHERE C.ChildCriticalLabelId=@id
+          AND R.regid=@regid
+          AND R.archive=0
+          AND C.archive=0
+    )
+    BEGIN
+        SELECT 0 AS Result,'This Critical Label is used in a Child condition. Change or delete that rule first.' AS Message;
+        RETURN;
+    END
+
+    UPDATE dbo.Pms_tbl_CriticalLabel
+    SET status=0,archive=1,uid=@uid,modifieddate=GETDATE()
+    WHERE id=@id AND regid=@regid AND archive=0;
+
+    IF @@ROWCOUNT>0 SELECT 1 AS Result,'Critical label deleted successfully.' AS Message;
+    ELSE SELECT 0 AS Result,'Critical label could not be deleted.' AS Message;
+END
+GO
+
+/* ---------------------------------------------------------
+   9. Active rules for runtime evaluator.
+   Returns Self and Child condition metadata.
+   --------------------------------------------------------- */
+IF OBJECT_ID('dbo.usp_Pms_Critical_GetActiveRules','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_Critical_GetActiveRules;
+GO
+CREATE PROCEDURE dbo.usp_Pms_Critical_GetActiveRules
+    @regid INT,
+    @LevelCode NVARCHAR(30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @LevelCode=UPPER(ISNULL(@LevelCode,''));
+
+    SELECT
+        R.id AS RuleId,R.RuleName,R.LevelId,L.LevelName,L.LevelCode,
+        R.CriticalLabelId,CL.CriticalLabel,CL.ColorCode,CL.Severity,
+        R.RulePriority,R.StopProcessing
+    FROM dbo.Pms_tbl_CriticalRule R
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalLabel CL ON CL.id=R.CriticalLabelId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND L.status=1 AND L.archive=0 AND L.LevelCode=@LevelCode
+    ORDER BY R.RulePriority,R.id;
+
+    SELECT
+        C.RuleId,C.id AS ConditionId,C.SequenceNo,
+        ISNULL(C.ConditionSource,'SELF') AS ConditionSource,C.OpenBracket,
+        C.FieldId,F.FieldName,F.FieldKey,F.DataType,F.SourceType,
+        C.ChildLevelId,CLV.LevelName AS ChildLevelName,CLV.LevelCode AS ChildLevelCode,
+        C.ChildCriticalLabelId,CCL.CriticalLabel AS ChildCriticalLabel,CCL.ColorCode AS ChildCriticalColor,
+        C.ChildMeasure,
+        C.OperatorId,O.OperatorSymbol,C.CompareValue,C.CompareValue2,
+        C.LogicalOperatorId,LO.OperatorName AS LogicalOperator,
+        C.CloseBracket,C.GroupNo
+    FROM dbo.Pms_tbl_CriticalRuleCondition C
+    INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=C.RuleId
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    LEFT JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=C.FieldId
+    LEFT JOIN dbo.Pms_tbl_CriticalLevelMaster CLV ON CLV.id=C.ChildLevelId
+    LEFT JOIN dbo.Pms_tbl_CriticalLabel CCL ON CCL.id=C.ChildCriticalLabelId
+    INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=C.OperatorId
+    LEFT JOIN dbo.Pms_tbl_CriticalLogicalOperator LO ON LO.id=C.LogicalOperatorId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND C.status=1 AND C.archive=0 AND L.LevelCode=@LevelCode
+    ORDER BY R.RulePriority,C.RuleId,C.SequenceNo;
+
+    /* Legacy action result set retained. */
+    SELECT
+        RA.RuleId,RA.id AS RuleActionId,RA.ActionId,
+        AM.ActionName,AM.ActionCode,RA.ActionValue,RA.RecipientType,RA.SequenceNo
+    FROM dbo.Pms_tbl_CriticalRuleAction RA
+    INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=RA.RuleId
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=RA.ActionId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND RA.status=1 AND RA.archive=0 AND L.LevelCode=@LevelCode
+    ORDER BY R.RulePriority,RA.RuleId,RA.SequenceNo;
+END
+GO
+
+/* ---------------------------------------------------------
+   10. Child summary helper for runtime evaluation.
+   IMPORTANT: evaluate bottom-up first so every child has a current
+   Pms_tbl_CriticalResult row.
+
+   Example:
+       @ParentLevelCode='TASK', @ParentEntityId=100,
+       @ChildLevelCode='SUBTASK', @CriticalLabelId=<Critical id>
+   --------------------------------------------------------- */
+IF OBJECT_ID('dbo.usp_Pms_Critical_GetChildSummary','P') IS NOT NULL
+    DROP PROCEDURE dbo.usp_Pms_Critical_GetChildSummary;
+GO
+CREATE PROCEDURE dbo.usp_Pms_Critical_GetChildSummary
+    @regid INT,
+    @ParentLevelCode NVARCHAR(30),
+    @ParentEntityId INT,
+    @ChildLevelCode NVARCHAR(30),
+    @CriticalLabelId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SET @ParentLevelCode=UPPER(ISNULL(@ParentLevelCode,''));
+    SET @ChildLevelCode=UPPER(ISNULL(@ChildLevelCode,''));
+
+    IF @ParentLevelCode NOT IN ('PROJECT','MILESTONE','TASK')
+       OR @ChildLevelCode NOT IN ('MILESTONE','TASK','SUBTASK')
+    BEGIN
+        SELECT 0 AS TotalChildCount,0 AS LabelChildCount,CAST(0 AS DECIMAL(10,2)) AS LabelChildPercent;
+        RETURN;
+    END
+
+    ;WITH X AS
+    (
+        SELECT R.EntityId,R.CriticalLabelId
+        FROM dbo.Pms_tbl_CriticalResult R
+        WHERE R.regid=@regid
+          AND R.status=1
+          AND R.archive=0
+          AND UPPER(R.EntityType)=@ChildLevelCode
+          AND
+          (
+              (@ParentLevelCode='PROJECT' AND R.ProjectId=@ParentEntityId)
+              OR (@ParentLevelCode='MILESTONE' AND R.MilestoneId=@ParentEntityId)
+              OR (@ParentLevelCode='TASK' AND R.TaskId=@ParentEntityId)
+          )
+    )
+    SELECT
+        COUNT(1) AS TotalChildCount,
+        SUM(CASE WHEN CriticalLabelId=@CriticalLabelId THEN 1 ELSE 0 END) AS LabelChildCount,
+        CAST(
+            CASE WHEN COUNT(1)=0 THEN 0
+                 ELSE SUM(CASE WHEN CriticalLabelId=@CriticalLabelId THEN 1.0 ELSE 0 END)*100.0/COUNT(1)
+            END AS DECIMAL(10,2)
+        ) AS LabelChildPercent
+    FROM X;
+END
+GO
+
+PRINT 'PMS Critical hierarchy setting update completed successfully.';
+GO
+
+
+/* ============================================================================
+   LATEST IF / ELSE IF / ELSE + BRANCH ACTION UPDATE
+   ============================================================================ */
+/* =============================================================
+   PMS CRITICAL RULE - OPTIONAL ELSE IF / ELSE + BRANCH ACTIONS
+   NON-DESTRUCTIVE PATCH FOR CURRENT HIERARCHY SETTING
+   ============================================================= */
+SET NOCOUNT ON;
+GO
+
+/* 1. Critical label is now action driven, so header label can be NULL. */
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRule','CriticalLabelId') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.Pms_tbl_CriticalRule ALTER COLUMN CriticalLabelId INT NULL;
+END
+GO
+
+/* 2. Branch metadata on conditions. */
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','BranchNo') IS NULL
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition ADD BranchNo INT NULL;
+GO
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleCondition','BranchType') IS NULL
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleCondition ADD BranchType NVARCHAR(20) NULL;
+GO
+UPDATE dbo.Pms_tbl_CriticalRuleCondition
+SET BranchNo=ISNULL(BranchNo,1), BranchType=ISNULL(NULLIF(UPPER(LTRIM(RTRIM(BranchType))),''),'IF')
+WHERE BranchNo IS NULL OR ISNULL(LTRIM(RTRIM(BranchType)),'')='';
+GO
+
+/* 3. Branch + recipient metadata on actions. */
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleAction','BranchNo') IS NULL
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleAction ADD BranchNo INT NULL;
+GO
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleAction','BranchType') IS NULL
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleAction ADD BranchType NVARCHAR(20) NULL;
+GO
+IF COL_LENGTH('dbo.Pms_tbl_CriticalRuleAction','RecipientValue') IS NULL
+    ALTER TABLE dbo.Pms_tbl_CriticalRuleAction ADD RecipientValue NVARCHAR(1000) NULL;
+GO
+UPDATE dbo.Pms_tbl_CriticalRuleAction
+SET BranchNo=ISNULL(BranchNo,1), BranchType=ISNULL(NULLIF(UPPER(LTRIM(RTRIM(BranchType))),''),'IF')
+WHERE BranchNo IS NULL OR ISNULL(LTRIM(RTRIM(BranchType)),'')='';
+GO
+
+/* 4. Required actions. */
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalActionMaster WHERE ActionCode='SET_CRITICAL_LABEL' AND archive=0)
+    INSERT dbo.Pms_tbl_CriticalActionMaster(ActionName,ActionCode,DisplayOrder,regid,uid,status,archive)
+    VALUES('Set Critical Label','SET_CRITICAL_LABEL',1,NULL,NULL,1,0);
+ELSE
+    UPDATE dbo.Pms_tbl_CriticalActionMaster SET ActionName='Set Critical Label',status=1,archive=0 WHERE ActionCode='SET_CRITICAL_LABEL';
+GO
+
+IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalActionMaster WHERE ActionCode='SEND_NOTIFICATION' AND archive=0)
+    INSERT dbo.Pms_tbl_CriticalActionMaster(ActionName,ActionCode,DisplayOrder,regid,uid,status,archive)
+    VALUES('Send Notification','SEND_NOTIFICATION',2,NULL,NULL,1,0);
+ELSE
+    UPDATE dbo.Pms_tbl_CriticalActionMaster SET ActionName='Send Notification',status=1,archive=0 WHERE ActionCode='SEND_NOTIFICATION';
+GO
+
+/* 5. Preserve old rules: convert old header label into IF branch Set Critical Label action. */
+DECLARE @SetLabelActionId INT=(SELECT TOP 1 id FROM dbo.Pms_tbl_CriticalActionMaster WHERE ActionCode='SET_CRITICAL_LABEL' AND status=1 AND archive=0 ORDER BY id);
+INSERT dbo.Pms_tbl_CriticalRuleAction
+(
+    RuleId,ActionId,ActionValue,RecipientType,RecipientValue,SequenceNo,BranchNo,BranchType,regid,uid,status,archive
+)
+SELECT
+    R.id,@SetLabelActionId,CONVERT(NVARCHAR(100),R.CriticalLabelId),NULL,NULL,1,1,'IF',R.regid,R.uid,1,0
+FROM dbo.Pms_tbl_CriticalRule R
+WHERE R.archive=0
+  AND R.CriticalLabelId IS NOT NULL
+  AND @SetLabelActionId IS NOT NULL
+  AND NOT EXISTS
+  (
+      SELECT 1
+      FROM dbo.Pms_tbl_CriticalRuleAction A
+      INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=A.ActionId
+      WHERE A.RuleId=R.id AND A.status=1 AND A.archive=0 AND AM.ActionCode='SET_CRITICAL_LABEL'
+  );
+GO
+
+/* 6. Save/update rule. */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_Save','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_Save;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_Save
+    @RuleId INT=0,
+    @RuleName NVARCHAR(250),
+    @LevelId INT,
+    @CriticalLabelId INT=NULL, -- retained only for backward compatibility; UI no longer sends it
+    @PriorityId INT=NULL,
+    @RulePriority INT=100,
+    @StopProcessing BIT=1,
+    @Description NVARCHAR(1000)=NULL,
+    @regid INT,
+    @uid INT=NULL,
+    @ConditionsXml XML,
+    @ActionsXml XML=NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF ISNULL(LTRIM(RTRIM(@RuleName)),'')='' RAISERROR('Rule name is required.',16,1);
+        IF NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLevelMaster WHERE id=@LevelId AND status=1 AND archive=0)
+            RAISERROR('Invalid Apply On level.',16,1);
+        IF @ConditionsXml IS NULL OR @ConditionsXml.exist('/Conditions/Condition')=0
+            RAISERROR('At least one IF/ELSE IF condition is required.',16,1);
+        IF @ActionsXml IS NULL OR @ActionsXml.exist('/Actions/Action')=0
+            RAISERROR('At least one action is required.',16,1);
+
+        /* Validate branch types. */
+        IF EXISTS
+        (
+            SELECT 1 FROM @ConditionsXml.nodes('/Conditions/Condition') T(C)
+            WHERE UPPER(T.C.value('@BranchType','NVARCHAR(20)')) NOT IN ('IF','ELSEIF')
+        )
+            RAISERROR('Conditions are allowed only for IF and ELSE IF branches.',16,1);
+
+        IF EXISTS
+        (
+            SELECT 1 FROM @ActionsXml.nodes('/Actions/Action') T(C)
+            WHERE UPPER(T.C.value('@BranchType','NVARCHAR(20)')) NOT IN ('IF','ELSEIF','ELSE')
+        )
+            RAISERROR('Invalid action branch type.',16,1);
+
+        DECLARE @HeaderCriticalLabelId INT=NULL;
+        DECLARE @SetLabelActionId INT=(SELECT TOP 1 id FROM dbo.Pms_tbl_CriticalActionMaster WHERE ActionCode='SET_CRITICAL_LABEL' AND status=1 AND archive=0 ORDER BY id);
+
+        SELECT TOP 1 @HeaderCriticalLabelId=TRY_CONVERT(INT,NULLIF(T.C.value('@ActionValue','NVARCHAR(1000)'),''))
+        FROM @ActionsXml.nodes('/Actions/Action') T(C)
+        WHERE T.C.value('@ActionId','INT')=@SetLabelActionId
+        ORDER BY T.C.value('@BranchNo','INT'),T.C.value('@SequenceNo','INT');
+
+        IF @HeaderCriticalLabelId IS NOT NULL
+           AND NOT EXISTS(SELECT 1 FROM dbo.Pms_tbl_CriticalLabel WHERE id=@HeaderCriticalLabelId AND regid=@regid AND status=1 AND archive=0)
+            RAISERROR('Invalid Critical Label selected in action.',16,1);
+
+        IF ISNULL(@RuleId,0)=0
+        BEGIN
+            INSERT dbo.Pms_tbl_CriticalRule
+            (RuleName,LevelId,CriticalLabelId,PriorityId,RulePriority,StopProcessing,Description,regid,uid,status,archive)
+            VALUES
+            (@RuleName,@LevelId,@HeaderCriticalLabelId,@PriorityId,ISNULL(@RulePriority,100),ISNULL(@StopProcessing,1),@Description,@regid,@uid,1,0);
+            SET @RuleId=CAST(SCOPE_IDENTITY() AS INT);
+        END
+        ELSE
+        BEGIN
+            UPDATE dbo.Pms_tbl_CriticalRule
+            SET RuleName=@RuleName,LevelId=@LevelId,CriticalLabelId=@HeaderCriticalLabelId,
+                PriorityId=@PriorityId,RulePriority=ISNULL(@RulePriority,100),StopProcessing=ISNULL(@StopProcessing,1),
+                Description=@Description,uid=@uid,modifieddate=GETDATE()
+            WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+            IF @@ROWCOUNT=0 RAISERROR('Critical rule not found.',16,1);
+            DELETE dbo.Pms_tbl_CriticalRuleCondition WHERE RuleId=@RuleId;
+            DELETE dbo.Pms_tbl_CriticalRuleAction WHERE RuleId=@RuleId;
+        END
+
+        INSERT dbo.Pms_tbl_CriticalRuleCondition
+        (
+            RuleId,BranchNo,BranchType,SequenceNo,OpenBracket,ConditionSource,FieldId,ChildLevelId,
+            ChildCriticalLabelId,ChildMeasure,OperatorId,CompareValue,CompareValue2,LogicalOperatorId,
+            CloseBracket,GroupNo,regid,uid,status,archive
+        )
+        SELECT
+            @RuleId,
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@BranchNo','NVARCHAR(20)'),'')),1),
+            UPPER(ISNULL(NULLIF(T.C.value('@BranchType','NVARCHAR(20)'),''),'IF')),
+            T.C.value('@SequenceNo','INT'),
+            NULLIF(T.C.value('@OpenBracket','NVARCHAR(10)'),'') ,
+            UPPER(ISNULL(NULLIF(T.C.value('@ConditionSource','NVARCHAR(20)'),''),'SELF')),
+            TRY_CONVERT(INT,NULLIF(T.C.value('@FieldId','NVARCHAR(20)'),'')),
+            TRY_CONVERT(INT,NULLIF(T.C.value('@ChildLevelId','NVARCHAR(20)'),'')),
+            TRY_CONVERT(INT,NULLIF(T.C.value('@ChildCriticalLabelId','NVARCHAR(20)'),'')),
+            NULLIF(T.C.value('@ChildMeasure','NVARCHAR(30)'),''),
+            T.C.value('@OperatorId','INT'),
+            NULLIF(T.C.value('@CompareValue','NVARCHAR(500)'),'') ,
+            NULLIF(T.C.value('@CompareValue2','NVARCHAR(500)'),'') ,
+            TRY_CONVERT(INT,NULLIF(T.C.value('@LogicalOperatorId','NVARCHAR(20)'),'')),
+            NULLIF(T.C.value('@CloseBracket','NVARCHAR(10)'),'') ,
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@GroupNo','NVARCHAR(20)'),'')),1),
+            @regid,@uid,1,0
+        FROM @ConditionsXml.nodes('/Conditions/Condition') T(C);
+
+        INSERT dbo.Pms_tbl_CriticalRuleAction
+        (
+            RuleId,ActionId,ActionValue,RecipientType,RecipientValue,SequenceNo,BranchNo,BranchType,regid,uid,status,archive
+        )
+        SELECT
+            @RuleId,
+            T.C.value('@ActionId','INT'),
+            NULLIF(T.C.value('@ActionValue','NVARCHAR(1000)'),'') ,
+            NULLIF(T.C.value('@RecipientType','NVARCHAR(100)'),'') ,
+            NULLIF(T.C.value('@RecipientValue','NVARCHAR(1000)'),'') ,
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@SequenceNo','NVARCHAR(20)'),'')),1),
+            ISNULL(TRY_CONVERT(INT,NULLIF(T.C.value('@BranchNo','NVARCHAR(20)'),'')),1),
+            UPPER(ISNULL(NULLIF(T.C.value('@BranchType','NVARCHAR(20)'),''),'IF')),
+            @regid,@uid,1,0
+        FROM @ActionsXml.nodes('/Actions/Action') T(C);
+
+        COMMIT;
+        SELECT @RuleId AS RuleId,'Rule saved successfully.' AS Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK;
+        DECLARE @Err NVARCHAR(4000)=ERROR_MESSAGE();
+        RAISERROR(@Err,16,1);
+    END CATCH
+END
+GO
+
+/* 7. Rule list - Critical Label is derived from Set Critical Label action. */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_List','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_List;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_List
+    @regid INT,
+    @LevelId INT=0
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        R.id,R.RuleName,R.LevelId,L.LevelName,L.LevelCode,
+        COALESCE(LA.LabelId,R.CriticalLabelId) AS CriticalLabelId,
+        CL.CriticalLabel,CL.ColorCode,CL.Severity,
+        R.RulePriority,R.StopProcessing,R.Description,R.status,R.cdate,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_CriticalRuleCondition C WHERE C.RuleId=R.id AND C.status=1 AND C.archive=0) AS ConditionCount,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_CriticalRuleCondition C WHERE C.RuleId=R.id AND C.status=1 AND C.archive=0 AND C.ConditionSource='CHILD') AS ChildConditionCount,
+        (SELECT COUNT(1) FROM dbo.Pms_tbl_CriticalRuleAction A WHERE A.RuleId=R.id AND A.status=1 AND A.archive=0) AS ActionCount
+    FROM dbo.Pms_tbl_CriticalRule R
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    OUTER APPLY
+    (
+        SELECT TOP 1 TRY_CONVERT(INT,RA.ActionValue) AS LabelId
+        FROM dbo.Pms_tbl_CriticalRuleAction RA
+        INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=RA.ActionId
+        WHERE RA.RuleId=R.id AND RA.status=1 AND RA.archive=0 AND AM.ActionCode='SET_CRITICAL_LABEL'
+        ORDER BY ISNULL(RA.BranchNo,1),RA.SequenceNo,RA.id
+    ) LA
+    LEFT JOIN dbo.Pms_tbl_CriticalLabel CL ON CL.id=COALESCE(LA.LabelId,R.CriticalLabelId)
+    WHERE R.regid=@regid AND R.archive=0
+      AND L.LevelCode IN ('PROJECT','MILESTONE','TASK','SUBTASK')
+      AND (ISNULL(@LevelId,0)=0 OR R.LevelId=@LevelId)
+    ORDER BY R.RulePriority,R.id;
+END
+GO
+
+/* 8. Get rule for Edit popup. */
+IF OBJECT_ID('dbo.usp_Pms_CriticalRule_GetById','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_CriticalRule_GetById;
+GO
+CREATE PROCEDURE dbo.usp_Pms_CriticalRule_GetById
+    @RuleId INT,
+    @regid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT id,RuleName,LevelId,CriticalLabelId,PriorityId,RulePriority,StopProcessing,Description,status
+    FROM dbo.Pms_tbl_CriticalRule
+    WHERE id=@RuleId AND regid=@regid AND archive=0;
+
+    SELECT
+        C.id,ISNULL(C.BranchNo,1) AS BranchNo,ISNULL(C.BranchType,'IF') AS BranchType,
+        C.SequenceNo,ISNULL(C.ConditionSource,'SELF') AS ConditionSource,
+        C.OpenBracket,C.FieldId,F.FieldName,F.FieldKey,F.DataType,F.SourceType,
+        C.ChildLevelId,CLV.LevelName AS ChildLevelName,CLV.LevelCode AS ChildLevelCode,
+        C.ChildCriticalLabelId,CCL.CriticalLabel AS ChildCriticalLabel,CCL.ColorCode AS ChildCriticalColor,
+        C.ChildMeasure,C.OperatorId,O.OperatorName,O.OperatorSymbol,C.CompareValue,C.CompareValue2,
+        C.LogicalOperatorId,LO.OperatorName AS LogicalOperator,C.CloseBracket,C.GroupNo
+    FROM dbo.Pms_tbl_CriticalRuleCondition C
+    LEFT JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=C.FieldId
+    LEFT JOIN dbo.Pms_tbl_CriticalLevelMaster CLV ON CLV.id=C.ChildLevelId
+    LEFT JOIN dbo.Pms_tbl_CriticalLabel CCL ON CCL.id=C.ChildCriticalLabelId
+    INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=C.OperatorId
+    LEFT JOIN dbo.Pms_tbl_CriticalLogicalOperator LO ON LO.id=C.LogicalOperatorId
+    WHERE C.RuleId=@RuleId AND C.status=1 AND C.archive=0
+    ORDER BY ISNULL(C.BranchNo,1),C.SequenceNo;
+
+    SELECT
+        RA.id,ISNULL(RA.BranchNo,1) AS BranchNo,ISNULL(RA.BranchType,'IF') AS BranchType,
+        RA.ActionId,AM.ActionName,AM.ActionCode,RA.ActionValue,RA.RecipientType,RA.RecipientValue,RA.SequenceNo
+    FROM dbo.Pms_tbl_CriticalRuleAction RA
+    INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=RA.ActionId
+    WHERE RA.RuleId=@RuleId AND RA.status=1 AND RA.archive=0
+    ORDER BY ISNULL(RA.BranchNo,1),RA.SequenceNo;
+END
+GO
+
+/* 9. Active rules for runtime evaluator - now includes branches and actions. */
+IF OBJECT_ID('dbo.usp_Pms_Critical_GetActiveRules','P') IS NOT NULL DROP PROCEDURE dbo.usp_Pms_Critical_GetActiveRules;
+GO
+CREATE PROCEDURE dbo.usp_Pms_Critical_GetActiveRules
+    @regid INT,
+    @LevelCode NVARCHAR(30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @LevelCode=UPPER(ISNULL(@LevelCode,''));
+
+    SELECT
+        R.id AS RuleId,R.RuleName,R.LevelId,L.LevelName,L.LevelCode,
+        R.RulePriority,R.StopProcessing
+    FROM dbo.Pms_tbl_CriticalRule R
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND L.status=1 AND L.archive=0 AND L.LevelCode=@LevelCode
+    ORDER BY R.RulePriority,R.id;
+
+    SELECT
+        C.RuleId,C.id AS ConditionId,ISNULL(C.BranchNo,1) AS BranchNo,ISNULL(C.BranchType,'IF') AS BranchType,
+        C.SequenceNo,ISNULL(C.ConditionSource,'SELF') AS ConditionSource,C.OpenBracket,
+        C.FieldId,F.FieldName,F.FieldKey,F.DataType,F.SourceType,
+        C.ChildLevelId,CLV.LevelName AS ChildLevelName,CLV.LevelCode AS ChildLevelCode,
+        C.ChildCriticalLabelId,CCL.CriticalLabel AS ChildCriticalLabel,CCL.ColorCode AS ChildCriticalColor,
+        C.ChildMeasure,C.OperatorId,O.OperatorSymbol,C.CompareValue,C.CompareValue2,
+        C.LogicalOperatorId,LO.OperatorName AS LogicalOperator,C.CloseBracket,C.GroupNo
+    FROM dbo.Pms_tbl_CriticalRuleCondition C
+    INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=C.RuleId
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    LEFT JOIN dbo.Pms_tbl_CriticalFieldMaster F ON F.id=C.FieldId
+    LEFT JOIN dbo.Pms_tbl_CriticalLevelMaster CLV ON CLV.id=C.ChildLevelId
+    LEFT JOIN dbo.Pms_tbl_CriticalLabel CCL ON CCL.id=C.ChildCriticalLabelId
+    INNER JOIN dbo.Pms_tbl_CriticalOperatorMaster O ON O.id=C.OperatorId
+    LEFT JOIN dbo.Pms_tbl_CriticalLogicalOperator LO ON LO.id=C.LogicalOperatorId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND C.status=1 AND C.archive=0 AND L.LevelCode=@LevelCode
+    ORDER BY R.RulePriority,C.RuleId,ISNULL(C.BranchNo,1),C.SequenceNo;
+
+    SELECT
+        RA.RuleId,RA.id AS RuleActionId,ISNULL(RA.BranchNo,1) AS BranchNo,ISNULL(RA.BranchType,'IF') AS BranchType,
+        RA.ActionId,AM.ActionName,AM.ActionCode,RA.ActionValue,RA.RecipientType,RA.RecipientValue,RA.SequenceNo
+    FROM dbo.Pms_tbl_CriticalRuleAction RA
+    INNER JOIN dbo.Pms_tbl_CriticalRule R ON R.id=RA.RuleId
+    INNER JOIN dbo.Pms_tbl_CriticalLevelMaster L ON L.id=R.LevelId
+    INNER JOIN dbo.Pms_tbl_CriticalActionMaster AM ON AM.id=RA.ActionId
+    WHERE R.regid=@regid AND R.status=1 AND R.archive=0
+      AND RA.status=1 AND RA.archive=0 AND L.LevelCode=@LevelCode
+    ORDER BY R.RulePriority,RA.RuleId,ISNULL(RA.BranchNo,1),RA.SequenceNo;
+END
+GO
+
+PRINT 'PMS Critical optional ELSE IF/ELSE + branch action update completed successfully.';
+GO
+
+
+/* ============================================================================
+   CRITICAL LABEL MASTER - EXTRA HELPER PROCEDURES
+   These do not replace the module's Save/Delete procedures above.
+   ============================================================================ */
+
+IF OBJECT_ID('dbo.usp_Pms_CriticalLabel_List','P') IS NULL
+    EXEC('CREATE PROCEDURE dbo.usp_Pms_CriticalLabel_List AS BEGIN SET NOCOUNT ON; END');
+GO
+ALTER PROCEDURE dbo.usp_Pms_CriticalLabel_List
+(
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        id,CriticalLabel,ColorCode,Severity,DisplayOrder,
+        regid,uid,status,archive,cdate,modifieddate
+    FROM dbo.Pms_tbl_CriticalLabel
+    WHERE regid=@regid
+      AND ISNULL(archive,0)=0
+    ORDER BY DisplayOrder,Severity,CriticalLabel;
+END
+GO
+
+IF OBJECT_ID('dbo.usp_Pms_CriticalLabel_GetById','P') IS NULL
+    EXEC('CREATE PROCEDURE dbo.usp_Pms_CriticalLabel_GetById AS BEGIN SET NOCOUNT ON; END');
+GO
+ALTER PROCEDURE dbo.usp_Pms_CriticalLabel_GetById
+(
+    @id INT,
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        id,CriticalLabel,ColorCode,Severity,DisplayOrder,
+        regid,uid,status,archive,cdate,modifieddate
+    FROM dbo.Pms_tbl_CriticalLabel
+    WHERE id=@id
+      AND regid=@regid
+      AND ISNULL(archive,0)=0;
+END
+GO
+
+IF OBJECT_ID('dbo.usp_Pms_CriticalLabel_ChangeStatus','P') IS NULL
+    EXEC('CREATE PROCEDURE dbo.usp_Pms_CriticalLabel_ChangeStatus AS BEGIN SET NOCOUNT ON; END');
+GO
+ALTER PROCEDURE dbo.usp_Pms_CriticalLabel_ChangeStatus
+(
+    @id INT,
+    @regid INT,
+    @uid INT=NULL,
+    @status BIT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.Pms_tbl_CriticalLabel
+    SET status=@status,
+        uid=@uid,
+        modifieddate=GETDATE()
+    WHERE id=@id
+      AND regid=@regid
+      AND ISNULL(archive,0)=0;
+
+    IF @@ROWCOUNT=0
+    BEGIN
+        SELECT 0 AS Result,'Critical Label not found.' AS Message;
+        RETURN;
+    END
+
+    SELECT 1 AS Result,'Critical Label status updated successfully.' AS Message;
+END
+GO
+
+IF OBJECT_ID('dbo.usp_Pms_CriticalLabel_Dropdown','P') IS NULL
+    EXEC('CREATE PROCEDURE dbo.usp_Pms_CriticalLabel_Dropdown AS BEGIN SET NOCOUNT ON; END');
+GO
+ALTER PROCEDURE dbo.usp_Pms_CriticalLabel_Dropdown
+(
+    @regid INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT id,CriticalLabel,ColorCode,Severity,DisplayOrder
+    FROM dbo.Pms_tbl_CriticalLabel
+    WHERE regid=@regid
+      AND ISNULL(status,1)=1
+      AND ISNULL(archive,0)=0
+    ORDER BY DisplayOrder,Severity,CriticalLabel;
+END
+GO
+
+
+/* ============================================================================
+   OBJECT SUMMARY / VERIFICATION
+   ============================================================================ */
+SELECT 'TABLE' AS ObjectType, name AS ObjectName
+FROM sys.tables
+WHERE name IN
+(
+    'Pms_tbl_CriticalLabel',
+    'Pms_tbl_CriticalLevelMaster',
+    'Pms_tbl_CriticalFieldMaster',
+    'Pms_tbl_CriticalOperatorMaster',
+    'Pms_tbl_CriticalLogicalOperator',
+    'Pms_tbl_CriticalActionMaster',
+    'Pms_tbl_CriticalRule',
+    'Pms_tbl_CriticalRuleCondition',
+    'Pms_tbl_CriticalRuleAction',
+    'Pms_tbl_CriticalResult',
+    'Pms_tbl_CriticalHistory'
+)
+UNION ALL
+SELECT 'PROCEDURE', name
+FROM sys.procedures
+WHERE name IN
+(
+    'usp_Pms_Critical_GetMasters',
+    'usp_Pms_Critical_GetFieldValues',
+    'usp_Pms_CriticalLabel_Save',
+    'usp_Pms_CriticalLabel_Delete',
+    'usp_Pms_CriticalLabel_List',
+    'usp_Pms_CriticalLabel_GetById',
+    'usp_Pms_CriticalLabel_ChangeStatus',
+    'usp_Pms_CriticalLabel_Dropdown',
+    'usp_Pms_CriticalRule_Save',
+    'usp_Pms_CriticalRule_List',
+    'usp_Pms_CriticalRule_GetById',
+    'usp_Pms_CriticalRule_Delete',
+    'usp_Pms_CriticalRule_ChangeStatus',
+    'usp_Pms_Critical_GetActiveRules',
+    'usp_Pms_Critical_GetChildSummary',
+    'usp_Pms_CriticalResult_Save',
+    'usp_Pms_CriticalResult_Get',
+    'usp_Pms_CriticalHistory_Get'
+)
+ORDER BY ObjectType,ObjectName;
+GO
+
+PRINT 'PMS Critical Setting consolidated script completed.';
+GO

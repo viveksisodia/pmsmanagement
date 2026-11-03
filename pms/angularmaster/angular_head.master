@@ -1,0 +1,697 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="angular_head.master.cs" Inherits="angular_head" %>
+
+   
+<!DOCTYPE html>
+
+<html lang="en" >
+<head runat="server">
+ <meta charset="utf-8" />
+    <title>Absolute ERP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/pms/angularmaster/js/angular.min.js"></script>
+    <script src="/pms/angularmaster/js/angular-sanitize.js"></script>
+    <script src="/pms/angularmaster/js/dirPagination.js"></script> 
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+      <link href="/pms/new/assets/css/drag-task.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+
+        #colorPicker {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 99999;
+        }
+
+
+        /* PMS notification bell - AngularJS/AJAX */
+        [ng-cloak] { display: none !important; }
+        .pms-notification-wrap { position: relative; }
+        .pms-notification-btn { border:0; background:transparent; padding:0; position:relative; }
+        .pms-notification-badge {
+            position:absolute; top:-7px; right:-7px; min-width:18px; height:18px;
+            padding:0 5px; border-radius:10px; background:#dc3545; color:#fff;
+            font-size:10px; line-height:18px; text-align:center; font-weight:700; z-index:2;
+        }
+        .pms-notification-menu {
+            width:340px; max-width:calc(100vw - 16px); padding:0; overflow:hidden;
+            border:1px solid #e7e7e7; box-shadow:0 8px 24px rgba(0,0,0,.14); z-index:1080;
+        }
+        .pms-notification-head { padding:10px 12px 8px; border-bottom:1px solid #ececec; background:#fff; }
+        .pms-notification-head h6 { margin:0 0 3px 0; font-size:16px; font-weight:600; }
+        .pms-notification-head small { color:#6c757d; }
+        .pms-notification-list { max-height:300px; overflow-y:auto; background:#fff; }
+        .pms-notification-item {
+            display:block; width:100%; padding:9px 11px; border:0; border-bottom:1px solid #ededed;
+            white-space:normal; text-decoration:none !important; text-align:left; background:#fff;
+        }
+        .pms-notification-item.unread { background:#fff9ec; cursor:pointer; }
+        .pms-notification-item.unread:hover { background:#fff3d6; }
+        .pms-notification-item.read { background:#fff; cursor:default; }
+        .pms-notification-text { color:#6e6c6c; font-size:10px; line-height:1.45; font-weight:600; word-break:break-word; }
+        .pms-notification-date { margin-top:5px; color:#6c757d; font-size:12px; }
+        .pms-notification-section-title {
+            padding:9px 11px 7px; background:#fff; color:#687386; font-size:11px;
+            font-weight:600; letter-spacing:.2px; border-bottom:1px solid #ededed;
+        }
+        .pms-notification-loadmore { padding:6px 8px; text-align:right; border-top:1px solid #ededed; background:#fff; }
+        .pms-notification-loadmore-btn {
+            display:inline-block; min-width:86px; padding:5px 12px; border:0; border-radius:4px;
+            background:#7b0b69; color:#fff !important; font-size:12px; font-weight:600; text-decoration:none !important;
+        }
+        .pms-notification-loadmore-btn:disabled { opacity:.75; cursor:default; }
+        .pms-notification-spinner {
+            display:inline-block; width:12px; height:12px; margin-right:5px; vertical-align:-2px;
+            border:2px solid rgba(255,255,255,.45); border-top-color:#fff; border-radius:50%;
+            animation:pmsNotificationSpin .7s linear infinite;
+        }
+        @keyframes pmsNotificationSpin { to { transform:rotate(360deg); } }
+        .pms-notification-empty, .pms-notification-loading, .pms-notification-error {
+            padding:18px 12px; text-align:center; color:#6c757d; font-size:12px;
+        }
+        .pms-notification-error { color:#b42318; }
+    </style>
+    <script>
+        function fstFunction() {
+            
+        var element = document.getElementById("setting");
+        element.classList.add("canvas-fullscreen");
+    }
+        function fsetFunction() {
+        
+        var element = document.getElementById("setting");
+        element.classList.remove("canvas-fullscreen");
+    }
+    </script>
+
+    <script>
+        (function () {
+            if (!window.angular) return;
+
+            var app;
+            try {
+                app = angular.module('pmsNotificationApp');
+            } catch (e) {
+                app = angular.module('pmsNotificationApp', []);
+            }
+
+            app.controller('PmsNotificationController', ['$scope', '$http', '$interval', function ($scope, $http, $interval) {
+                var apiUrl = '/pms/angularmaster/PmsNotificationHandler.ashx';
+                var pageSize = 8;
+                var autoRefreshMilliseconds = 60000; // 1 minute
+                var bellCheckInProgress = false;
+                var bellRefreshTimer = null;
+
+                $scope.unread = [];
+                $scope.read = [];
+                $scope.unreadCount = 0;
+                $scope.readCount = 0;
+                $scope.unreadHasMore = false;
+                $scope.readHasMore = false;
+                $scope.loadingInitial = true;
+                $scope.loadingUnread = false;
+                $scope.loadingRead = false;
+                $scope.loadError = false;
+
+                function appendUnique(target, items) {
+                    var found = {};
+                    var i;
+                    for (i = 0; i < target.length; i++) found[target[i].id] = true;
+                    for (i = 0; i < items.length; i++) {
+                        if (!found[items[i].id]) {
+                            target.push(items[i]);
+                            found[items[i].id] = true;
+                        }
+                    }
+                }
+
+                function updateCounts(data) {
+                    if (angular.isDefined(data.unreadCount)) $scope.unreadCount = data.unreadCount || 0;
+                    if (angular.isDefined(data.readCount)) $scope.readCount = data.readCount || 0;
+                }
+
+                function currentLatestUnreadId() {
+                    return $scope.unread.length ? parseInt($scope.unread[0].id || 0, 10) : 0;
+                }
+
+                function currentLatestReadId() {
+                    return $scope.read.length ? parseInt($scope.read[0].id || 0, 10) : 0;
+                }
+
+                function hasAnyNotificationActionRunning() {
+                    if ($scope.loadingInitial || $scope.loadingUnread || $scope.loadingRead) return true;
+                    for (var i = 0; i < $scope.unread.length; i++) {
+                        if ($scope.unread[i].reading) return true;
+                    }
+                    return false;
+                }
+
+                function loadInitial(keepVisibleCounts) {
+                    $scope.loadingInitial = true;
+                    $scope.loadError = false;
+
+                    var unreadTake = keepVisibleCounts ? Math.max(pageSize, $scope.unread.length) : pageSize;
+                    var readTake = keepVisibleCounts ? Math.max(pageSize, $scope.read.length) : pageSize;
+
+                    $http.get(apiUrl, {
+                        params: {
+                            action: 'initial',
+                            unreadTake: unreadTake,
+                            readTake: readTake,
+                            t: new Date().getTime()
+                        }
+                    }).then(function (response) {
+                        var data = response.data || {};
+                        if (!data.success) {
+                            $scope.loadError = true;
+                            return;
+                        }
+
+                        $scope.unread = data.unread || [];
+                        $scope.read = data.read || [];
+                        updateCounts(data);
+                        $scope.unreadHasMore = !!data.unreadHasMore;
+                        $scope.readHasMore = !!data.readHasMore;
+                    }, function () {
+                        $scope.loadError = true;
+                    }).then(function () {
+                        $scope.loadingInitial = false;
+                    });
+                }
+
+                $scope.loadMoreUnread = function () {
+                    if ($scope.loadingUnread || !$scope.unreadHasMore) return;
+                    $scope.loadingUnread = true;
+                    var beforeId = $scope.unread.length ? $scope.unread[$scope.unread.length - 1].id : 0;
+
+                    $http.get(apiUrl, {
+                        params: {
+                            action: 'load', section: 'unread', beforeId: beforeId,
+                            take: pageSize, t: new Date().getTime()
+                        }
+                    }).then(function (response) {
+                        var data = response.data || {};
+                        if (data.success) {
+                            appendUnique($scope.unread, data.items || []);
+                            $scope.unreadHasMore = !!data.hasMore;
+                            updateCounts(data);
+                        }
+                    }).then(function () {
+                        $scope.loadingUnread = false;
+                    }, function () {
+                        $scope.loadingUnread = false;
+                    });
+                };
+
+                $scope.loadMoreRead = function () {
+                    if ($scope.loadingRead || !$scope.readHasMore) return;
+                    $scope.loadingRead = true;
+                    var beforeId = $scope.read.length ? $scope.read[$scope.read.length - 1].id : 0;
+
+                    $http.get(apiUrl, {
+                        params: {
+                            action: 'load', section: 'read', beforeId: beforeId,
+                            take: pageSize, t: new Date().getTime()
+                        }
+                    }).then(function (response) {
+                        var data = response.data || {};
+                        if (data.success) {
+                            appendUnique($scope.read, data.items || []);
+                            $scope.readHasMore = !!data.hasMore;
+                            updateCounts(data);
+                        }
+                    }).then(function () {
+                        $scope.loadingRead = false;
+                    }, function () {
+                        $scope.loadingRead = false;
+                    });
+                };
+
+                $scope.markRead = function (item, $event) {
+                    if ($event) {
+                        $event.preventDefault();
+                        $event.stopPropagation();
+                    }
+                    if (!item || item.reading) return;
+
+                    item.reading = true;
+                    var body = 'action=markread&id=' + encodeURIComponent(item.id);
+                    $http({
+                        method: 'POST',
+                        url: apiUrl,
+                        data: body,
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+                    }).then(function (response) {
+                        var data = response.data || {};
+                        if (data.success) {
+                            // Refresh only dropdown data; never reload the page.
+                            loadInitial(true);
+                        } else {
+                            item.reading = false;
+                        }
+                    }, function () {
+                        item.reading = false;
+                    });
+                };
+
+                $scope.unreadMessageText = function () {
+                    return 'You have ' + $scope.unreadCount + ' unread message' + ($scope.unreadCount === 1 ? '' : 's');
+                };
+
+                // Lightweight background bell check.
+                // It never reloads the PMS page and it does not mark anything as read.
+                // If another notification request is running, this cycle is skipped.
+                function checkBellInBackground() {
+                    if (bellCheckInProgress || hasAnyNotificationActionRunning()) return;
+
+                    // Avoid unnecessary polling while this browser tab is hidden.
+                    // As soon as the user returns, visibilitychange below checks immediately.
+                    if (document.hidden) return;
+
+                    bellCheckInProgress = true;
+
+                    var oldUnreadCount = $scope.unreadCount;
+                    var oldReadCount = $scope.readCount;
+                    var oldLatestUnreadId = currentLatestUnreadId();
+                    var oldLatestReadId = currentLatestReadId();
+
+                    $http.get(apiUrl, {
+                        params: {
+                            action: 'check',
+                            t: new Date().getTime()
+                        },
+                        timeout: 15000
+                    }).then(function (response) {
+                        var data = response.data || {};
+                        if (!data.success) return;
+
+                        var newUnreadCount = parseInt(data.unreadCount || 0, 10);
+                        var newReadCount = parseInt(data.readCount || 0, 10);
+                        var newLatestUnreadId = parseInt(data.latestUnreadId || 0, 10);
+                        var newLatestReadId = parseInt(data.latestReadId || 0, 10);
+
+                        // Badge is updated immediately from the lightweight call.
+                        updateCounts(data);
+
+                        var changed =
+                            newUnreadCount !== oldUnreadCount ||
+                            newReadCount !== oldReadCount ||
+                            newLatestUnreadId !== oldLatestUnreadId ||
+                            newLatestReadId !== oldLatestReadId;
+
+                        // Only when something actually changed, refresh the dropdown data.
+                        // Keep however many rows the user already loaded.
+                        if (changed) {
+                            loadInitial(true);
+                        }
+                    }).then(function () {
+                        bellCheckInProgress = false;
+                    }, function () {
+                        bellCheckInProgress = false;
+                    });
+                }
+
+                function onPmsNotificationVisibilityChange() {
+                    if (!document.hidden) {
+                        // Refresh immediately when the user returns to the tab.
+                        checkBellInBackground();
+                    }
+                }
+
+                loadInitial(false);
+
+                // Auto refresh bell every 1 minute.
+                bellRefreshTimer = $interval(checkBellInBackground, autoRefreshMilliseconds);
+                document.addEventListener('visibilitychange', onPmsNotificationVisibilityChange);
+
+                $scope.$on('$destroy', function () {
+                    if (bellRefreshTimer) {
+                        $interval.cancel(bellRefreshTimer);
+                        bellRefreshTimer = null;
+                    }
+                    document.removeEventListener('visibilitychange', onPmsNotificationVisibilityChange);
+                });
+            }]);
+
+            function bootstrapPmsNotification() {
+                var root = document.getElementById('pmsNotificationAngularRoot');
+                if (!root) return;
+                try {
+                    if (!angular.element(root).injector()) {
+                        angular.bootstrap(root, ['pmsNotificationApp']);
+                    }
+                } catch (e) {
+                    if (window.console) console.log('PMS notification Angular bootstrap:', e);
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bootstrapPmsNotification);
+            } else {
+                setTimeout(bootstrapPmsNotification, 0);
+            }
+        })();
+    </script>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+     
+    <form id="form1" runat="server">
+        <asp:ScriptManager runat="server" EnablePageMethods="true"></asp:ScriptManager>
+       <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div id="pmsNotificationAngularRoot" class="dropdown pms-notification-wrap" ng-controller="PmsNotificationController" ng-cloak>
+                <button type="button" class="pms-notification-btn" id="pmsNotificationDropdown"
+                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                    aria-label="Notifications">
+                    <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+                    <span class="pms-notification-badge" ng-show="unreadCount > 0" ng-bind="unreadCount > 99 ? '99+' : unreadCount"></span>
+                </button>
+
+                <div class="dropdown-menu dropdown-menu-end pms-notification-menu" aria-labelledby="pmsNotificationDropdown">
+                    <div class="pms-notification-head">
+                        <h6>Notification</h6>
+                        <small ng-bind="unreadMessageText()"></small>
+                    </div>
+
+                    <div class="pms-notification-list">
+                        <div class="pms-notification-loading" ng-show="loadingInitial && unread.length === 0 && read.length === 0">
+                            Loading notifications...
+                        </div>
+                        <div class="pms-notification-error" ng-show="loadError">
+                            Unable to load notifications.
+                        </div>
+
+                        <!-- UNREAD: default 8 -->
+                        <button type="button" class="pms-notification-item unread"
+                            ng-repeat="n in unread track by n.id"
+                            ng-click="markRead(n, $event)" ng-disabled="n.reading">
+                            <div class="pms-notification-text" ng-bind="n.notificationtext"></div>
+                            <div class="pms-notification-date" ng-bind="n.ndatetime"></div>
+                        </button>
+
+                        <!-- Unread Load More: Angular AJAX, no postback -->
+                        <div class="pms-notification-loadmore" ng-show="unreadHasMore">
+                            <button type="button" class="pms-notification-loadmore-btn"
+                                ng-click="loadMoreUnread()" ng-disabled="loadingUnread">
+                                <span class="pms-notification-spinner" ng-show="loadingUnread"></span>
+                                <span ng-bind="loadingUnread ? 'Loading...' : 'Load More'"></span>
+                            </button>
+                        </div>
+
+                        <div class="pms-notification-section-title" ng-show="readCount > 0">READ BEFORE</div>
+
+                        <!-- READ: default 8 -->
+                        <div class="pms-notification-item read" ng-repeat="n in read track by n.id">
+                            <div class="pms-notification-text" ng-bind="n.notificationtext"></div>
+                            <div class="pms-notification-date" ng-bind="n.ndatetime"></div>
+                        </div>
+
+                        <!-- Read Load More: Angular AJAX, no postback -->
+                        <div class="pms-notification-loadmore" ng-show="readHasMore">
+                            <button type="button" class="pms-notification-loadmore-btn"
+                                ng-click="loadMoreRead()" ng-disabled="loadingRead">
+                                <span class="pms-notification-spinner" ng-show="loadingRead"></span>
+                                <span ng-bind="loadingRead ? 'Loading...' : 'Load More'"></span>
+                            </button>
+                        </div>
+
+                        <div class="pms-notification-empty"
+                            ng-show="!loadingInitial && !loadError && unreadCount === 0 && readCount === 0">
+                            No notifications found.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="icon-round" data-bs-toggle="offcanvas" data-bs-target="#setting" onclick="loadsrc('myModalsettings','/pms/settings/adddepartment.aspx')">
+                    <i class="ri-settings-3-line"></i>
+                            
+                
+
+            </div>
+
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/crm/assets/images/users/user.jpg" alt="User">
+                        <%--<img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">--%>
+                        <div class="text-start">
+                            <div class="user-name"><asp:Label ID="lblusername" runat="server"></asp:Label></div>
+                            <%--<div class="user-role">Admin</div>--%>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header"><asp:Label ID="lblusername2" runat="server"></asp:Label></h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/Logout.aspx"><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+         <!-- Main Nav -->
+    <div class="sales-nav">
+        <%--<a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>--%>
+        <a href="/crm/" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <!--<a href="myprojects.html">Projects</a>
+         <a href="userview/mytask.html">My Task</a>
+        <a href="userview/task-logs.html">Task Logs</a>-->
+         <%if (chkisadmin == 1)
+          {%>
+        <a href="/pms/dashboard/default.aspx"   id="dashboard" runat="server" >Dashboard</a> 
+        <%}%>
+       
+        <%if(isdashboard==1&&chkisadmin == 0)
+         {%>
+        <%--<%if(issingleuser == 1&&chkisadmin == 0)--%>
+        <%if(issingleuser == 1&&chkisadmin == 0)
+         {%>
+            <a href="/pms/userdashboard/"   id="userdashboard" runat="server" >Dashboard</a> 
+            <a href="/pms/newuserdashboard/"   id="newuserdashboard" runat="server" >New Dashboard</a> 
+         <%}
+           %>
+        <%-- <%else
+         {%>
+        <a href="/pms/userdashboard/"   id="userdashboard2" runat="server" >Dashboard</a> 
+        <%} %>--%>
+
+
+        <%} %>       
+
+         <%if (isproject == 1)
+          {%>
+        <a href="/pms/projects/" id="myproject" runat="server" >Projects</a>  
+        <%} %>
+        <%if (ismytask == 1)
+          {%>
+         <a href="/pms/users/?type=mytask" id="usertask" runat="server" >My Task</a>
+        <%} %>
+       <%if (isdelayedtask == 1)
+          {%>
+         <a href="/pms/users/?type=delayedtask" id="userdelayedtask" runat="server" >Delayed Task</a>
+        <%} %>        
+        <a href="/pms/task-logs.html" >Task Logs</a>
+        <%if (isteamwork == 1)
+          {%>
+         <a href="/pms/myteamtask/" id="myteam" runat="server">Team Work</a>
+        <%} %>
+         <%if (isqc == 1)
+          {%>
+          <a href="/pms/pendingqc/" id="myqc" runat="server" >QC</a> 
+        <%} %>
+        <%if (isissue == 1)
+          {%>
+          <a href="/pms/issues/" id="myissues" runat="server" >Issues</a> 
+        <%} %>
+          
+        
+
+
+
+    </div>
+       <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+        
+        </asp:ContentPlaceHolder>
+   <div class="offcanvas offcanvas-end canvas_lg_screen" id="setting" data-bs-backdrop="static" tabindex="-1" data-bs-scroll="false">
+    <div class="offcanvas-header border-bottom" style="padding:0px 15px;">
+        <ul class="nav nav-tabs-custom nav-tab-rpv border-0">
+            <li class="nav-item" 
+                role="presentation">
+               <%-- <a class="nav-link active" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/adddepartment.aspx')">Department</a>--%>
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/adddepartment.aspx')">Department</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/adddesignation.aspx')">Designation</a>
+            </li>
+
+
+            
+
+              <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Status_Master.aspx')">Status</a>
+            </li>
+
+
+               <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Priority_Master.aspx')">Priority</a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Tag_Master.aspx')">Tags</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/StageMasterCreate.aspx')">Stage</a>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/IssueTypeMaster.aspx')">Issue Type</a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/IssueStatusMaster.aspx')">Issue Status</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/ReplicabilityMaster.aspx')">Replicability</a>
+            </li>
+
+
+               <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/highlightcolor.aspx')">Highlight Edit Color</a>
+            </li>
+             <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/weeklyoffsetup.aspx')">Manage Weekoff</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/holidaysetup.aspx')">Manage Holydays</a>
+            </li>
+           <%-- <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/projectplaning.aspx')">Project Planing</a>
+            </li>--%>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/Templatemaster.aspx')">Manage Template</a>
+            </li>
+            <%--
+                 <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/StateMaster.aspx')">State</a>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/addrolesresponsibility.aspx')">Roles & Responsibility</a>
+            </li>--%>
+            <%--<li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/addindustry.aspx')">Industry</a>
+            </li>--%>
+           <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/workflows/CriticalSetting.aspx')">Critical Workflows</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/workflows/WorkflowSetting.aspx')">QC Workflows</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="javascript://" onclick="loadsrc('myModalsettings','/pms/settings/setnotification.aspx')">Notification</a>
+            </li>
+        </ul>
+        <div class="hstack gap-2">
+            <%--<button type="button" onclick="fs1Function()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsr"><i class="ph-arrows-out-simple-bold"></i></button>
+            <button type="button" onclick="fse1Function()" class="btn btn-success btn-icon btn-sm rounded-circle btn-ios fsre"><i class="ph-arrows-in-simple-bold"></i></button>--%>
+            <a href="javascript:void(0);" type="button" onclick="fstFunction()" class="sub-soft-btn fsr fs-18"><i class="ri-fullscreen-fill"></i></a>
+                <a href="javascript:void(0);" type="button" onclick="fsetFunction()" class="sub-soft-btn fsre fs-18" style="text-align:center;"><i class="ri-fullscreen-exit-fill"></i></a>
+            <%--<button type="button" class="btn btn-danger btn-icon btn-sm rounded-circle btn-ios" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ri-close-line"></i></button>--%>
+            <a href="javascript:void(0);" type="button" class="sub-soft-btn danger fs-18" data-bs-dismiss="offcanvas" aria-label="Close" ><i class="ri-close-fill"></i></a>
+        </div>
+    </div>
+    <div class="offcanvas-body p-0 overflow-hidden">
+        
+             <iframe id='myModalsettings' width="100%" height="100%" style="padding:0px 0px;" border="0px"></iframe>
+        
+    </div> 
+    <%--<div class="offcanvas-foorter border p-3 pt-1 pb-1 text-center"> 
+        <a href="javascript:void(0);" class="btn btn-success">Save</a>
+        <a href="javascript:void(0);" class="btn btn-danger" data-bs-dismiss="offcanvas" aria-label="Close">Close</a>
+    </div>--%>
+</div>
+<script>
+    var count11 = 1;
+    function loadsrc(val1, val2) {
+        count11++;
+        //alert(val1);
+        if (val2.includes("aspx?"))
+        {
+          document.getElementById(val1).src = val2 + "&count=" + count11;
+        }
+        else
+        {
+             document.getElementById(val1).src = val2 + "?count=" + count11;
+        }
+       
+        try {
+
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+function loadsrc_angold(val1, val2) {
+        count11++;
+        //alert(val1);
+        document.getElementById(val1).src="";            
+        
+       
+        try {
+document.getElementById(val1).src = val2;
+            //document.getElementById("").innerHTML = val3;
+        }
+        catch (ex) {
+        }
+    }
+function loadsrc_ang(frameId, url) {
+
+    let frame = document.getElementById(frameId);
+
+    if (frame) {
+        frame.src = "about:blank";   // force reset
+
+        setTimeout(function () {
+            frame.src = url + "&r=" + Date.now();
+        }, 50);
+    }
+}
+</script>
+        <script src="/angularmaster/assets/js/app.js"></script>
+    <%--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>--%>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+        
+    <script src="/pms/angularmaster/js/sweetalert.js"></script>
+        <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+        
+    </form>
+     
+    
+   
+
+  
+
+</body>
+</html>

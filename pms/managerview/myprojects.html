@@ -1,0 +1,1449 @@
+﻿<!doctype html>
+<html lang="en" ng-app="quotationApp">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolute ERP</title>
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+
+        #colorPicker {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 99999;
+        }
+    </style>
+</head>
+
+<body ng-controller="quotationCtrl">
+    <!-- Top Header -->
+    <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name">Erica Kernan</div>
+                            <div class="user-role">Project Head</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Welcome Erica!</h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="myprojects.html" class="active">Projects</a>
+        <a href="mytask.html">Task</a>
+        <a href="myteam.html">Team</a>
+        <!--<a href="mytask.html">My Task</a>
+        <a href="javascript:void(0)">Task Logs</a>
+        <a href="javascript:void(0);">Received Project Items</a>-->
+    </div>
+    <div class="main-wrapper">
+        <div class="sub-header">
+            <div class="row">
+                <div class="col-xxl-3 col-lg-3 col-md-4 col-sm-12">
+                    <div class="sub-left">
+                        <div class="sub-page-title">Projects</div>
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="ri-calendar-line text-muted" style="font-size: 20px;"></i>
+                            <span style="font-size: 15px;">2025-2026</span>
+                            <i class="ri-arrow-down-s-line" style="font-size: 18px;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-6 col-lg-6 col-md-8 col-sm-12">
+                    <ul class="top-list-sales">
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon"><i class="ri-folder-2-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Total Project</span></div>
+                                            <div class="tile-body">52</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-warning"><i class="bx bx-hourglass"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Inprogress</span></div>
+                                            <div class="tile-body">60</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-info"><i class="ri-share-forward-line"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Ready to Live</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-gray"><i class="bx bx-archive"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Hold</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div class="tile">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <div>
+                                            <div class="tile-icon text-success"><i class="bx bx-check-circle"></i></div>
+                                        </div>
+                                        <div>
+                                            <div class="tile-heading"><span>Completed</span></div>
+                                            <div class="tile-body">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xxl-3 col-lg-3 col-md-6 col-sm-12">
+                    <div class="d-flex justify-content-end align-items-center gap-1">
+                        <!--<div class="search_box me-2">
+                            <input type="text" class="form-control" id="" placeholder="Search...">
+                            <i class="ri-search-line"></i>
+                        </div>-->
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Search"><i class="ri-search-line"></i></button>
+                        <a href="myprojects.html" class="sub-soft-btn active" data-bs-toggle="tooltip" title="List View"><i class="ri-list-check"></i></a>
+                        <a href="myprojects-tiles.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Tiles View"><i class="ri-layout-grid-fill"></i></a>
+                        <a href="myprojects-calendar.html" class="sub-soft-btn" data-bs-toggle="tooltip" title="Calendar"><i class="bx bx-calendar"></i></a>
+                        <button class="sub-soft-btn" data-bs-toggle="tooltip" title="Filter"><i class="ri-filter-line"></i></button>
+                        <div class="btn-group d-block">
+                            <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="sub-soft-btn"><i class="ri-more-fill"></i></a>
+                            <div class="dropdown-menu p-0" style="border-radius:0;">
+                                <ul class='sttus-list'>
+                                    <li><a class='' href='#'><i class="bx bx-download fs-16 align-middle me-1"></i> Download Report</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Project</a></li>
+                                    <li><a class='' href='#'><i class="bx bx-plus fs-16 align-middle me-1"></i> Add Project</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper_inner p-0">
+            <div class="table-responsive-new">
+                <table class="table table-hover table-striped tbl_new">
+                    <thead>
+                        <tr>
+                            <th class="color_border"></th>
+                            <th style="width: 40px;">S.No.</th>
+                            <th>ID</th>
+                            <th style="min-width:250px;">Project Name</th>
+                            <th>Milestones</th>
+                            <th>Timeline</th>
+                            <th style="min-width:120px;">Status</th>
+                            <th>Project Situation</th>
+                            <th>Priority</th>
+                            <th>Extended Timeline</th>
+                            <th>Completion %</th>
+                            <th>Assign by</th>
+                            <th style="min-width:120px;">Team</th>
+                            <th>Task</th>
+                            <th>Issues</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Budget</th>
+                            <th>Actual</th>
+                            <th style="min-width:250px;">Project Address</th>
+                            <th>Files</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#ffc300 !important;">
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='' href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#adddependency"><i class="ri-parent-line fs-16 align-middle me-1"></i> Dependency</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-error-circle fs-16 align-middle me-1"></i> Add Issue</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Documents</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                            <li><a class='' href='javascript:void(0);' id="text"><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Hold</a></li>
+                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                        </ul>
+                                        <input type="color" id="colorPicker">
+                                    </div>
+                                </div>
+                            </td>
+                            <td>1</td>
+                            <td><a href="">ID6427</a></td>
+                            <td><a href="projects-unassign.html" style="color:#000 !important;"><b>Construction XYZ</b></a></td>
+                            <td>
+                                <div class="mile_st">
+                                    <div style="min-width:85px;">
+                                        <div class="d-block mb-0">
+                                            <div style="font-size:11px !important;color:#777;">4/6</div>
+                                        </div>
+                                        <div class="progress progress-md animated-progress">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width:75%;"></div>
+                                        </div>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-info"><i class='bx bxs-circle'></i> WIP</a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> To be Started</a></li>
+                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Ready to Live</a></li>
+                                            <li><a class='text-secondary' href='#'><i class='bx bxs-circle'></i> Go Live</a></li>
+                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-danger">Critical</td>
+                            <td><div class="badge bg-danger-subtle text-danger priority">High</div></td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>
+                                <div>
+                                    <div class="d-block mb-0">
+                                        <div style="font-size:11px !important;color:#777;">85%</div>
+                                    </div>
+                                    <div class="progress progress-md animated-progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width:85%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="javascript: void(0);" class="d-flex gap-2" style="display:inline-block;">
+                                    <div class="avatar-xxs">
+                                        <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                    </div>
+                                    <div style="color:#000;">Erica Kernan</div>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="avatar-group">
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-danger">
+                                                    D
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-primary">
+                                                    +2
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div style="min-width:85px;">
+                                        <div class="d-block mb-0">
+                                            <div style="font-size:11px !important;color:#777;">22/33</div>
+                                        </div>
+                                        <div class="progress progress-md animated-progress">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width:65%;"></div>
+                                        </div>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div style="min-width:85px;">
+                                        <div class="d-block mb-0">
+                                            <div style="font-size:11px !important;color:#777;">4/6</div>
+                                        </div>
+                                        <div class="progress progress-md animated-progress">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width:75%;"></div>
+                                        </div>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>04/05/2026</td>
+                            <td>25/05/2026</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td></td>
+                            <td><a href="javascript:void(0);" style="font-size:22px;" data-bs-toggle="offcanvas" data-bs-target="#uploaddocuments"><i class="ri-file-text-line"></i></a></td>
+                        </tr>
+                        <tr>
+                            <td class="color_border" style="border-left-color:#3978de !important;">
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="click-link"><i class="ri-more-2-fill"></i></a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='' href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#adddependency"><i class="ri-parent-line fs-16 align-middle me-1"></i> Dependency</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-error-circle fs-16 align-middle me-1"></i> Add Issue</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-upload fs-16 align-middle me-1"></i> Upload Documents</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-edit fs-16 align-middle me-1"></i> Edit Project</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-copy fs-16 align-middle me-1"></i> Clone</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-palette fs-16 align-middle me-1"></i> Change Color</a></li>
+                                            <li><a class='' href='#'><i class="bx bx-archive fs-16 align-middle me-1"></i> Hold</a></li>
+                                            <li><a class='text-danger' href='#'><i class="bx bx-trash fs-16 align-middle me-1"></i> Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>2</td>
+                            <td><a href="">ID6427</a></td>
+                            <td><a href="projects-unassign.html" style="color:#000 !important;"><b>Construction ABC</b></a></td>
+                            <td>
+                                <div class="mile_st">
+                                    <div style="min-width:85px;">
+                                        <div class="d-block mb-0">
+                                            <div style="font-size:11px !important;color:#777;">1/4</div>
+                                        </div>
+                                        <div class="progress progress-md animated-progress">
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width:25%;"></div>
+                                        </div>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>
+                                <div class="btn-group d-block">
+                                    <a href="javascript:void(0);" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" data-bs-boundary="window" class="d-block text-warning"><i class='bx bxs-circle'></i> To be Started</a>
+                                    <div class="dropdown-menu p-0" style="border-radius:0;">
+                                        <ul class='sttus-list'>
+                                            <li><a class='text-info active' href='#'><i class='bx bxs-circle'></i> WIP</a></li>
+                                            <li><a class='text-warning' href='#'><i class='bx bxs-circle'></i> To be Started</a></li>
+                                            <li><a class='text-ready' href='#'><i class='bx bxs-circle'></i> Ready to Live</a></li>
+                                            <li><a class='text-secondary' href='#'><i class='bx bxs-circle'></i> Go Live</a></li>
+                                            <li><a class='text-success' href='#'><i class='bx bxs-circle'></i> Completed</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-warning">Moderate</td>
+                            <td><div class="badge bg-info-subtle text-info priority">Medium</div></td>
+                            <td>04/05/2026-25/05/2026</td>
+                            <td>
+                                <div>
+                                    <div class="d-block mb-0">
+                                        <div style="font-size:11px !important;color:#777;">85%</div>
+                                    </div>
+                                    <div class="progress progress-md animated-progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width:30%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="javascript: void(0);" class="d-flex gap-2" style="display:inline-block;">
+                                    <div class="avatar-xxs">
+                                        <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                                    </div>
+                                    <div style="color:#000;">Erica Kernan</div>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div class="avatar-group">
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Donna Kline">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-danger">
+                                                    D
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Lee Winton">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-2.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="Johnny Shorter">
+                                            <div class="avatar-xxs">
+                                                <img src="/pms/new/assets/img/avatar-3.jpg" alt="" class="rounded-circle img-fluid">
+                                            </div>
+                                        </a>
+                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" title="2 More">
+                                            <div class="avatar-xxs">
+                                                <div class="avatar-title rounded-circle bg-primary">
+                                                    +2
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div style="min-width:85px;">
+                                        <div class="d-block mb-0">
+                                            <div style="font-size:11px !important;color:#777;">8/24</div>
+                                        </div>
+                                        <div class="progress progress-md animated-progress">
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width:33%;"></div>
+                                        </div>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="mile_st">
+                                    <div style="min-width:85px;">
+                                        <div class="d-block mb-0">
+                                            <div style="font-size:11px !important;color:#777;">1/4</div>
+                                        </div>
+                                        <div class="progress progress-md animated-progress">
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width:25%;"></div>
+                                        </div>
+                                    </div>
+                                    <div><a href="" class="click-link"><i class="ri-add-line"></i></a></div>
+                                </div>
+                            </td>
+                            <td>04/05/2026</td>
+                            <td>25/05/2026</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td></td>
+                            <td><a href="javascript:void(0);" style="font-size:22px;" data-bs-toggle="offcanvas" data-bs-target="#uploaddocuments"><i class="ri-file-text-line"></i></a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="d-flex align-items-center gap-2" style="padding-left:10px;">
+                        <select class="form-select" ng-model="pageSize" ng-options="size for size in pageSizes" style="width:55px;"><option label="10" value="number:10" selected="selected">10</option><option label="20" value="number:20">20</option><option label="50" value="number:50">50</option><option label="100" value="number:100">100</option></select>
+                        <span class="text-muted" style="font-size:11px;">Records per page</span>
+                    </div>
+                </div>
+                <div class="col-sm-4 text-center" style="padding-top:7px;">
+                    <span class="text-muted" style="font-size:11px;">Showing 1 to 2 of 2 entries</span>
+                </div>
+                <div class="col-sm-4">
+                    <div class="pull-right" style="padding-right:10px;">
+                        <dir-pagination-controls max-size="8" direction-links="true" boundary-links="true" class="ng-isolate-scope"><ul class="pagination justify-content-end mb-0"><li class="page-item disabled" ng-class="{disabled: pagination.current == 1}"><a class="page-link" href="" ng-click="setCurrent(1); $event.preventDefault()">«</a></li><!-- ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope active" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">1</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">2</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">3</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">4</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">5</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">6</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope disabled" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">...</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item ng-scope" ng-repeat="pageNumber in pages track by $index" ng-class="{active: pagination.current == pageNumber, disabled: pageNumber == '...'}"><a class="page-link ng-binding" href="" ng-click="setCurrent(pageNumber); $event.preventDefault()">96</a></li><!-- end ngRepeat: pageNumber in pages track by $index --><li class="page-item" ng-class="{disabled: pagination.current == pagination.last}"><a class="page-link" href="" ng-click="setCurrent(pagination.last); $event.preventDefault()">»</a></li></ul></dir-pagination-controls>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="addnewproject">
+        <div class="offcanvas-header justify-content-between border-bottom p-2">
+            <h5 class="offcanvas-title">Add Project</h5>
+            <!--<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>-->
+            <div class="hstack gap-1">
+                <button type="button" onclick="fsFunction()" class="sub-soft-btn fsr fs-18"><i class="ri-fullscreen-fill"></i></button>
+                <button type="button" onclick="fseFunction()" class="sub-soft-btn fsre fs-18"><i class="ri-fullscreen-exit-fill"></i></button>
+                <button type="button" class="sub-soft-btn danger fs-18" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ri-close-fill"></i></button>
+            </div>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div data-simplebar style="height: calc(100vh - 45px);">
+                <div class="p-3">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="input-line">
+                                <input type="text" placeholder="Project ID">
+                            </div>
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="input-line">
+                                <input type="text" placeholder="Project Name">
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mb-1">
+                            <label style="font-weight:600;">Client Details</label>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="input-line">
+                                        <div class="search__wrap position-relative">
+                                            <input type="text" class="form-control search__input" placeholder="Client Name" value="" autocomplete="off">
+                                            <span class="search__arrow"><i class="ri-arrow-down-s-fill"></i></span>
+                                            <div class="dropdown_bl search__dropdown shadow-sm">
+                                                <a href="#" class="dropdown_bl__link">ABC Pvt. Ltd.</a>
+                                                <a href="#" class="dropdown_bl__link">XYZ Pvt. Ltd.</a>
+                                                <div class="dropdown_bl__no-record d-none">No record found</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="input-line">
+                                        <div class="search__wrap position-relative">
+                                            <input type="text" class="form-control search__input" placeholder="Sales Order" value="" autocomplete="off">
+                                            <span class="search__arrow"><i class="ri-arrow-down-s-fill"></i></span>
+                                            <div class="dropdown_bl search__dropdown shadow-sm">
+                                                <a href="#" class="dropdown_bl__link">SO-26/4333</a>
+                                                <a href="#" class="dropdown_bl__link">SO-26/4334</a>
+                                                <a href="#" class="dropdown_bl__link">SO-26/4335</a>
+                                                <a href="#" class="dropdown_bl__link">SO-26/4336</a>
+                                                <div class="dropdown_bl__no-record d-none">No record found</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-weight:600;">Milestone</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-2" style="display:none !important;">
+                                <span>Same weightage</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-weight:600;">Task</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-2" style="display:none !important;">
+                                <span>Same weightage</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-weight:600;">Subtask</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-2" style="display:none !important;">
+                                <span>Same weightage</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mt-3">
+                            <label style="font-weight:600;">Priority</label>
+                            <div class="hstack gap-1 flex-wrap">
+                                <input type="radio"
+                                       class="btn-check" name="options-priority"
+                                       id="high-priority">
+                                <label class="btn-outline-sp btn-stts" for="high-priority" style="background:#fde8e4;color:#f06548;"><i class="ri-check-line me-1"></i> High</label>
+                                <input type="radio"
+                                       class="btn-check" name="options-priority"
+                                       id="medium-priority">
+                                <label class="btn-outline-sp btn-stts" for="medium-priority" style="background:#ddfbf9;color:#18e0d3;"><i class="ri-check-line me-1"></i> Medium</label>
+                                <input type="radio"
+                                       class="btn-check" name="options-priority"
+                                       id="low-priority" checked>
+                                <label class="btn-stts" for="low-priority" style="background:#fef4e4;color:#f7ba4b;"><i class="ri-check-line me-1"></i> Low</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mt-2">
+                            <label style="font-weight:600;">Status</label>
+                            <div class="hstack gap-1 flex-wrap">
+                                <input type="radio"
+                                       class="btn-check" name="options-status"
+                                       id="Status1" checked>
+                                <label class="btn-outline-sp btn-stts" for="Status1" style="background:#ddfbf9;color:#18e0d3;"><i class="ri-check-line me-1"></i> WIP</label>
+                                <input type="radio"
+                                       class="btn-check" name="options-status"
+                                       id="Status2">
+                                <label class="btn-outline-sp btn-stts" for="Status2" style="background:#fef4e4;color:#f7ba4b;"><i class="ri-check-line me-1"></i> To be Started</label>
+                                <input type="radio"
+                                       class="btn-check" name="options-status"
+                                       id="Status3">
+                                <label class="btn-stts" for="Status3" style="background:#f6dff1;color:#ff06c9;"><i class="ri-check-line me-1"></i> Ready to Live</label>
+                                <input type="radio"
+                                       class="btn-check" name="options-status"
+                                       id="Status4">
+                                <label class="btn-stts" for="Status4" style="background:#d7e3fa;color:#3577f1;"><i class="ri-check-line me-1"></i> Go Live</label>
+                                <input type="radio"
+                                       class="btn-check" name="options-status"
+                                       id="Status5">
+                                <label class="btn-stts" for="Status5" style="background:#d9fad7;color:#0cda7d;"><i class="ri-check-line me-1"></i> Completed</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mt-2">
+                            <div class="input-line">
+                                <div class="search__wrap position-relative">
+                                    <input type="text" class="form-control search__input" placeholder="Project Manager" value="" autocomplete="off">
+                                    <span class="search__arrow"><i class="ri-arrow-down-s-fill"></i></span>
+                                    <div class="dropdown_bl search__dropdown shadow-sm">
+                                        <a href="#" class="dropdown_bl__link">Avneesh Thakur</a>
+                                        <a href="#" class="dropdown_bl__link">Vivek Sisodia</a>
+                                        <div class="dropdown_bl__no-record d-none">No record found</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mb-1">
+                            <div class="input-line">
+                                <div class="search__wrap position-relative">
+                                    <div class="tag-input">
+                                        <input type="text" id="" class="search__input" placeholder="Team" />
+                                        <span class="search__arrow"><i class="ri-arrow-down-s-fill "></i></span>
+                                    </div>
+                                    <div class="dropdown_bl search__dropdown">
+                                        <a href="#" class="dropdown_bl__link">Amit Kumar</a>
+                                        <a href="#" class="dropdown_bl__link">Sachin Gupta</a>
+                                        <a href="#" class="dropdown_bl__link">Ashok Sharma</a>
+                                        <a href="#" class="dropdown_bl__link">Arun Kumar</a>
+                                        <a href="#" class="dropdown_bl__link">Bablu Kumar</a>
+                                        <div class="dropdown_bl__no-record d-none">No record found</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-line">
+                                <label for="StartDate">Start Date</label>
+                                <div class="search__wrap position-relative">
+                                    <input type="text" id="StartDate" class="form-control search__input" placeholder="dd/mm/yyyy" value="" autocomplete="off">
+                                    <span class="search__arrow"><i class="ri-calendar-line"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-line">
+                                <label for="EndDate">End Date</label>
+                                <div class="search__wrap position-relative">
+                                    <input type="text" id="EndDate" class="form-control search__input" placeholder="dd/mm/yyyy" value="" autocomplete="off">
+                                    <span class="search__arrow"><i class="ri-calendar-line"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="input-line">
+                                <label for="TargetDate">Target Date</label>
+                                <div class="search__wrap position-relative">
+                                    <input type="text" id="TargetDate" class="form-control search__input" placeholder="dd/mm/yyyy" value="" autocomplete="off">
+                                    <span class="search__arrow"><i class="ri-calendar-line"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mt-1 mb-1">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="input-line">
+                                        <label class="mb-2">Project Address</label>
+                                        <input type="text" placeholder="Address Line 1">
+                                    </div>
+                                    <div class="input-line">
+                                        <input type="text" placeholder="Address Line 2">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="input-line">
+                                        <input type="text" placeholder="City">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="input-line">
+                                        <div class="search__wrap position-relative">
+                                            <input type="text" class="form-control search__input" placeholder="State" value="" autocomplete="off">
+                                            <span class="search__arrow"><i class="ri-arrow-down-s-fill"></i></span>
+                                            <div class="dropdown_bl search__dropdown">
+                                                <a href="#" class="dropdown_bl__link">Andaman and Nicobar Islands</a>
+                                                <a href="#" class="dropdown_bl__link">Andhra Pradesh</a>
+                                                <a href="#" class="dropdown_bl__link">Arunachal Pradesh</a>
+                                                <a href="#" class="dropdown_bl__link">Assam</a>
+                                                <a href="#" class="dropdown_bl__link">Bihar</a>
+                                                <a href="#" class="dropdown_bl__link">Chandigarh</a>
+                                                <a href="#" class="dropdown_bl__link">Chhattisgarh</a>
+                                                <a href="#" class="dropdown_bl__link">Dadra and Nagar Haveli</a>
+                                                <a href="#" class="dropdown_bl__link">Daman and Diu</a>
+                                                <a href="#" class="dropdown_bl__link">Delhi</a>
+                                                <a href="#" class="dropdown_bl__link">Goa</a>
+                                                <a href="#" class="dropdown_bl__link">Gujarat</a>
+                                                <a href="#" class="dropdown_bl__link">Haryana</a>
+                                                <a href="#" class="dropdown_bl__link">Himachal Pradesh</a>
+                                                <a href="#" class="dropdown_bl__link">Jammu and Kashmir</a>
+                                                <a href="#" class="dropdown_bl__link">Jharkhand</a>
+                                                <a href="#" class="dropdown_bl__link">Karnataka</a>
+                                                <a href="#" class="dropdown_bl__link">Kerala</a>
+                                                <a href="#" class="dropdown_bl__link">Ladakh</a>
+                                                <a href="#" class="dropdown_bl__link">Lakshadweep Islands</a>
+                                                <a href="#" class="dropdown_bl__link">Madhya Pradesh</a>
+                                                <a href="#" class="dropdown_bl__link">Maharashtra</a>
+                                                <a href="#" class="dropdown_bl__link">Manipur</a>
+                                                <a href="#" class="dropdown_bl__link">Meghalaya</a>
+                                                <a href="#" class="dropdown_bl__link">Mizoram</a>
+                                                <a href="#" class="dropdown_bl__link">Nagaland</a>
+                                                <a href="#" class="dropdown_bl__link">Odisha</a>
+                                                <a href="#" class="dropdown_bl__link">Pondicherry</a>
+                                                <a href="#" class="dropdown_bl__link">Punjab</a>
+                                                <a href="#" class="dropdown_bl__link">Rajasthan</a>
+                                                <a href="#" class="dropdown_bl__link">Sikkim</a>
+                                                <a href="#" class="dropdown_bl__link">Tamil Nadu</a>
+                                                <a href="#" class="dropdown_bl__link">Telangana</a>
+                                                <a href="#" class="dropdown_bl__link">Tripura</a>
+                                                <a href="#" class="dropdown_bl__link">UP</a>
+                                                <a href="#" class="dropdown_bl__link">Uttar Pradesh</a>
+                                                <a href="#" class="dropdown_bl__link">Uttarakhand</a>
+                                                <a href="#" class="dropdown_bl__link">West Bengal</a>
+                                                <div class="dropdown_bl__no-record d-none">No record found</div>
+                                                <!--<a href="#" class="dropdown_bl__link search-more">Search more…</a>-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="input-line">
+                                        <input type="text" placeholder="Zip/Postal Code">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="input-line">
+                                        <div class="search__wrap position-relative">
+                                            <input type="text" class="form-control search__input" placeholder="Country" value="" autocomplete="off">
+                                            <span class="search__arrow"><i class="ri-arrow-down-s-fill"></i></span>
+                                            <div class="dropdown_bl search__dropdown">
+                                                <a href="#" class="dropdown_bl__link">Afghanistan</a>
+                                                <a href="#" class="dropdown_bl__link">Albania</a>
+                                                <a href="#" class="dropdown_bl__link">Algeria</a>
+                                                <a href="#" class="dropdown_bl__link">Andorra</a>
+                                                <a href="#" class="dropdown_bl__link">Angola</a>
+                                                <a href="#" class="dropdown_bl__link">Antigua and Barbuda</a>
+                                                <a href="#" class="dropdown_bl__link">Argentina</a>
+                                                <a href="#" class="dropdown_bl__link">Armenia</a>
+                                                <a href="#" class="dropdown_bl__link">Australia</a>
+                                                <a href="#" class="dropdown_bl__link">Austria</a>
+                                                <a href="#" class="dropdown_bl__link">Azerbaijan</a>
+                                                <a href="#" class="dropdown_bl__link">Bahamas</a>
+                                                <a href="#" class="dropdown_bl__link">Bahrain</a>
+                                                <a href="#" class="dropdown_bl__link">Bangladesh</a>
+                                                <a href="#" class="dropdown_bl__link">Barbados</a>
+                                                <a href="#" class="dropdown_bl__link">Belarus</a>
+                                                <a href="#" class="dropdown_bl__link">Belgium</a>
+                                                <a href="#" class="dropdown_bl__link">Belize</a>
+                                                <a href="#" class="dropdown_bl__link">Benin</a>
+                                                <a href="#" class="dropdown_bl__link">Bhutan</a>
+                                                <a href="#" class="dropdown_bl__link">Bolivia</a>
+                                                <a href="#" class="dropdown_bl__link">Bosnia and Herzegovina</a>
+                                                <a href="#" class="dropdown_bl__link">Botswana</a>
+                                                <a href="#" class="dropdown_bl__link">Brazil</a>
+                                                <a href="#" class="dropdown_bl__link">Brunei Darussalam</a>
+                                                <a href="#" class="dropdown_bl__link">Bulgaria</a>
+                                                <a href="#" class="dropdown_bl__link">Burkina Faso</a>
+                                                <a href="#" class="dropdown_bl__link">Burundi</a>
+                                                <a href="#" class="dropdown_bl__link">Cabo Verde</a>
+                                                <a href="#" class="dropdown_bl__link">Cambodia</a>
+                                                <a href="#" class="dropdown_bl__link">Cameroon</a>
+                                                <a href="#" class="dropdown_bl__link">Canada</a>
+                                                <a href="#" class="dropdown_bl__link">Central African Republic</a>
+                                                <a href="#" class="dropdown_bl__link">Chad</a>
+                                                <a href="#" class="dropdown_bl__link">Chile</a>
+                                                <a href="#" class="dropdown_bl__link">China</a>
+                                                <a href="#" class="dropdown_bl__link">Colombia</a>
+                                                <a href="#" class="dropdown_bl__link">Comoros</a>
+                                                <a href="#" class="dropdown_bl__link">Congo</a>
+                                                <a href="#" class="dropdown_bl__link">Costa Rica</a>
+                                                <a href="#" class="dropdown_bl__link">Côte d'Ivoire</a>
+                                                <a href="#" class="dropdown_bl__link">Croatia</a>
+                                                <a href="#" class="dropdown_bl__link">Cuba</a>
+                                                <a href="#" class="dropdown_bl__link">Cyprus</a>
+                                                <a href="#" class="dropdown_bl__link">Czech Republic</a>
+                                                <a href="#" class="dropdown_bl__link">Democratic People's Republic of Korea (North Korea)</a>
+                                                <a href="#" class="dropdown_bl__link">Democratic Republic of the Cong</a>
+                                                <a href="#" class="dropdown_bl__link">Denmark</a>
+                                                <a href="#" class="dropdown_bl__link">Djibouti</a>
+                                                <a href="#" class="dropdown_bl__link">Dominica</a>
+                                                <a href="#" class="dropdown_bl__link">Dominican Republic</a>
+                                                <a href="#" class="dropdown_bl__link">Ecuador</a>
+                                                <a href="#" class="dropdown_bl__link">Egypt</a>
+                                                <a href="#" class="dropdown_bl__link">El Salvador</a>
+                                                <a href="#" class="dropdown_bl__link">Equatorial Guinea</a>
+                                                <a href="#" class="dropdown_bl__link">Eritrea</a>
+                                                <a href="#" class="dropdown_bl__link">Estonia</a>
+                                                <a href="#" class="dropdown_bl__link">Ethiopia</a>
+                                                <a href="#" class="dropdown_bl__link">Fiji</a>
+                                                <a href="#" class="dropdown_bl__link">Finland</a>
+                                                <a href="#" class="dropdown_bl__link">France</a>
+                                                <a href="#" class="dropdown_bl__link">Gabon</a>
+                                                <a href="#" class="dropdown_bl__link">Gambia</a>
+                                                <a href="#" class="dropdown_bl__link">Georgia</a>
+                                                <a href="#" class="dropdown_bl__link">Germany</a>
+                                                <a href="#" class="dropdown_bl__link">Ghana</a>
+                                                <a href="#" class="dropdown_bl__link">Greece</a>
+                                                <a href="#" class="dropdown_bl__link">Grenada</a>
+                                                <a href="#" class="dropdown_bl__link">Guatemala</a>
+                                                <a href="#" class="dropdown_bl__link">Guinea</a>
+                                                <a href="#" class="dropdown_bl__link">Guinea-Bissau</a>
+                                                <a href="#" class="dropdown_bl__link">Guyana</a>
+                                                <a href="#" class="dropdown_bl__link">Haiti</a>
+                                                <a href="#" class="dropdown_bl__link">Honduras</a>
+                                                <a href="#" class="dropdown_bl__link">Hungary</a>
+                                                <a href="#" class="dropdown_bl__link">Iceland</a>
+                                                <a href="#" class="dropdown_bl__link">India</a>
+                                                <a href="#" class="dropdown_bl__link">Indonesia</a>
+                                                <a href="#" class="dropdown_bl__link">Iran</a>
+                                                <a href="#" class="dropdown_bl__link">Iraq</a>
+                                                <a href="#" class="dropdown_bl__link">Ireland</a>
+                                                <a href="#" class="dropdown_bl__link">Israel</a>
+                                                <a href="#" class="dropdown_bl__link">Italy</a>
+                                                <a href="#" class="dropdown_bl__link">Jamaica</a>
+                                                <a href="#" class="dropdown_bl__link">Japan</a>
+                                                <a href="#" class="dropdown_bl__link">Jordan</a>
+                                                <a href="#" class="dropdown_bl__link">Kazakhstan</a>
+                                                <a href="#" class="dropdown_bl__link">Kenya</a>
+                                                <a href="#" class="dropdown_bl__link">Kiribati</a>
+                                                <a href="#" class="dropdown_bl__link">Kuwait</a>
+                                                <a href="#" class="dropdown_bl__link">Kyrgyzstan</a>
+                                                <a href="#" class="dropdown_bl__link">Lao People's Democratic Republic (Laos)</a>
+                                                <a href="#" class="dropdown_bl__link">Latvia</a>
+                                                <a href="#" class="dropdown_bl__link">Lebanon</a>
+                                                <a href="#" class="dropdown_bl__link">Lesotho</a>
+                                                <a href="#" class="dropdown_bl__link">Liberia</a>
+                                                <a href="#" class="dropdown_bl__link">Libya</a>
+                                                <a href="#" class="dropdown_bl__link">Liechtenstein</a>
+                                                <a href="#" class="dropdown_bl__link">Lithuania</a>
+                                                <a href="#" class="dropdown_bl__link">Luxembourg</a>
+                                                <a href="#" class="dropdown_bl__link">Macedonia</a>
+                                                <a href="#" class="dropdown_bl__link">Madagascar</a>
+                                                <a href="#" class="dropdown_bl__link">Malawi</a>
+                                                <a href="#" class="dropdown_bl__link">Malaysia</a>
+                                                <a href="#" class="dropdown_bl__link">Maldives</a>
+                                                <a href="#" class="dropdown_bl__link">Mali</a>
+                                                <a href="#" class="dropdown_bl__link">Malta</a>
+                                                <a href="#" class="dropdown_bl__link">Marshall Islands</a>
+                                                <a href="#" class="dropdown_bl__link">Mauritania</a>
+                                                <a href="#" class="dropdown_bl__link">Mauritius</a>
+                                                <a href="#" class="dropdown_bl__link">Mexico</a>
+                                                <a href="#" class="dropdown_bl__link">Micronesia (Federated States of)</a>
+                                                <a href="#" class="dropdown_bl__link">Monaco</a>
+                                                <a href="#" class="dropdown_bl__link">Mongolia</a>
+                                                <a href="#" class="dropdown_bl__link">Montenegro</a>
+                                                <a href="#" class="dropdown_bl__link">Morocco</a>
+                                                <a href="#" class="dropdown_bl__link">Mozambique</a>
+                                                <a href="#" class="dropdown_bl__link">Myanmar</a>
+                                                <a href="#" class="dropdown_bl__link">Namibia</a>
+                                                <a href="#" class="dropdown_bl__link">Nauru</a>
+                                                <a href="#" class="dropdown_bl__link">Nepal</a>
+                                                <a href="#" class="dropdown_bl__link">Netherlands</a>
+                                                <a href="#" class="dropdown_bl__link">New Zealand</a>
+                                                <a href="#" class="dropdown_bl__link">Nicaragua</a>
+                                                <a href="#" class="dropdown_bl__link">Niger</a>
+                                                <a href="#" class="dropdown_bl__link">Nigeria</a>
+                                                <a href="#" class="dropdown_bl__link">Norway</a>
+                                                <a href="#" class="dropdown_bl__link">Oman</a>
+                                                <a href="#" class="dropdown_bl__link">Pakistan</a>
+                                                <a href="#" class="dropdown_bl__link">Palau</a>
+                                                <a href="#" class="dropdown_bl__link">Panama</a>
+                                                <a href="#" class="dropdown_bl__link">Papua New Guinea</a>
+                                                <a href="#" class="dropdown_bl__link">Paraguay</a>
+                                                <a href="#" class="dropdown_bl__link">Peru</a>
+                                                <a href="#" class="dropdown_bl__link">Philippines</a>
+                                                <a href="#" class="dropdown_bl__link">Poland</a>
+                                                <a href="#" class="dropdown_bl__link">Portugal</a>
+                                                <a href="#" class="dropdown_bl__link">Qatar</a>
+                                                <a href="#" class="dropdown_bl__link">Republic of Korea (South Korea)</a>
+                                                <a href="#" class="dropdown_bl__link">Republic of Moldova</a>
+                                                <a href="#" class="dropdown_bl__link">Romania</a>
+                                                <a href="#" class="dropdown_bl__link">Russian Federation</a>
+                                                <a href="#" class="dropdown_bl__link">Rwanda</a>
+                                                <a href="#" class="dropdown_bl__link">Saint Kitts and Nevis</a>
+                                                <a href="#" class="dropdown_bl__link">Saint Lucia</a>
+                                                <a href="#" class="dropdown_bl__link">Saint Vincent and the Grenadines</a>
+                                                <a href="#" class="dropdown_bl__link">Samoa</a>
+                                                <a href="#" class="dropdown_bl__link">San Marino</a>
+                                                <a href="#" class="dropdown_bl__link">Sao Tome and Principe</a>
+                                                <a href="#" class="dropdown_bl__link">Saudi Arabia</a>
+                                                <a href="#" class="dropdown_bl__link">Senegal</a>
+                                                <a href="#" class="dropdown_bl__link">Serbia</a>
+                                                <a href="#" class="dropdown_bl__link">Seychelles</a>
+                                                <a href="#" class="dropdown_bl__link">Sierra Leone</a>
+                                                <a href="#" class="dropdown_bl__link">Singapore</a>
+                                                <a href="#" class="dropdown_bl__link">Slovakia</a>
+                                                <a href="#" class="dropdown_bl__link">Slovenia</a>
+                                                <a href="#" class="dropdown_bl__link">Solomon Islands</a>
+                                                <a href="#" class="dropdown_bl__link">Somalia</a>
+                                                <a href="#" class="dropdown_bl__link">South Africa</a>
+                                                <a href="#" class="dropdown_bl__link">South Sudan</a>
+                                                <a href="#" class="dropdown_bl__link">Spain</a>
+                                                <a href="#" class="dropdown_bl__link">Sri Lanka</a>
+                                                <a href="#" class="dropdown_bl__link">Sudan</a>
+                                                <a href="#" class="dropdown_bl__link">Suriname</a>
+                                                <a href="#" class="dropdown_bl__link">Swaziland</a>
+                                                <a href="#" class="dropdown_bl__link">Sweden</a>
+                                                <a href="#" class="dropdown_bl__link">Switzerland</a>
+                                                <a href="#" class="dropdown_bl__link">Syrian Arab Republic</a>
+                                                <a href="#" class="dropdown_bl__link">Tajikistan</a>
+                                                <a href="#" class="dropdown_bl__link">Thailand</a>
+                                                <a href="#" class="dropdown_bl__link">Timor-Leste</a>
+                                                <a href="#" class="dropdown_bl__link">Togo</a>
+                                                <a href="#" class="dropdown_bl__link">Tonga</a>
+                                                <a href="#" class="dropdown_bl__link">Trinidad and Tobago</a>
+                                                <a href="#" class="dropdown_bl__link">Tunisia</a>
+                                                <a href="#" class="dropdown_bl__link">Turkey</a>
+                                                <a href="#" class="dropdown_bl__link">Turkmenistan</a>
+                                                <a href="#" class="dropdown_bl__link">Tuvalu</a>
+                                                <a href="#" class="dropdown_bl__link">Uganda</a>
+                                                <a href="#" class="dropdown_bl__link">Ukraine</a>
+                                                <a href="#" class="dropdown_bl__link">United Arab Emirates</a>
+                                                <a href="#" class="dropdown_bl__link">United Kingdom of Great Britain and Northern Ireland</a>
+                                                <a href="#" class="dropdown_bl__link">United Republic of Tanzania</a>
+                                                <a href="#" class="dropdown_bl__link">United States of America</a>
+                                                <a href="#" class="dropdown_bl__link">Uruguay</a>
+                                                <a href="#" class="dropdown_bl__link">Uzbekistan</a>
+                                                <a href="#" class="dropdown_bl__link">Vanuatu</a>
+                                                <a href="#" class="dropdown_bl__link">Venezuela</a>
+                                                <a href="#" class="dropdown_bl__link">Vietnam</a>
+                                                <a href="#" class="dropdown_bl__link">Yemen</a>
+                                                <a href="#" class="dropdown_bl__link">Zambia</a>
+                                                <a href="#" class="dropdown_bl__link">Zimbabwe</a>
+                                                <div class="dropdown_bl__no-record d-none">No record found</div>
+                                                <!--<a href="#" class="dropdown_bl__link search-more">Search more…</a>-->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-weight:600;">Document Required</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-weight:600;">Approval of Document</span>
+                                <label class="switch_dis" style="margin-bottom:0;">
+                                    <input type="checkbox" />
+                                    <div class="slider round">
+                                        <span class="on">Yes</span>
+                                        <span class="off">No</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4 mt-2">
+                            <div class="input-line">
+                                <label for="AwardDate">Date of Award</label>
+                                <div class="search__wrap position-relative">
+                                    <input type="text" id="AwardDate" class="form-control search__input" placeholder="dd/mm/yyyy" value="" autocomplete="off">
+                                    <span class="search__arrow"><i class="ri-calendar-line"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mb-1">
+                            <label style="font-weight:600;">Upload Document</label>
+                            <div class="row">
+                                <div class="col-sm-12 mt-1">
+                                    <div id="dropzone" class="dropzone">
+                                        <input type="file" id="fileInput" multiple hidden>
+                                        <div class="mb-2">
+                                            <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                                        </div>
+                                        <h3>Drop files here or click to upload</h3>
+                                    </div>
+                                    <table class="table table-hover table-striped tbl_new tbl_fileup">
+                                        <thead>
+                                            <tr>
+                                                <th>File</th>
+                                                <th>Uploaded by</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fileTable"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="offcanvas-foorter border-top p-2 text-center">
+            <button type="button" class="sub-soft-btn fs-18" style="display:inline;"><i class="ri-save-3-line"></i></button>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="uploaddocuments">
+        <div class="offcanvas-header justify-content-between border-bottom p-2">
+            <h5 class="offcanvas-title">Upload Documents</h5>
+            <!--<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>-->
+            <div class="hstack gap-1">
+                <button type="button" onclick="fs1Function()" class="sub-soft-btn fsr fs-18"><i class="ri-fullscreen-fill"></i></button>
+                <button type="button" onclick="fse1Function()" class="sub-soft-btn fsre fs-18"><i class="ri-fullscreen-exit-fill"></i></button>
+                <button type="button" class="sub-soft-btn danger fs-18" data-bs-dismiss="offcanvas" aria-label="Close"><i class="ri-close-fill"></i></button>
+            </div>
+        </div>
+        <div class="offcanvas-body p-0 overflow-hidden">
+            <div data-simplebar style="height: calc(100vh - 10px);">
+                <div class="p-3">
+                    <div id="dropzone" class="dropzone">
+                        <input type="file" id="fileInput" multiple hidden>
+                        <div class="mb-2">
+                            <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                        </div>
+                        <h3>Drop files here or click to upload</h3>
+                    </div>
+                    <table class="table table-hover table-striped tbl_new tbl_fileup">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Uploaded by</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fileTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="adddependency" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-flex justify-content-between align-items-center" style="border-bottom:1px solid #ddd;padding:10px;">
+                    <h4 style="font-size:18px;margin:0;">Add Dependency</h4>
+                    <button type="button" class="sub-soft-btn danger" data-bs-dismiss="modal" aria-label="Close"><i class="ri-close-line"></i></button>
+                </div>
+                <div class="modal-body p-2">
+                    <div class="input-line">
+                        <div class="search__wrap position-relative">
+                            <div class="tag-input">
+                                <input type="text" id="" class="search__input" placeholder="Milestone" />
+                                <span class="search__arrow"><i class="ri-arrow-down-s-fill "></i></span>
+                            </div>
+                            <div class="dropdown_bl search__dropdown">
+                                <a href="#" class="dropdown_bl__link">Milestone 1</a>
+                                <a href="#" class="dropdown_bl__link">Milestone 2</a>
+                                <a href="#" class="dropdown_bl__link">Milestone 3</a>
+                                <a href="#" class="dropdown_bl__link">Milestone 4</a>
+                                <div class="dropdown_bl__no-record d-none">No record found</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-line">
+                        <div class="search__wrap position-relative">
+                            <div class="tag-input">
+                                <input type="text" id="" class="search__input" placeholder="Task" />
+                                <span class="search__arrow"><i class="ri-arrow-down-s-fill "></i></span>
+                            </div>
+                            <div class="dropdown_bl search__dropdown">
+                                <a href="#" class="dropdown_bl__link">Task 1</a>
+                                <a href="#" class="dropdown_bl__link">Task 2</a>
+                                <a href="#" class="dropdown_bl__link">Task 3</a>
+                                <a href="#" class="dropdown_bl__link">Task 4</a>
+                                <div class="dropdown_bl__no-record d-none">No record found</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-line">
+                        <div class="search__wrap position-relative">
+                            <div class="tag-input">
+                                <input type="text" id="" class="search__input" placeholder="Subtask" />
+                                <span class="search__arrow"><i class="ri-arrow-down-s-fill "></i></span>
+                            </div>
+                            <div class="dropdown_bl search__dropdown">
+                                <a href="#" class="dropdown_bl__link">Subtask 1</a>
+                                <a href="#" class="dropdown_bl__link">Subtask 2</a>
+                                <a href="#" class="dropdown_bl__link">Subtask 3</a>
+                                <a href="#" class="dropdown_bl__link">Subtask 4</a>
+                                <div class="dropdown_bl__no-record d-none">No record found</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid #ddd;padding-top:10px;padding-bottom:10px;">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close"><i class="ri-user-add-line"></i> Assign Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    <script>
+        function fsFunction() {
+            var element = document.getElementById("addnewproject");
+            element.classList.add("canvas-fullscreen");
+        }
+        function fseFunction() {
+            var element = document.getElementById("addnewproject");
+            element.classList.remove("canvas-fullscreen");
+        }
+    </script>
+    <script>
+        function fs1Function() {
+            var element = document.getElementById("uploaddocuments");
+            element.classList.add("canvas-fullscreen");
+        }
+        function fse1Function() {
+            var element = document.getElementById("uploaddocuments");
+            element.classList.remove("canvas-fullscreen");
+        }
+    </script>
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>
+        const text = document.getElementById("text");
+        const colorPicker = document.getElementById("colorPicker");
+
+        // Open color picker only when text clicked
+        text.addEventListener("click", () => {
+            colorPicker.click();
+        });
+
+        // Change text color
+        colorPicker.addEventListener("input", (e) => {
+            text.style.color = e.target.value;
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const dropzone = document.getElementById("dropzone");
+            const fileInput = document.getElementById("fileInput");
+            const fileTable = document.getElementById("fileTable");
+
+            let filesArray = [];
+
+            dropzone.addEventListener("click", () => fileInput.click());
+
+            fileInput.addEventListener("change", (e) => {
+                handleFiles(e.target.files);
+            });
+
+            dropzone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropzone.classList.add("dragover");
+            });
+
+            dropzone.addEventListener("dragleave", () => {
+                dropzone.classList.remove("dragover");
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropzone.classList.remove("dragover");
+                handleFiles(e.dataTransfer.files);
+            });
+
+            function getIcon(file) {
+                if (file.type.startsWith("image/")) return "<i class='ri-image-fill'></i>";
+                if (file.type.includes("pdf")) return "<i class='bx bxs-file-pdf' style='color:red;'></i>";
+                if (file.type.includes("zip")) return "<i class='ri-folder-zip-line'></i>";
+                if (file.type.includes("video")) return "<i class='ri-film-line'></i>";
+                if (file.type.includes("audio")) return "<i class='ri-volume-up-fill'></i>";
+                return "📁";
+            }
+
+            function handleFiles(files) {
+                Array.from(files).forEach(file => {
+                    filesArray.push(file);
+                });
+
+                renderTable();
+            }
+
+            function renderTable() {
+                fileTable.innerHTML = "";
+
+                filesArray.forEach((file, index) => {
+
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                <td>
+                  <span class="icon">${getIcon(file)}</span>
+                  ${file.name}
+                </td>
+                <td>
+                    <div class="d-flex align-items-center gap-2" style="display:inline-block;">
+                        <div class="avatar-xxs">
+                            <img src="/pms/new/assets/img/avatar.jpg" alt="" class="rounded-circle img-fluid">
+                        </div>
+                        <div style="color:#000;line-height:1;">Erica Kernan<br><small>34534</small></div>
+                    </div>
+                </td>
+                <td><div class="d-flex align-items-center gap-2"><a href="javascript:void(0);" class="text-dark"><i class="ri-download-2-line"></i></a><a href="javascript:void(0);" class="text-dark"><i class="ri-eye-line"></i></a><a href="javascript:void(0);" data-index="${index}" class="delete text-danger"><i class="ri-delete-bin-line"></i></a></div></td>
+              `;
+
+                    fileTable.appendChild(row);
+
+                    uploadFile(file, row);
+                });
+
+                document.querySelectorAll(".delete").forEach(btn => {
+                    btn.addEventListener("click", (e) => {
+                        const index = e.target.dataset.index;
+                        filesArray.splice(index, 1);
+                        renderTable();
+                    });
+                });
+            }
+
+            function uploadFile(file, row) {
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                fetch("/upload", {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(() => {
+                        row.querySelector(".status").textContent = "✔ Uploaded";
+                        row.querySelector(".status").style.color = "green";
+                    })
+                    .catch(() => {
+                        row.querySelector(".status").textContent = "✖ Failed";
+                        row.querySelector(".status").style.color = "red";
+                    });
+            }
+
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            document.querySelectorAll('.search__wrap').forEach(wrapper => {
+
+                const tagInput = wrapper.querySelector('.tag-input'); // optional
+                const input = wrapper.querySelector('.search__input');
+                const dropdown = wrapper.querySelector('.search__dropdown');
+                const arrow = wrapper.querySelector('.search__arrow');
+                const items = [...wrapper.querySelectorAll('.dropdown_bl__link:not(.search-more)')];
+                const noRecord = wrapper.querySelector('.dropdown_bl__no-record');
+
+                /* ✅ PLACEHOLDER FIX */
+                const originalPlaceholder = input.getAttribute('placeholder');
+                function updatePlaceholder() {
+                    if (!tagInput) return;
+                    const hasTags = tagInput.querySelectorAll('.tag').length > 0;
+                    input.placeholder = hasTags ? 'Team' : originalPlaceholder;
+                }
+
+                function openDropdown() {
+                    dropdown.style.display = 'block';
+                }
+
+                function closeDropdown() {
+                    dropdown.style.display = 'none';
+                }
+
+                function updateNoRecord() {
+                    const visible = items.some(i => i.style.display !== 'none');
+                    if (noRecord) {
+                        noRecord.classList.toggle('d-none', visible);
+                    }
+                }
+
+                function toggleTag(value) {
+                    if (!tagInput) return false;
+
+                    const existing = [...tagInput.querySelectorAll('.tag')]
+                        .find(tag => tag.dataset.value === value);
+
+                    const item = items.find(i => i.textContent.trim() === value);
+
+                    /* 🔁 REMOVE TAG */
+                    if (existing) {
+                        existing.remove();
+                        if (item) item.style.display = 'block';
+                        updateNoRecord();
+                        updatePlaceholder(); // ✅
+                        return true;
+                    }
+
+                    /* ➕ ADD TAG */
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.dataset.value = value;
+                    tag.innerHTML = `${value} <i class="ri-close-line"></i>`;
+
+                    tag.querySelector('i').onclick = () => {
+                        tag.remove();
+                        if (item) item.style.display = 'block';
+                        updateNoRecord();
+                        updatePlaceholder(); // ✅
+                    };
+
+                    tagInput.insertBefore(tag, input);
+                    if (item) item.style.display = 'none';
+
+                    updateNoRecord();
+                    updatePlaceholder(); // ✅
+                    return true;
+                }
+
+                /* Open dropdown */
+                (tagInput || input).addEventListener('click', () => {
+                    input.focus();
+                    openDropdown();
+                });
+
+                if (arrow) {
+                    arrow.addEventListener('click', e => {
+                        e.stopPropagation();
+                        dropdown.style.display === 'block' ? closeDropdown() : openDropdown();
+                    });
+                }
+
+                /* 🔍 Search filter */
+                input.addEventListener('input', () => {
+                    const value = input.value.toLowerCase();
+                    let visibleCount = 0;
+
+                    items.forEach(item => {
+                        if (item.style.display === 'none') return;
+
+                        const match = item.textContent.toLowerCase().includes(value);
+                        item.style.display = match ? 'block' : 'none';
+                        if (match) visibleCount++;
+                    });
+
+                    if (noRecord) {
+                        noRecord.classList.toggle('d-none', visibleCount !== 0);
+                    }
+                });
+
+                /* Select / Unselect */
+                items.forEach(item => {
+                    item.addEventListener('click', e => {
+                        e.preventDefault();
+                        const value = item.textContent.trim();
+
+                        if (tagInput) {
+                            toggleTag(value);
+                            input.value = '';
+                            input.dispatchEvent(new Event('input'));
+                        } else {
+                            input.value = value;
+                            closeDropdown();
+                        }
+                    });
+                });
+
+                /* Click outside */
+                document.addEventListener('click', e => {
+                    if (!wrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                });
+
+                updatePlaceholder(); // ✅ initial state
+
+            });
+
+        });
+    </script>
+</body>
+</html>

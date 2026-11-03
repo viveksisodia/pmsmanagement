@@ -1,0 +1,93 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="angular_user.master.cs" Inherits="angularmaster_angular" %>
+
+   
+<!DOCTYPE html>
+
+<html lang="en">
+<head runat="server">
+ <meta charset="utf-8" />
+    <title>Absolute ERP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <script src="/pms/angularmaster/js/angular.min.js"></script>
+    <script src="/pms/angularmaster/js/angular-sanitize.js"></script>
+    <script src="/pms/angularmaster/js/dirPagination.js"></script> 
+    <%--<script src="/pms/angularmaster/jsapp/pmsapp.js?v=<%=DateTime.Now.Ticks %>"></script>--%>
+
+
+    <link rel="shortcut icon" href="/pms/new/assets/img/favicon.ico">
+    <link href="/pms/new/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    <link href="/pms/new/assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/pms/new/assets/css/style.css">
+    <style>
+        body {
+            background-color: #f1f5f7;
+        }
+    </style>
+      
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+     
+    <form id="form1" runat="server">
+        <asp:ScriptManager runat="server" EnablePageMethods="true"></asp:ScriptManager>
+        <div class="top-header">
+        <a class="top-header-left">
+            <img src="/pms/new/assets/img/logo.png" />
+            <div class="page-main-title">Absolute ERP Pvt. Ltd.</div>
+        </a>
+        <div class="top-header-right">
+            <div class="icon-round"><i class="ri-notification-3-line"></i></div>
+            <div class="icon-round"><i class="ri-settings-3-line"></i></div>
+            <div class="dropdown user-box">
+                <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex align-items-center gap-2">
+                        <%--<img class="rounded-circle header-profile-user" src="/pms/new/assets/img/avatar.jpg" alt="User">--%>
+                        <img class="rounded-circle header-profile-user" src="/crm/assets/images/users/user.jpg" alt="User">
+                        <div class="text-start">
+                            <div class="user-name"><asp:Label ID="lblusername" runat="server"></asp:Label></div>
+                            <div class="user-role">User</div>
+                        </div>
+                    </div>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header"><asp:Label ID="lblusername2" runat="server"></asp:Label></h6>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-message-text-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Messages</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-calendar-check-outline text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Taskboard</span></a>
+                    <a class="dropdown-item" href=""><i class="mdi mdi-lifebuoy text-muted fs-16 align-middle me-1"></i> <span class="align-middle">Help</span></a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="/Logout.aspx"><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+         <!-- Main Nav -->
+    <div class="sales-nav">
+        <a href="javascript:void(0);" data-bs-toggle="tooltip" class="sub-icon-btn" aria-label="Back to Home" title="Back to Home"><i class="ri-arrow-left-s-line"></i></a>
+        <!--<a href="myprojects.html">Projects</a>
+         <a href="userview/mytask.html">My Task</a>
+        <a href="userview/task-logs.html">Task Logs</a>-->
+        <a href="/pms/dashboarduser.aspx"  id="userdashboard" runat="server" >Dashboard</a>        
+        <a href="/pms/mytaskuser.aspx" class="active" id="usertask" runat="server" >My Task</a>    
+        <a href="/pms/task-logs.html" >Task Logs</a>
+    </div>
+  <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+        
+        </asp:ContentPlaceHolder>
+   
+       <script src="/angularmaster/assets/js/app.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/pms/new/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/pms/new/assets/js/app.js"></script>
+    
+    </form>
+     
+    
+   
+
+  
+
+</body>
+</html>
