@@ -228,9 +228,10 @@
                     </div>
                     <div class="cc-grid3">
                         <div><label>Quantity</label><input type="number" step="0.0001" ng-model="modal.data.Quantity" ng-change="recalculateLineAmount()" /></div>
-                        <div><label>Unit</label><input type="text" maxlength="20" ng-model="modal.data.Unit" /></div>
+                        <div><label>Unit</label><select ng-model="modal.data.UnitId" ng-options="u.id as u.UnitName for u in unitOptions" ng-change="unitSelected()"><option value="">-- Select --</option></select></div>
                         <div><label>Rate</label><input type="number" step="0.0001" ng-model="modal.data.Rate" ng-change="recalculateLineAmount()" /></div>
                     </div>
+                    <div class="cc-quickadd" ng-if="quickUnit.open"><label style="margin-top:0">New Unit Name *</label><input type="text" maxlength="50" ng-model="quickUnit.Name" placeholder="e.g. Bag, Cum, Sqm" /><div class="cc-hint">Added to the common unit master (tbl_unitmaster), so it is also available in other ERP screens.</div><div class="cc-alert" style="margin:6px 0 0" ng-if="quickUnit.error">{{quickUnit.error}}</div><div class="cc-modal-footer" style="margin-top:8px"><button type="button" class="cc-btn" ng-click="cancelQuickUnit()" ng-disabled="quickUnit.saving">Cancel</button><button type="button" class="cc-btn cc-btn-primary" ng-click="saveQuickUnit()" ng-disabled="quickUnit.saving">{{quickUnit.saving ? 'Adding...' : 'Add Unit'}}</button></div></div>
                     <label>Amount *</label>
                     <input type="number" step="0.01" min="0" ng-model="modal.data.Amount" ng-disabled="modal.data.Quantity!=null && modal.data.Rate!=null" />
                     <div class="cc-hint">When quantity and rate are both entered, amount = quantity x rate.</div>

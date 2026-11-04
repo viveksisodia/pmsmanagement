@@ -138,7 +138,22 @@ public partial class pms_costcontrol_default : Page
             LoginContext login = RequireAdminLogin();
             DataSet projects = RunProcedure("usp_pms_cc_Project_List", new SqlParameter("@regid", login.RegId));
             DataSet costCodes = RunProcedure("usp_pms_cc_CostCode_List", new SqlParameter("@regid", login.RegId));
-            return new { Success = true, Projects = ToRows(projects, 0), CostCodes = ToRows(costCodes, 0) };
+            DataSet units = RunProcedure("usp_pms_cc_Unit_List", new SqlParameter("@regid", login.RegId));
+            return new { Success = true, Projects = ToRows(projects, 0), CostCodes = ToRows(costCodes, 0), Units = ToRows(units, 0) };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    /// <summary>Adds a unit to the existing unit master through the existing ERP procedure.</summary>
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object AddUnit(string unitName)
+    {
+        try
+        {
+            LoginContext login = RequireAdminLogin();
+            return SaveResult(RunProcedure("usp_pms_cc_Unit_Add",
+                new SqlParameter("@regid", login.RegId), new SqlParameter("@UnitName", unitName ?? "")));
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -271,7 +286,7 @@ public partial class pms_costcontrol_default : Page
         public int? TaskId { get; set; }
         public int CostCodeId { get; set; }
         public decimal? Quantity { get; set; }
-        public string Unit { get; set; }
+        public int? UnitId { get; set; }
         public decimal? Rate { get; set; }
         public decimal? Amount { get; set; }
         public string Remarks { get; set; }
@@ -293,7 +308,7 @@ public partial class pms_costcontrol_default : Page
                 new SqlParameter("@TaskId", DbValue(request.TaskId)),
                 new SqlParameter("@CostCodeId", request.CostCodeId),
                 new SqlParameter("@Quantity", DbValue(request.Quantity)),
-                new SqlParameter("@Unit", DbText(request.Unit)),
+                new SqlParameter("@UnitId", DbValue(request.UnitId)),
                 new SqlParameter("@Rate", DbValue(request.Rate)),
                 new SqlParameter("@Amount", DbValue(request.Amount)),
                 new SqlParameter("@Remarks", DbText(request.Remarks)),

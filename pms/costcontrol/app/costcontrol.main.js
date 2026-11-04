@@ -95,6 +95,16 @@
             var ADD_NEW_COST_CODE = -1;
             $scope.costCodeOptions = [];
             $scope.quickCode = { open: false };
+            // Value of the "+ Add new unit" choice in the Unit drop-down (units come from tbl_unitmaster).
+            var ADD_NEW_UNIT = -1;
+            $scope.units = [];
+            $scope.unitOptions = [];
+            $scope.quickUnit = { open: false };
+            function buildUnitOptions() {
+                var options = [{ id: ADD_NEW_UNIT, UnitName: '+ Add new unit' }];
+                angular.forEach($scope.units, function (u) { options.push({ id: u.id, UnitName: u.UnitName }); });
+                $scope.unitOptions = options;
+            }
 
             function buildCostCodeOptions() {
                 // Built once per load (not per digest) so ng-options sees a stable array.
@@ -107,6 +117,8 @@
                     $scope.projects = result.Projects || [];
                     $scope.costCodes = result.CostCodes || [];
                     buildCostCodeOptions();
+                    $scope.units = result.Units || [];
+                    buildUnitOptions();
                 });
             }
 
@@ -117,6 +129,25 @@
                 $scope.quickCode = { open: true, Code: '', Name: '', CostType: null, error: '', saving: false, previousId: $scope.modal.data.CostCodeId };
             };
             $scope.cancelQuickCode = function () { $scope.quickCode = { open: false }; };
+            $scope.unitSelected = function () {
+                if ($scope.modal.data.UnitId !== ADD_NEW_UNIT) { $scope.quickUnit.open = false; return; }
+                $scope.modal.data.UnitId = null;
+                $scope.quickUnit = { open: true, Name: '', error: '', saving: false };
+            };
+            $scope.cancelQuickUnit = function () { $scope.quickUnit = { open: false }; };
+            $scope.saveQuickUnit = function () {
+                var q = $scope.quickUnit;
+                if (!(q.Name || '').trim()) { q.error = 'Enter a unit name.'; return; }
+                q.saving = true; q.error = '';
+                call('AddUnit', { unitName: q.Name.trim() })
+                    .then(function (result) {
+                        return loadLookups().then(function () {
+                            $scope.modal.data.UnitId = result.Id;
+                            $scope.quickUnit = { open: false };
+                        });
+                    })
+                    .catch(function (err) { q.saving = false; q.error = err.message; });
+            };
             $scope.saveQuickCode = function () {
                 var q = $scope.quickCode;
                 if (!(q.Code || '').trim() || !(q.Name || '').trim()) { q.error = 'Code and name are required.'; return; }
@@ -127,6 +158,16 @@
                         return loadLookups().then(function () {
                             $scope.modal.data.CostCodeId = result.Id;
                             $scope.quickCode = { open: false };
+            // Value of the "+ Add new unit" choice in the Unit drop-down (units come from tbl_unitmaster).
+            var ADD_NEW_UNIT = -1;
+            $scope.units = [];
+            $scope.unitOptions = [];
+            $scope.quickUnit = { open: false };
+            function buildUnitOptions() {
+                var options = [{ id: ADD_NEW_UNIT, UnitName: '+ Add new unit' }];
+                angular.forEach($scope.units, function (u) { options.push({ id: u.id, UnitName: u.UnitName }); });
+                $scope.unitOptions = options;
+            }
                         });
                     })
                     .catch(function (err) { q.saving = false; q.error = err.message; });
@@ -187,7 +228,7 @@
 
             // ---------- modal handling ----------
             $scope.closeModal = function () { if (!$scope.busy) $scope.modal = { type: null, data: {}, error: '' }; };
-            function openModal(type, data) { $scope.quickCode = { open: false }; $scope.modal = { type: type, data: data, error: '' }; }
+            function openModal(type, data) { $scope.quickCode = { open: false }; $scope.quickUnit = { open: false }; $scope.modal = { type: type, data: data, error: '' }; }
 
             $scope.openNewVersion = function () { openModal('version', { reason: '' }); };
             $scope.openBudgetLine = function (line) {
@@ -195,7 +236,7 @@
                 openModal('line', {
                     Id: line.id || 0, CostCodeId: line.CostCodeId || null,
                     MilestoneId: line.MilestoneId || null, TaskId: line.TaskId || null,
-                    Quantity: toNumber(line.Quantity), Unit: line.Unit || '', Rate: toNumber(line.Rate),
+                    Quantity: toNumber(line.Quantity), UnitId: line.UnitId || null, Rate: toNumber(line.Rate),
                     Amount: toNumber(line.Amount), Remarks: line.Remarks || ''
                 });
             };
@@ -252,7 +293,7 @@
                     case 'line':
                         request = call('SaveBudgetLine', { request: {
                             Id: d.Id, VersionId: $scope.budget.versionId, MilestoneId: toIntOrNull(d.MilestoneId), TaskId: toIntOrNull(d.TaskId),
-                            CostCodeId: d.CostCodeId, Quantity: d.Quantity, Unit: d.Unit, Rate: d.Rate, Amount: d.Amount, Remarks: d.Remarks } });
+                            CostCodeId: d.CostCodeId, Quantity: d.Quantity, UnitId: toIntOrNull(d.UnitId), Rate: d.Rate, Amount: d.Amount, Remarks: d.Remarks } });
                         after = function () { return $scope.loadBudget(); };
                         break;
                     case 'entry':

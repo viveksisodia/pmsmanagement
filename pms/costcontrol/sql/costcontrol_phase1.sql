@@ -79,7 +79,7 @@ BEGIN
         TaskId       INT            NULL,       -- Pms_tbl_Addtask.id (optional)
         CostCodeId   INT            NOT NULL,   -- Pms_tbl_CostCode.id
         Quantity     DECIMAL(18,4)  NULL,
-        Unit         NVARCHAR(20)   NULL,
+        Unit         NVARCHAR(50)   NULL,
         Rate         DECIMAL(18,4)  NULL,
         Amount       DECIMAL(18,2)  NOT NULL,
         Remarks      NVARCHAR(1000) NULL,
@@ -92,6 +92,17 @@ BEGIN
     );
     CREATE INDEX IX_Pms_tbl_ProjectBudgetLine_version ON dbo.Pms_tbl_ProjectBudgetLine (regid, VersionId, status, archive);
 END
+GO
+
+-- UnitId links a budget line to the existing unit master (tbl_unitmaster.id, read only).
+-- Unit keeps the unit name as saved, so history stays readable if the master changes.
+-- Added to the NEW cost-control table only; tbl_unitmaster itself is not changed.
+IF COL_LENGTH('dbo.Pms_tbl_ProjectBudgetLine', 'UnitId') IS NULL
+    ALTER TABLE dbo.Pms_tbl_ProjectBudgetLine ADD UnitId INT NULL;
+GO
+-- Unit holds tbl_unitmaster.unitname (up to 50 characters).
+IF COL_LENGTH('dbo.Pms_tbl_ProjectBudgetLine', 'Unit') < 100
+    ALTER TABLE dbo.Pms_tbl_ProjectBudgetLine ALTER COLUMN Unit NVARCHAR(50) NULL;
 GO
 
 IF OBJECT_ID('dbo.Pms_tbl_ProjectCostEntry', 'U') IS NULL
@@ -245,6 +256,48 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID('dbo.usp_pms_cc_Unit_List', 'P') IS NULL EXEC('CREATE PROCEDURE dbo.usp_pms_cc_Unit_List AS RETURN 0');
+GO
+ALTER PROCEDURE dbo.usp_pms_cc_Unit_List @regid INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Existing unit master (also used by accounting/Tally); read only.
+    SELECT u.id, u.unitname AS UnitName
+    FROM dbo.tbl_unitmaster u WITH (NOLOCK)
+    WHERE u.regid = @regid AND ISNULL(u.status, 1) = 1 AND ISNULL(u.archive, 0) = 0
+    ORDER BY u.unitname;
+END
+GO
+
+IF OBJECT_ID('dbo.usp_pms_cc_Unit_Add', 'P') IS NULL EXEC('CREATE PROCEDURE dbo.usp_pms_cc_Unit_Add AS RETURN 0');
+GO
+ALTER PROCEDURE dbo.usp_pms_cc_Unit_Add @regid INT, @UnitName NVARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @UnitName = LTRIM(RTRIM(ISNULL(@UnitName, N'')));
+    IF @UnitName = N'' BEGIN SELECT 0 AS Result, N'Enter a unit name.' AS Message; RETURN; END
+
+    DECLARE @UnitId INT;
+    SELECT TOP 1 @UnitId = id FROM dbo.tbl_unitmaster
+     WHERE regid = @regid AND unitname = @UnitName AND ISNULL(status, 1) = 1 AND ISNULL(archive, 0) = 0;
+    IF @UnitId IS NOT NULL BEGIN SELECT 1 AS Result, N'This unit already exists and has been selected.' AS Message, @UnitId AS id; RETURN; END
+
+    IF EXISTS (SELECT 1 FROM dbo.tbl_unitmaster WHERE regid = @regid AND unitname = @UnitName)
+        BEGIN SELECT 0 AS Result, N'This unit exists but is inactive in the unit master. Reactivate it there.' AS Message; RETURN; END
+
+    -- Reuse the existing ERP insert procedure so unit-master and Tally behaviour stay unchanged.
+    EXEC dbo.tbl_unitmasterInsertNew @regid = @regid, @unitname = @UnitName;
+
+    SELECT TOP 1 @UnitId = id FROM dbo.tbl_unitmaster
+     WHERE regid = @regid AND unitname = @UnitName AND ISNULL(status, 1) = 1 AND ISNULL(archive, 0) = 0
+     ORDER BY id DESC;
+    IF @UnitId IS NULL SELECT 0 AS Result, N'The unit could not be added.' AS Message;
+    ELSE SELECT 1 AS Result, N'Unit added.' AS Message, @UnitId AS id;
+END
+GO
+
 /* ---------------------------------------------------------------------
    5. Budget versions and lines
    --------------------------------------------------------------------- */
@@ -272,12 +325,13 @@ BEGIN
     SELECT b.id, b.VersionId, b.MilestoneId, ISNULL(m.milestone, N'') AS MilestoneName,
            b.TaskId, ISNULL(t.taskname, N'') AS TaskName,
            b.CostCodeId, ISNULL(c.Code, N'') AS CostCode, ISNULL(c.Name, N'') AS CostCodeName, ISNULL(c.CostType, N'') AS CostType,
-           b.Quantity, ISNULL(b.Unit, N'') AS Unit, b.Rate, b.Amount, ISNULL(b.Remarks, N'') AS Remarks
+           b.Quantity, b.UnitId, ISNULL(u.unitname, ISNULL(b.Unit, N'')) AS Unit, b.Rate, b.Amount, ISNULL(b.Remarks, N'') AS Remarks
     FROM dbo.Pms_tbl_ProjectBudgetLine b WITH (NOLOCK)
     INNER JOIN dbo.Pms_tbl_ProjectBudgetVersion v WITH (NOLOCK) ON v.id = b.VersionId AND v.regid = b.regid
     LEFT JOIN dbo.Pms_tbl_CostCode c WITH (NOLOCK) ON c.id = b.CostCodeId AND c.regid = b.regid
     LEFT JOIN dbo.Pms_tbl_AddMilestone m WITH (NOLOCK) ON m.id = b.MilestoneId AND m.regid = b.regid
     LEFT JOIN dbo.Pms_tbl_Addtask t WITH (NOLOCK) ON t.id = b.TaskId AND t.regid = b.regid
+    LEFT JOIN dbo.tbl_unitmaster u WITH (NOLOCK) ON u.id = b.UnitId AND u.regid = b.regid
     WHERE b.regid = @regid AND b.ProjectId = @ProjectId AND b.VersionId = @VersionId
       AND b.status = 1 AND b.archive = 0
     ORDER BY c.Code, m.milestone, t.taskname, b.id;
@@ -319,8 +373,8 @@ BEGIN
 
         -- A revision starts as a copy of the last locked version.
         IF @LastLockedId IS NOT NULL
-            INSERT INTO dbo.Pms_tbl_ProjectBudgetLine (regid, VersionId, ProjectId, MilestoneId, TaskId, CostCodeId, Quantity, Unit, Rate, Amount, Remarks, cby, cdate)
-            SELECT regid, @NewId, ProjectId, MilestoneId, TaskId, CostCodeId, Quantity, Unit, Rate, Amount, Remarks, @uid, GETDATE()
+            INSERT INTO dbo.Pms_tbl_ProjectBudgetLine (regid, VersionId, ProjectId, MilestoneId, TaskId, CostCodeId, Quantity, UnitId, Unit, Rate, Amount, Remarks, cby, cdate)
+            SELECT regid, @NewId, ProjectId, MilestoneId, TaskId, CostCodeId, Quantity, UnitId, Unit, Rate, Amount, Remarks, @uid, GETDATE()
               FROM dbo.Pms_tbl_ProjectBudgetLine
              WHERE VersionId = @LastLockedId AND regid = @regid AND status = 1 AND archive = 0;
     COMMIT TRANSACTION;
@@ -333,7 +387,7 @@ IF OBJECT_ID('dbo.usp_pms_cc_BudgetLine_Save', 'P') IS NULL EXEC('CREATE PROCEDU
 GO
 ALTER PROCEDURE dbo.usp_pms_cc_BudgetLine_Save
     @regid INT, @id INT, @VersionId INT, @MilestoneId INT = NULL, @TaskId INT = NULL, @CostCodeId INT,
-    @Quantity DECIMAL(18,4) = NULL, @Unit NVARCHAR(20) = NULL, @Rate DECIMAL(18,4) = NULL,
+    @Quantity DECIMAL(18,4) = NULL, @UnitId INT = NULL, @Rate DECIMAL(18,4) = NULL,
     @Amount DECIMAL(18,2) = NULL, @Remarks NVARCHAR(1000) = NULL, @uid INT
 AS
 BEGIN
@@ -349,21 +403,30 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_CostCode WHERE id = @CostCodeId AND regid = @regid AND status = 1 AND archive = 0)
         BEGIN SELECT 0 AS Result, N'Select an active cost code.' AS Message; RETURN; END
 
+    -- Unit comes from the existing unit master (tbl_unitmaster); its name is kept on the line as saved.
+    DECLARE @UnitName NVARCHAR(50) = NULL;
+    IF @UnitId IS NOT NULL
+    BEGIN
+        SELECT @UnitName = unitname FROM dbo.tbl_unitmaster WITH (NOLOCK)
+         WHERE id = @UnitId AND regid = @regid AND ISNULL(status, 1) = 1 AND ISNULL(archive, 0) = 0;
+        IF @UnitName IS NULL BEGIN SELECT 0 AS Result, N'Select an active unit.' AS Message; RETURN; END
+    END
+
     -- When quantity and rate are both given, the amount is always quantity x rate.
     IF @Quantity IS NOT NULL AND @Rate IS NOT NULL SET @Amount = ROUND(@Quantity * @Rate, 2);
     IF @Amount IS NULL OR @Amount < 0 BEGIN SELECT 0 AS Result, N'Enter a budget amount of zero or more.' AS Message; RETURN; END
 
     IF ISNULL(@id, 0) = 0
     BEGIN
-        INSERT INTO dbo.Pms_tbl_ProjectBudgetLine (regid, VersionId, ProjectId, MilestoneId, TaskId, CostCodeId, Quantity, Unit, Rate, Amount, Remarks, cby, cdate)
-        VALUES (@regid, @VersionId, @ProjectId, @MilestoneId, @TaskId, @CostCodeId, @Quantity, NULLIF(LTRIM(RTRIM(@Unit)), N''), @Rate, @Amount, NULLIF(LTRIM(RTRIM(@Remarks)), N''), @uid, GETDATE());
+        INSERT INTO dbo.Pms_tbl_ProjectBudgetLine (regid, VersionId, ProjectId, MilestoneId, TaskId, CostCodeId, Quantity, UnitId, Unit, Rate, Amount, Remarks, cby, cdate)
+        VALUES (@regid, @VersionId, @ProjectId, @MilestoneId, @TaskId, @CostCodeId, @Quantity, @UnitId, @UnitName, @Rate, @Amount, NULLIF(LTRIM(RTRIM(@Remarks)), N''), @uid, GETDATE());
         SELECT 1 AS Result, N'Saved.' AS Message, CAST(SCOPE_IDENTITY() AS INT) AS id;
     END
     ELSE
     BEGIN
         UPDATE dbo.Pms_tbl_ProjectBudgetLine
            SET MilestoneId = @MilestoneId, TaskId = @TaskId, CostCodeId = @CostCodeId, Quantity = @Quantity,
-               Unit = NULLIF(LTRIM(RTRIM(@Unit)), N''), Rate = @Rate, Amount = @Amount,
+               UnitId = @UnitId, Unit = @UnitName, Rate = @Rate, Amount = @Amount,
                Remarks = NULLIF(LTRIM(RTRIM(@Remarks)), N''), mby = @uid, mdate = GETDATE()
          WHERE id = @id AND VersionId = @VersionId AND regid = @regid AND status = 1 AND archive = 0;
         IF @@ROWCOUNT = 1 SELECT 1 AS Result, N'Saved.' AS Message, @id AS id;
