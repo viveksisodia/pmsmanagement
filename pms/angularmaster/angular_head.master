@@ -519,6 +519,10 @@
           {%>
           <a href="/pms/issues/" id="myissues" runat="server" >Issues</a> 
         <%} %>
+        <%if (chkisadmin == 1)
+          {%>
+          <a href="/pms/costcontrol/">Cost Control</a>
+        <%} %>
           
         
 
