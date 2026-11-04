@@ -4,6 +4,124 @@
     // PMS Cost Control (Phase 1) - AngularJS 1.x controller.
     // Server methods live in /pms/costcontrol/default.aspx.cs.
     angular.module('pmsCostControlApp', [])
+        /*
+         * <cc-search-select> - searchable drop-down used by every list on this page.
+         *   ng-model       selected value (works with ng-change)
+         *   items          array of objects
+         *   value-key      property holding the value      (default "id")
+         *   label-key      property holding the text       (default "Name")
+         *   placeholder    text when nothing is selected
+         *   empty-label    optional first choice that clears the value (e.g. "Project level")
+         *   add-new-label  optional LAST choice, e.g. "+ Add new unit"; calls on-add-new()
+         *   is-disabled    expression
+         * Keyboard: Enter/Space/ArrowDown opens, ArrowUp/ArrowDown move, Enter selects, Esc closes.
+         */
+        .directive('ccSearchSelect', ['$document', '$timeout', function ($document, $timeout) {
+            return {
+                restrict: 'E',
+                require: 'ngModel',
+                scope: {
+                    items: '<', valueKey: '@', labelKey: '@', placeholder: '@',
+                    emptyLabel: '@', addNewLabel: '@', onAddNew: '&', isDisabled: '<'
+                },
+                template:
+                    '<div class="cc-ss" ng-class="{\'cc-ss-open\':open,\'cc-ss-disabled\':isDisabled}">' +
+                    '<button type="button" class="cc-ss-trigger" ng-click="toggle()" ng-disabled="isDisabled" ng-keydown="triggerKey($event)" aria-haspopup="listbox" aria-expanded="{{open}}">' +
+                    '<span class="cc-ss-text" ng-class="{\'cc-ss-placeholder\':!currentLabel}">{{currentLabel || placeholder || emptyLabel || \'-- Select --\'}}</span>' +
+                    '<span class="cc-ss-arrow" aria-hidden="true">&#9662;</span></button>' +
+                    '<div class="cc-ss-popup" ng-if="open">' +
+                    '<input type="text" class="cc-ss-search" ng-model="state.search" ng-change="rebuild(true)" ng-keydown="searchKey($event)" placeholder="Type to search..." autocomplete="off" aria-label="Type to search" />' +
+                    '<div class="cc-ss-list" role="listbox">' +
+                    '<button type="button" role="option" class="cc-ss-option" ng-repeat="entry in entries track by $index" ' +
+                    'ng-class="{\'cc-ss-active\':$index===state.active,\'cc-ss-selected\':entry.selected,\'cc-ss-addnew\':entry.kind===\'add\',\'cc-ss-emptyopt\':entry.kind===\'empty\'}" ' +
+                    'ng-mouseenter="state.active=$index" ng-click="choose(entry)">{{entry.label}}</button>' +
+                    '<div class="cc-ss-none" ng-if="!hasMatches">No matching records</div>' +
+                    '</div></div></div>',
+                link: function (scope, element, attrs, ngModel) {
+                    var valueKey = scope.valueKey || 'id', labelKey = scope.labelKey || 'Name';
+                    scope.open = false;
+                    scope.state = { search: '', active: 0 };
+                    scope.entries = [];
+                    scope.currentLabel = '';
+
+                    function same(a, b) { return a !== null && a !== undefined && b !== null && b !== undefined && String(a) === String(b); }
+                    function refreshLabel() {
+                        var value = ngModel.$viewValue, label = '';
+                        angular.forEach(scope.items || [], function (item) { if (!label && same(item[valueKey], value)) label = item[labelKey]; });
+                        scope.currentLabel = label;
+                    }
+                    // Entries are rebuilt only when items/search change, so the view sees a stable array.
+                    scope.rebuild = function (resetActive) {
+                        var text = (scope.state.search || '').toLowerCase().trim(), list = [], value = ngModel.$viewValue;
+                        if (scope.emptyLabel && !text) list.push({ kind: 'empty', label: scope.emptyLabel, value: null, selected: value === null || value === undefined || value === '' });
+                        angular.forEach(scope.items || [], function (item) {
+                            var label = String(item[labelKey] == null ? '' : item[labelKey]);
+                            if (!text || label.toLowerCase().indexOf(text) >= 0)
+                                list.push({ kind: 'item', label: label, value: item[valueKey], selected: same(item[valueKey], value) });
+                        });
+                        scope.hasMatches = list.some(function (e) { return e.kind === 'item'; }) || (!text && list.length > 0);
+                        if (scope.addNewLabel) list.push({ kind: 'add', label: scope.addNewLabel });
+                        scope.entries = list;
+                        if (resetActive) scope.state.active = 0;
+                    };
+                    function scrollActiveIntoView() {
+                        $timeout(function () {
+                            var active = element[0].querySelector('.cc-ss-active');
+                            if (active && active.scrollIntoView) active.scrollIntoView({ block: 'nearest' });
+                        }, 0, false);
+                    }
+                    scope.openPopup = function () {
+                        if (scope.isDisabled) return;
+                        scope.open = true;
+                        scope.state.search = '';
+                        scope.rebuild(false);
+                        var selectedIndex = -1;
+                        scope.entries.forEach(function (e, i) { if (selectedIndex < 0 && e.selected) selectedIndex = i; });
+                        scope.state.active = selectedIndex >= 0 ? selectedIndex : 0;
+                        $timeout(function () {
+                            var input = element[0].querySelector('.cc-ss-search');
+                            if (input) input.focus();
+                            scrollActiveIntoView();
+                        }, 0, false);
+                    };
+                    scope.close = function (focusTrigger) {
+                        scope.open = false;
+                        if (focusTrigger) $timeout(function () { var b = element[0].querySelector('.cc-ss-trigger'); if (b) b.focus(); }, 0, false);
+                    };
+                    scope.toggle = function () { if (scope.open) scope.close(false); else scope.openPopup(); };
+                    scope.choose = function (entry) {
+                        if (!entry) return;
+                        scope.close(true);
+                        if (entry.kind === 'add') { scope.onAddNew(); return; }
+                        if (!same(entry.value, ngModel.$viewValue) || (entry.value === null && ngModel.$viewValue !== null)) {
+                            ngModel.$setViewValue(entry.value);
+                        }
+                        refreshLabel();
+                    };
+                    scope.triggerKey = function (event) {
+                        var key = event.key || '';
+                        if (key === 'Enter' || key === ' ' || key === 'ArrowDown') { event.preventDefault(); scope.openPopup(); }
+                    };
+                    scope.searchKey = function (event) {
+                        var key = event.key || '', count = scope.entries.length;
+                        if (key === 'ArrowDown') { event.preventDefault(); if (count) scope.state.active = (scope.state.active + 1) % count; scrollActiveIntoView(); }
+                        else if (key === 'ArrowUp') { event.preventDefault(); if (count) scope.state.active = (scope.state.active - 1 + count) % count; scrollActiveIntoView(); }
+                        else if (key === 'Enter') { event.preventDefault(); event.stopPropagation(); scope.choose(scope.entries[scope.state.active]); }
+                        else if (key === 'Escape') { event.preventDefault(); event.stopPropagation(); scope.close(true); }
+                        else if (key === 'Tab') { scope.close(false); }
+                    };
+
+                    ngModel.$render = function () { refreshLabel(); if (scope.open) scope.rebuild(false); };
+                    scope.$watchCollection('items', function () { refreshLabel(); if (scope.open) scope.rebuild(false); });
+
+                    function outsideClick(event) {
+                        if (scope.open && !element[0].contains(event.target)) scope.$apply(function () { scope.close(false); });
+                    }
+                    $document.on('mousedown', outsideClick);
+                    scope.$on('$destroy', function () { $document.off('mousedown', outsideClick); });
+                }
+            };
+        }])
         .controller('CostControlController', ['$scope', '$http', function ($scope, $http) {
             var STORAGE_KEY = 'pmsCostControl.selection';
 
@@ -20,6 +138,14 @@
             $scope.report = { groupBy: 'COSTCODE', rows: [], header: null };
             $scope.codes = { search: '' };
             $scope.modal = { type: null, data: {}, error: '' };
+            $scope.versionOptions = [];
+            $scope.modalTasks = [];
+            // Tasks of the milestone chosen in the open form (stable array for the drop-down).
+            function refreshModalTasks() {
+                var milestoneId = $scope.modal.data ? $scope.modal.data.MilestoneId : null;
+                $scope.modalTasks = milestoneId ? $scope.tasksFor(milestoneId) : [];
+            }
+            $scope.milestoneChanged = function () { $scope.modal.data.TaskId = null; refreshModalTasks(); };
 
             // ---------- server call helper ----------
             function call(method, payload) {
@@ -91,47 +217,52 @@
             };
 
             // ---------- loading ----------
-            // Value of the "+ Add new cost code" choice in the Cost Code drop-downs.
-            var ADD_NEW_COST_CODE = -1;
+            // Drop-down sources. "+ Add new" is not part of these lists; <cc-search-select>
+            // shows it as the last choice and calls startQuickCode()/startQuickUnit().
             $scope.costCodeOptions = [];
-            $scope.quickCode = { open: false };
-            // Value of the "+ Add new unit" choice in the Unit drop-down (units come from tbl_unitmaster).
-            var ADD_NEW_UNIT = -1;
             $scope.units = [];
-            $scope.unitOptions = [];
+            $scope.quickCode = { open: false };
             $scope.quickUnit = { open: false };
-            function buildUnitOptions() {
-                var options = [{ id: ADD_NEW_UNIT, UnitName: '+ Add new unit' }];
-                angular.forEach($scope.units, function (u) { options.push({ id: u.id, UnitName: u.UnitName }); });
-                $scope.unitOptions = options;
-            }
+            $scope.costTypeOptions = $scope.costTypes.map(function (t) { return { id: t, Name: t }; });
+            $scope.groupByOptions = [{ id: 'COSTCODE', Name: 'Cost code' }, { id: 'MILESTONE', Name: 'Milestone' }];
 
             function buildCostCodeOptions() {
-                // Built once per load (not per digest) so ng-options sees a stable array.
-                var options = [{ id: ADD_NEW_COST_CODE, Label: '+ Add new cost code' }];
-                angular.forEach($scope.costCodes, function (c) { options.push({ id: c.id, Label: c.Code + ' - ' + c.Name }); });
-                $scope.costCodeOptions = options;
+                // Built once per load (not per digest) so the drop-down sees a stable array.
+                $scope.costCodeOptions = $scope.costCodes.map(function (c) { return { id: c.id, Label: c.Code + ' - ' + c.Name }; });
             }
             function loadLookups() {
                 return call('GetLookups').then(function (result) {
                     $scope.projects = result.Projects || [];
                     $scope.costCodes = result.CostCodes || [];
-                    buildCostCodeOptions();
                     $scope.units = result.Units || [];
-                    buildUnitOptions();
+                    buildCostCodeOptions();
                 });
             }
 
             // ---------- quick add of a cost code from inside a form ----------
-            $scope.costCodeSelected = function () {
-                if ($scope.modal.data.CostCodeId !== ADD_NEW_COST_CODE) { $scope.quickCode.open = false; return; }
-                $scope.modal.data.CostCodeId = $scope.quickCode.previousId || null;
-                $scope.quickCode = { open: true, Code: '', Name: '', CostType: null, error: '', saving: false, previousId: $scope.modal.data.CostCodeId };
+            $scope.startQuickCode = function () {
+                $scope.quickUnit = { open: false };
+                $scope.quickCode = { open: true, Code: '', Name: '', CostType: null, error: '', saving: false };
             };
             $scope.cancelQuickCode = function () { $scope.quickCode = { open: false }; };
-            $scope.unitSelected = function () {
-                if ($scope.modal.data.UnitId !== ADD_NEW_UNIT) { $scope.quickUnit.open = false; return; }
-                $scope.modal.data.UnitId = null;
+            $scope.saveQuickCode = function () {
+                var q = $scope.quickCode;
+                if (!(q.Code || '').trim() || !(q.Name || '').trim()) { q.error = 'Code and name are required.'; return; }
+                if (!q.CostType) { q.error = 'Select a cost type.'; return; }
+                q.saving = true; q.error = '';
+                call('SaveCostCode', { request: { Id: 0, Code: q.Code, Name: q.Name, CostType: q.CostType, Description: '' } })
+                    .then(function (result) {
+                        return loadLookups().then(function () {
+                            $scope.modal.data.CostCodeId = result.Id;
+                            $scope.quickCode = { open: false };
+                        });
+                    })
+                    .catch(function (err) { q.saving = false; q.error = err.message; });
+            };
+
+            // ---------- quick add of a unit (existing tbl_unitmaster) ----------
+            $scope.startQuickUnit = function () {
+                $scope.quickCode = { open: false };
                 $scope.quickUnit = { open: true, Name: '', error: '', saving: false };
             };
             $scope.cancelQuickUnit = function () { $scope.quickUnit = { open: false }; };
@@ -148,35 +279,12 @@
                     })
                     .catch(function (err) { q.saving = false; q.error = err.message; });
             };
-            $scope.saveQuickCode = function () {
-                var q = $scope.quickCode;
-                if (!(q.Code || '').trim() || !(q.Name || '').trim()) { q.error = 'Code and name are required.'; return; }
-                if (!q.CostType) { q.error = 'Select a cost type.'; return; }
-                q.saving = true; q.error = '';
-                call('SaveCostCode', { request: { Id: 0, Code: q.Code, Name: q.Name, CostType: q.CostType, Description: '' } })
-                    .then(function (result) {
-                        return loadLookups().then(function () {
-                            $scope.modal.data.CostCodeId = result.Id;
-                            $scope.quickCode = { open: false };
-            // Value of the "+ Add new unit" choice in the Unit drop-down (units come from tbl_unitmaster).
-            var ADD_NEW_UNIT = -1;
-            $scope.units = [];
-            $scope.unitOptions = [];
-            $scope.quickUnit = { open: false };
-            function buildUnitOptions() {
-                var options = [{ id: ADD_NEW_UNIT, UnitName: '+ Add new unit' }];
-                angular.forEach($scope.units, function (u) { options.push({ id: u.id, UnitName: u.UnitName }); });
-                $scope.unitOptions = options;
-            }
-                        });
-                    })
-                    .catch(function (err) { q.saving = false; q.error = err.message; });
-            };
             function loadStructure() {
                 $scope.structure = { milestones: [], tasks: [] };
                 if (!$scope.selection.projectId) return;
                 return call('GetProjectStructure', { projectId: $scope.selection.projectId }).then(function (result) {
                     $scope.structure = { milestones: result.Milestones || [], tasks: result.Tasks || [] };
+                    refreshModalTasks();
                 });
             }
             $scope.loadBudget = function () {
@@ -185,6 +293,7 @@
                 return call('GetBudget', { projectId: $scope.selection.projectId, versionId: $scope.budget.versionId || 0 }).then(function (result) {
                     $scope.budget.versions = result.Versions || [];
                     $scope.budget.lines = result.Lines || [];
+                    $scope.versionOptions = $scope.budget.versions.map(function (v) { return { id: v.id, Label: $scope.versionLabel(v) }; });
                     if (!$scope.currentVersion()) $scope.budget.versionId = $scope.budget.versions.length ? $scope.budget.versions[0].id : null;
                 }).catch(showError);
             };
@@ -217,6 +326,7 @@
             $scope.projectChanged = function () {
                 $scope.error = '';
                 $scope.budget = { versions: [], versionId: null, lines: [] };
+                $scope.versionOptions = [];
                 $scope.actuals.entries = [];
                 $scope.report.rows = [];
                 $scope.report.header = null;
@@ -228,7 +338,7 @@
 
             // ---------- modal handling ----------
             $scope.closeModal = function () { if (!$scope.busy) $scope.modal = { type: null, data: {}, error: '' }; };
-            function openModal(type, data) { $scope.quickCode = { open: false }; $scope.quickUnit = { open: false }; $scope.modal = { type: type, data: data, error: '' }; }
+            function openModal(type, data) { $scope.quickCode = { open: false }; $scope.quickUnit = { open: false }; $scope.modal = { type: type, data: data, error: '' }; refreshModalTasks(); }
 
             $scope.openNewVersion = function () { openModal('version', { reason: '' }); };
             $scope.openBudgetLine = function (line) {
