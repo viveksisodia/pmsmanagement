@@ -91,12 +91,46 @@
             };
 
             // ---------- loading ----------
+            // Value of the "+ Add new cost code" choice in the Cost Code drop-downs.
+            var ADD_NEW_COST_CODE = -1;
+            $scope.costCodeOptions = [];
+            $scope.quickCode = { open: false };
+
+            function buildCostCodeOptions() {
+                // Built once per load (not per digest) so ng-options sees a stable array.
+                var options = [{ id: ADD_NEW_COST_CODE, Label: '+ Add new cost code' }];
+                angular.forEach($scope.costCodes, function (c) { options.push({ id: c.id, Label: c.Code + ' - ' + c.Name }); });
+                $scope.costCodeOptions = options;
+            }
             function loadLookups() {
                 return call('GetLookups').then(function (result) {
                     $scope.projects = result.Projects || [];
                     $scope.costCodes = result.CostCodes || [];
+                    buildCostCodeOptions();
                 });
             }
+
+            // ---------- quick add of a cost code from inside a form ----------
+            $scope.costCodeSelected = function () {
+                if ($scope.modal.data.CostCodeId !== ADD_NEW_COST_CODE) { $scope.quickCode.open = false; return; }
+                $scope.modal.data.CostCodeId = $scope.quickCode.previousId || null;
+                $scope.quickCode = { open: true, Code: '', Name: '', CostType: null, error: '', saving: false, previousId: $scope.modal.data.CostCodeId };
+            };
+            $scope.cancelQuickCode = function () { $scope.quickCode = { open: false }; };
+            $scope.saveQuickCode = function () {
+                var q = $scope.quickCode;
+                if (!(q.Code || '').trim() || !(q.Name || '').trim()) { q.error = 'Code and name are required.'; return; }
+                if (!q.CostType) { q.error = 'Select a cost type.'; return; }
+                q.saving = true; q.error = '';
+                call('SaveCostCode', { request: { Id: 0, Code: q.Code, Name: q.Name, CostType: q.CostType, Description: '' } })
+                    .then(function (result) {
+                        return loadLookups().then(function () {
+                            $scope.modal.data.CostCodeId = result.Id;
+                            $scope.quickCode = { open: false };
+                        });
+                    })
+                    .catch(function (err) { q.saving = false; q.error = err.message; });
+            };
             function loadStructure() {
                 $scope.structure = { milestones: [], tasks: [] };
                 if (!$scope.selection.projectId) return;
@@ -153,7 +187,7 @@
 
             // ---------- modal handling ----------
             $scope.closeModal = function () { if (!$scope.busy) $scope.modal = { type: null, data: {}, error: '' }; };
-            function openModal(type, data) { $scope.modal = { type: type, data: data, error: '' }; }
+            function openModal(type, data) { $scope.quickCode = { open: false }; $scope.modal = { type: type, data: data, error: '' }; }
 
             $scope.openNewVersion = function () { openModal('version', { reason: '' }); };
             $scope.openBudgetLine = function (line) {

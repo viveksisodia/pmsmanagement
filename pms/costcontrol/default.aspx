@@ -1,4 +1,4 @@
-<%@ Page Title="Cost Control" Language="C#" MasterPageFile="~/pms/angularmaster/angular_head.master" AutoEventWireup="true" CodeFile="default.aspx.cs" Inherits="pms_costcontrol_default" %>
+﻿<%@ Page Title="Cost Control" Language="C#" MasterPageFile="~/pms/angularmaster/angular_head.master" AutoEventWireup="true" CodeFile="default.aspx.cs" Inherits="pms_costcontrol_default" %>
 <asp:Content ID="CostControlHead" ContentPlaceHolderID="head" runat="Server">
     <script>
         window.CostControlPage = { regid: <%= pageRegId %>, employeeId: <%= pageEmployeeId %>, isadmin: <%= isadmin %> };
@@ -6,7 +6,7 @@
     <script src="app/costcontrol.main.js?v=<%=DateTime.Now.Ticks %>"></script>
     <style>
         [ng-cloak]{display:none!important}
-        .cc-page{padding:0 2px 14px;background:#f1f5f7;min-height:calc(100vh - 110px);color:#252a31}
+        .cc-page{padding:37px 2px 14px;background:#f1f5f7;min-height:calc(100vh - 110px);color:#252a31}
         .cc-card{background:#fff;border:1px solid #e3e9ee}
         .cc-titlebar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:38px;padding:7px 12px;border-bottom:1px solid #eceef1;flex-wrap:wrap}
         .cc-title{margin:0;font-size:18px;font-weight:600}
@@ -14,6 +14,7 @@
         .cc-project label{margin:0;font-size:12px;color:#5e6672}
         .cc-project select{min-width:280px}
         .cc-page select,.cc-page input,.cc-page textarea{min-height:32px;border:1px solid #d9dde3;border-radius:4px;padding:4px 8px;font-size:12px;background:#fff}
+        .cc-page input,.cc-page input:hover{border-bottom:1px solid #d9dde3!important}
         .cc-tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid #eceef1}
         .cc-tab{border:0;background:transparent;padding:9px 14px;font-size:13px;color:#5e6672;cursor:pointer;border-bottom:2px solid transparent}
         .cc-tab.active{color:#7b0b69;border-bottom-color:#7b0b69;font-weight:600}
@@ -46,6 +47,7 @@
         .cc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
         .cc-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 12px}
         .cc-modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+        .cc-quickadd{margin-top:8px;padding:8px 10px;border:1px dashed #b98ab2;border-radius:6px;background:#fbf7fb}
         .cc-hint{font-size:11px;color:#7a828c;margin-top:3px}
         @media(max-width:650px){.cc-project select{min-width:0;width:100%}.cc-grid2,.cc-grid3{grid-template-columns:1fr}}
     </style>
@@ -72,7 +74,7 @@
 
             <div class="cc-alert" ng-if="error">{{error}}</div>
             <div class="cc-info" ng-if="tab!=='codes' && !selection.projectId">Select a project to continue.</div>
-            <div class="cc-info" ng-if="tab!=='codes' && selection.projectId && !costCodes.length">No cost codes yet. Add them in the Cost Codes tab first.</div>
+            <div class="cc-info" ng-if="tab!=='codes' && selection.projectId && !costCodes.length">No cost codes yet. Add them in the Cost Codes tab, or choose "+ Add new cost code" in the Cost Code drop-down.</div>
 
             <!-- ================= BUDGET ================= -->
             <div ng-if="tab==='budget' && selection.projectId">
@@ -115,7 +117,7 @@
                 <div class="cc-toolbar">
                     <input type="search" ng-model="actuals.search" placeholder="Search entries..." aria-label="Search cost entries" style="min-width:240px" />
                     <span class="cc-spacer"></span>
-                    <button type="button" class="cc-btn cc-btn-primary" ng-click="openCostEntry()" ng-disabled="busy || !costCodes.length">Add Cost Entry</button>
+                    <button type="button" class="cc-btn cc-btn-primary" ng-click="openCostEntry()" ng-disabled="busy">Add Cost Entry</button>
                 </div>
                 <div class="cc-tablewrap">
                     <table class="cc-table">
@@ -216,7 +218,8 @@
                 <div ng-if="modal.type==='line'">
                     <h4>{{modal.data.Id ? 'Edit' : 'Add'}} Budget Line</h4>
                     <label>Cost Code *</label>
-                    <select ng-model="modal.data.CostCodeId" ng-options="c.id as (c.Code + ' - ' + c.Name) for c in costCodes"><option value="">-- Select --</option></select>
+                    <select ng-model="modal.data.CostCodeId" ng-options="c.id as c.Label for c in costCodeOptions" ng-change="costCodeSelected()"><option value="">-- Select --</option></select>
+                    <div class="cc-quickadd" ng-if="quickCode.open"><div class="cc-grid3"><div><label>New Code *</label><input type="text" maxlength="30" ng-model="quickCode.Code" /></div><div><label>Name *</label><input type="text" maxlength="200" ng-model="quickCode.Name" /></div><div><label>Cost Type *</label><select ng-model="quickCode.CostType" ng-options="t for t in costTypes"><option value="">-- Select --</option></select></div></div><div class="cc-alert" style="margin:6px 0 0" ng-if="quickCode.error">{{quickCode.error}}</div><div class="cc-modal-footer" style="margin-top:8px"><button type="button" class="cc-btn" ng-click="cancelQuickCode()" ng-disabled="quickCode.saving">Cancel</button><button type="button" class="cc-btn cc-btn-primary" ng-click="saveQuickCode()" ng-disabled="quickCode.saving">{{quickCode.saving ? 'Adding...' : 'Add Cost Code'}}</button></div></div>
                     <div class="cc-grid2">
                         <div><label>Milestone</label>
                             <select ng-model="modal.data.MilestoneId" ng-options="m.id as m.MilestoneName for m in structure.milestones" ng-change="modal.data.TaskId=null"><option value="">Project level</option></select></div>
@@ -241,7 +244,8 @@
                         <div><label>Amount *</label><input type="number" step="0.01" ng-model="modal.data.Amount" /><div class="cc-hint">Use a negative amount for a reversal.</div></div>
                     </div>
                     <label>Cost Code *</label>
-                    <select ng-model="modal.data.CostCodeId" ng-options="c.id as (c.Code + ' - ' + c.Name) for c in costCodes"><option value="">-- Select --</option></select>
+                    <select ng-model="modal.data.CostCodeId" ng-options="c.id as c.Label for c in costCodeOptions" ng-change="costCodeSelected()"><option value="">-- Select --</option></select>
+                    <div class="cc-quickadd" ng-if="quickCode.open"><div class="cc-grid3"><div><label>New Code *</label><input type="text" maxlength="30" ng-model="quickCode.Code" /></div><div><label>Name *</label><input type="text" maxlength="200" ng-model="quickCode.Name" /></div><div><label>Cost Type *</label><select ng-model="quickCode.CostType" ng-options="t for t in costTypes"><option value="">-- Select --</option></select></div></div><div class="cc-alert" style="margin:6px 0 0" ng-if="quickCode.error">{{quickCode.error}}</div><div class="cc-modal-footer" style="margin-top:8px"><button type="button" class="cc-btn" ng-click="cancelQuickCode()" ng-disabled="quickCode.saving">Cancel</button><button type="button" class="cc-btn cc-btn-primary" ng-click="saveQuickCode()" ng-disabled="quickCode.saving">{{quickCode.saving ? 'Adding...' : 'Add Cost Code'}}</button></div></div>
                     <div class="cc-grid2">
                         <div><label>Milestone</label>
                             <select ng-model="modal.data.MilestoneId" ng-options="m.id as m.MilestoneName for m in structure.milestones" ng-change="modal.data.TaskId=null"><option value="">Project level</option></select></div>
