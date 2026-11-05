@@ -164,8 +164,8 @@
                 </div>
                 <div class="cc-toolbar cc-meta" ng-if="currentVersion()">
                     <span ng-if="currentVersion().Reason">Reason: {{currentVersion().Reason}}</span>
-                    <span ng-if="currentVersion().SubmittedOn">Submitted by {{currentVersion().SubmittedByName || 'employee ' + currentVersion().SubmittedBy}} on {{currentVersion().SubmittedOn}}</span>
-                    <span ng-if="currentVersion().LockedOn">Approved by {{currentVersion().LockedByName}} on {{currentVersion().LockedOn}}</span>
+                    <span ng-if="currentVersion().SubmittedOn">Submitted by {{currentVersion().SubmittedByName || 'employee ' + currentVersion().SubmittedBy}} on {{currentVersion().SubmittedOn | ccDate}}</span>
+                    <span ng-if="currentVersion().LockedOn">Approved by {{currentVersion().LockedByName}} on {{currentVersion().LockedOn | ccDate}}</span>
                     <span class="cc-warn" ng-if="currentVersion().VersionStatus==='Draft' && currentVersion().RejectReason">Returned: {{currentVersion().RejectReason}}</span>
                     <span class="cc-warn" ng-if="isOwnSubmission() && access.CanApprove">You submitted this version, so another approver must approve it.</span>
                     <span ng-if="isSubmitted() && !access.CanApprove">Waiting for approval.</span>
@@ -207,7 +207,7 @@
                         <tbody>
                             <tr ng-if="!filteredEntries().length"><td colspan="11" class="cc-empty">No cost entries.</td></tr>
                             <tr ng-repeat="entry in filteredEntries() track by entry.id">
-                                <td>{{entry.EntryDate}}</td>
+                                <td>{{entry.EntryDate | ccDate}}</td>
                                 <td ng-if="!entry.splits.length">{{entry.CostCode}} - {{entry.CostCodeName}}</td>
                                 <td ng-if="entry.splits.length" colspan="3" class="cc-diff"><b>Split ({{entry.splits.length}})</b><div ng-repeat="s in entry.splits track by s.id">{{s.CostCodeLabel}}{{s.MilestoneName ? ' / ' + s.MilestoneName : ''}}: {{s.Amount | number:2}} ({{s.SplitPercent | number:2}} %)</div></td>
                                 <td ng-if="!entry.splits.length">{{entry.MilestoneName || 'Project level'}}</td><td ng-if="!entry.splits.length">{{entry.TaskName}}</td>
@@ -248,7 +248,7 @@
                                 <td class="cc-num">{{row.EtcAmount===null ? '-' : (row.EtcAmount | number:2)}}</td>
                                 <td class="cc-num">{{eacOf(row) | number:2}}</td>
                                 <td class="cc-num" ng-class="{'cc-neg':row.CurrentBudget - eacOf(row) < 0}">{{row.CurrentBudget - eacOf(row) | number:2}}</td>
-                                <td>{{row.AsOfDate}}</td><td>{{row.Remarks}}</td>
+                                <td>{{row.AsOfDate | ccDate}}</td><td>{{row.Remarks}}</td>
                                 <td class="cc-actions"><button type="button" class="cc-btn" ng-if="access.CanEnter" ng-click="openEtc(row)">{{row.EtcId ? 'Edit' : 'Set ETC'}}</button></td>
                             </tr>
                         </tbody>
@@ -367,7 +367,7 @@
                                 <td>{{m.Reason}}<div class="cc-warn" ng-if="m.MovementStatus==='Draft' && m.RejectReason">Returned: {{m.RejectReason}}</div></td>
                                 <td class="cc-diff"><div ng-repeat="l in m.lines track by l.id">{{l.LineKind==='Reserve' ? 'Reserve: ' + l.ReserveName : l.CostCodeLabel + (l.MilestoneName ? ' / ' + l.MilestoneName : '')}} <b ng-class="{'cc-neg':l.Amount<0}">{{l.Amount | number:2}}</b></div></td>
                                 <td class="cc-num">{{m.BudgetNet | number:2}}</td><td class="cc-num">{{m.ReserveNet | number:2}}</td>
-                                <td>{{m.SubmittedOn ? m.SubmittedByName + ', ' + m.SubmittedOn : ''}}</td><td>{{m.ApprovedOn ? m.ApprovedByName + ', ' + m.ApprovedOn : ''}}</td>
+                                <td>{{(m.SubmittedOn ? m.SubmittedByName + ', ' + m.SubmittedOn : '') | ccDate}}</td><td>{{(m.ApprovedOn ? m.ApprovedByName + ', ' + m.ApprovedOn : '') | ccDate}}</td>
                                 <td class="cc-actions">
                                     <button type="button" class="cc-btn" ng-if="access.CanEnter && m.MovementStatus==='Draft'" ng-click="openMovement(m)">Edit</button>
                                     <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanEnter && m.MovementStatus==='Draft'" ng-click="movementAction(m,'Submit')">Submit</button>
@@ -405,7 +405,7 @@
                                 <td>{{changeClassLabel(c.ChangeClass)}}</td>
                                 <td class="cc-num">{{c.EstimatedCost | number:2}}</td><td class="cc-num">{{c.AmountInEtc | number:2}}</td><td>{{c.IsProbable==1 ? 'Yes' : 'No'}}</td>
                                 <td><span class="cc-badge" ng-class="statusBadge(c.InternalStatus)">{{c.InternalStatus}}</span><div class="cc-meta" ng-if="c.InternalDecisionOn">{{c.InternalDecisionByName}}</div></td>
-                                <td><span class="cc-badge" ng-class="statusBadge(c.ClientStatus)">{{c.ClientStatus}}</span><div class="cc-meta" ng-if="c.ClientValueApproved!==null">{{c.ClientValueApproved | number:2}} on {{c.ClientDecisionOn}}</div><div class="cc-meta" ng-if="c.ClientValueApproved===null && c.ClientValueProposed!==null">proposed {{c.ClientValueProposed | number:2}}</div></td>
+                                <td><span class="cc-badge" ng-class="statusBadge(c.ClientStatus)">{{c.ClientStatus}}</span><div class="cc-meta" ng-if="c.ClientValueApproved!==null">{{c.ClientValueApproved | number:2}} on {{c.ClientDecisionOn | ccDate}}</div><div class="cc-meta" ng-if="c.ClientValueApproved===null && c.ClientValueProposed!==null">proposed {{c.ClientValueProposed | number:2}}</div></td>
                                 <td><span class="cc-badge" ng-class="statusBadge(c.SubcontractStatus)">{{c.SubcontractStatus}}</span></td>
                                 <td><span class="cc-badge" ng-class="statusBadge(c.BudgetPostingStatus)">{{c.BudgetPostingStatus}}</span><div class="cc-meta" ng-if="c.MovementStatus && c.BudgetPostingStatus!=='Posted'">movement {{c.MovementStatus}}</div></td>
                                 <td>{{c.IsAtRisk==1 ? (c.AtRiskAuthorisedOn ? 'Authorised' : 'Awaiting authorisation') : 'No'}}</td>
@@ -442,7 +442,7 @@
                             <tr ng-if="!approvals.rows.length"><td colspan="7" class="cc-empty">Nothing is waiting for approval.</td></tr>
                             <tr ng-repeat="a in approvals.rows track by $index">
                                 <td>{{a.ItemType==='AtRisk' ? 'At-risk work' : a.ItemType}}</td><td>{{a.ProjectName}}</td><td>{{a.Title}}</td>
-                                <td class="cc-num">{{a.Amount | number:2}}</td><td>{{a.RequestedByName}}<span class="cc-warn" ng-if="a.IsOwn==1"> (you)</span></td><td>{{a.RequestedOn}}</td>
+                                <td class="cc-num">{{a.Amount | number:2}}</td><td>{{a.RequestedByName}}<span class="cc-warn" ng-if="a.IsOwn==1"> (you)</span></td><td>{{a.RequestedOn | ccDate}}</td>
                                 <td class="cc-actions"><button type="button" class="cc-btn cc-btn-primary" ng-click="openApproval(a)">Open</button></td>
                             </tr>
                         </tbody>
@@ -502,8 +502,8 @@
                                 <td>{{monthLabel(p.PeriodStart)}}</td>
                                 <td><span class="cc-badge" ng-class="p.IsClosed==1 ? 'cc-badge-locked' : 'cc-badge-draft'">{{p.IsClosed==1 ? 'Closed' : 'Open'}}</span></td>
                                 <td class="cc-num">{{p.EntryCount}}</td><td class="cc-num">{{p.EntryTotal | number:2}}</td>
-                                <td>{{p.ClosedOn ? p.ClosedByName + ', ' + p.ClosedOn : ''}}</td>
-                                <td>{{p.ReopenedOn ? p.ReopenedByName + ', ' + p.ReopenedOn + ' - ' + p.ReopenReason : ''}}</td>
+                                <td>{{(p.ClosedOn ? p.ClosedByName + ', ' + p.ClosedOn : '') | ccDate}}</td>
+                                <td>{{(p.ReopenedOn ? p.ReopenedByName + ', ' + p.ReopenedOn + ' - ' + p.ReopenReason : '') | ccDate}}</td>
                                 <td><button type="button" class="cc-link" ng-if="p.SnapshotCount>0" ng-click="viewSnapshot(p.LatestSnapshotId)">{{p.SnapshotCount}} version(s) - view latest</button></td>
                                 <td class="cc-actions">
                                     <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanApprove && p.IsClosed!=1" ng-click="closePeriod(p)" ng-disabled="busy">Close Month</button>
@@ -530,7 +530,7 @@
                         <tbody>
                             <tr ng-if="!filteredHistory().length"><td colspan="6" class="cc-empty">No history yet.</td></tr>
                             <tr ng-repeat="h in filteredHistory() track by h.id">
-                                <td>{{h.ActionTime}}</td><td>{{h.UserName}}</td><td>{{entityLabel(h.EntityType)}}{{h.EntityId ? ' #' + h.EntityId : ''}}</td>
+                                <td>{{h.ActionTime | ccDate}}</td><td>{{h.UserName}}</td><td>{{entityLabel(h.EntityType)}}{{h.EntityId ? ' #' + h.EntityId : ''}}</td>
                                 <td>{{h.Action}}</td><td>{{h.Reason}}</td><td class="cc-diff">{{h.Changes}}</td>
                             </tr>
                         </tbody>
@@ -721,7 +721,7 @@
                         <div class="cc-hint" ng-if="modal.data.History && !modal.data.History.length && !modal.data.HistoryError">No earlier changes recorded.</div>
                         <div class="cc-hist-list" ng-if="modal.data.History.length">
                             <div class="cc-hist-row" ng-repeat="h in modal.data.History track by h.id">
-                                <div class="cc-hist-head"><b>{{h.ActionTime}}</b> &middot; {{h.UserName || 'Unknown user'}} &middot; {{h.Summary}}</div>
+                                <div class="cc-hist-head"><b>{{h.ActionTime | ccDate}}</b> &middot; {{h.UserName || 'Unknown user'}} &middot; {{h.Summary}}</div>
                                 <div ng-if="h.Reason" class="cc-hist-reason">Reason: {{h.Reason}}</div>
                             </div>
                         </div>
@@ -730,11 +730,11 @@
                 </div>
 
                 <div ng-if="modal.type==='docs'">
-                    <h4>Documents &middot; {{modal.data.entry.EntryDate}} &middot; {{modal.data.entry.SourceDocType}} {{modal.data.entry.ReferenceNo}}</h4>
+                    <h4>Documents &middot; {{modal.data.entry.EntryDate | ccDate}} &middot; {{modal.data.entry.SourceDocType}} {{modal.data.entry.ReferenceNo}}</h4>
                     <div class="cc-doclist">
                         <div class="cc-doc" ng-repeat="doc in modal.data.entry.documents track by doc.id" title="{{doc.FileName}}">
                             <span class="cc-doc-icon cc-doc-{{docKind(doc.FileName)}}">{{docKindLabel(doc.FileName)}}</span>
-                            <span class="cc-doc-name">{{doc.FileName}}</span><span class="cc-doc-size">{{fileSize(doc.FileSize)}} &middot; {{doc.UploadedBy}} {{doc.cdate}}</span>
+                            <span class="cc-doc-name">{{doc.FileName}}</span><span class="cc-doc-size">{{fileSize(doc.FileSize)}} &middot; {{doc.UploadedBy}} {{doc.cdate | ccDate}}</span>
                             <span class="cc-doc-tools">
                                 <button type="button" class="cc-doc-btn" ng-click="viewSavedDoc(doc)" title="View" aria-label="View {{doc.FileName}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
                                 <button type="button" class="cc-doc-btn" ng-click="downloadSavedDoc(doc)" title="Download" aria-label="Download {{doc.FileName}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg></button>

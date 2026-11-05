@@ -141,7 +141,7 @@ public partial class pms_costcontrol_export : Page
                 DataTable header = Table(report, 1);
                 string version = header.Rows.Count > 0 && header.Rows[0]["CurrentVersionNo"] != DBNull.Value ? "approved version " + header.Rows[0]["CurrentVersionNo"] : "no approved budget";
                 string asAt = snapshotId > 0 && header.Rows.Count > 0
-                    ? "SNAPSHOT of month starting " + header.Rows[0]["PeriodStart"] + ", version " + header.Rows[0]["SnapshotVersion"] + " (frozen at month close)"
+                    ? "SNAPSHOT of month starting " + (header.Rows[0]["PeriodStart"] is DateTime ? PmsCostControl.FormatDisplayDate((DateTime)header.Rows[0]["PeriodStart"]) : Convert.ToString(header.Rows[0]["PeriodStart"], CultureInfo.InvariantCulture)) + ", version " + header.Rows[0]["SnapshotVersion"] + " (frozen at month close)"
                     : "Live figures (not a snapshot)";
                 filter = "Grouped by " + (groupBy == "MILESTONE" ? "milestone" : groupBy == "COSTTYPE" ? "cost type" : "cost code") + "; baseline = " + version + "; " + asAt;
                 columns = new List<Column> { new Column(groupBy == "MILESTONE" ? "Milestone" : groupBy == "COSTTYPE" ? "Cost type" : "Cost code", "GroupName", false) };
@@ -208,8 +208,8 @@ public partial class pms_costcontrol_export : Page
         sheet.Range[1, 1].Style.Font.IsBold = true;
         sheet.Range[1, 1].Style.Font.Size = 13;
         sheet.Range[2, 1].Text = "Project: " + projectName;
-        sheet.Range[3, 1].Text = String.IsNullOrEmpty(filter) ? "Filter: none" : filter;
-        sheet.Range[4, 1].Text = "Generated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " by " + userName;
+        sheet.Range[3, 1].Text = String.IsNullOrEmpty(filter) ? "Filter: none" : PmsCostControl.FormatDisplayDates(filter);
+        sheet.Range[4, 1].Text = "Generated: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture) + " by " + userName;
         sheet.Range[5, 1].Text = "Currency: amounts as entered, one currency per project, not converted (multi-currency is not set up yet).";
 
         const int headerRow = 6;
@@ -236,8 +236,21 @@ public partial class pms_costcontrol_export : Page
                 }
                 else if (column.Field == "IsPeriodClosed" || column.Field == "IsAtRisk")
                     cell.Text = Convert.ToInt32(value, CultureInfo.InvariantCulture) == 1 ? "Yes" : "No";
+                else if (column.Field == "EntryDate" || column.Field == "AsOfDate")
+                {
+                    // Real Excel dates (sortable), shown as dd/mm/yyyy.
+                    DateTime date;
+                    if (value is DateTime) date = (DateTime)value;
+                    else if (!DateTime.TryParseExact(Convert.ToString(value, CultureInfo.InvariantCulture).Trim(), new[] { "yyyy-MM-dd", "yyyy-MM-dd HH:mm", "yyyy-MM-dd HH:mm:ss" },
+                                 CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+                    { cell.Text = PmsCostControl.FormatDisplayDates(Convert.ToString(value, CultureInfo.InvariantCulture)); continue; }
+                    cell.DateTimeValue = date.Date;
+                    cell.NumberFormat = "dd/mm/yyyy";
+                }
+                else if (value is DateTime)
+                    cell.Text = PmsCostControl.FormatDisplayDate((DateTime)value);
                 else
-                    cell.Text = Convert.ToString(value, CultureInfo.InvariantCulture);
+                    cell.Text = PmsCostControl.FormatDisplayDates(Convert.ToString(value, CultureInfo.InvariantCulture));
             }
             row++;
         }

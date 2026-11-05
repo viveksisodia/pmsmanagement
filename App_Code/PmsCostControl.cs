@@ -198,6 +198,29 @@ public static class PmsCostControl
         return value == "MILESTONE" || value == "COSTTYPE" ? value : "COSTCODE";
     }
 
+    private static readonly System.Text.RegularExpressions.Regex IsoDate = new System.Text.RegularExpressions.Regex(
+        @"\b(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?)?\b");
+
+    /// <summary>Display format used everywhere in Cost Control: dd/MM/yyyy (dd/MM/yyyy HH:mm for date-times).
+    /// Converts every yyyy-MM-dd[ HH:mm] inside a text.</summary>
+    public static string FormatDisplayDates(string text)
+    {
+        if (String.IsNullOrEmpty(text)) return text ?? "";
+        return IsoDate.Replace(text, m =>
+        {
+            string result = m.Groups[3].Value + "/" + m.Groups[2].Value + "/" + m.Groups[1].Value;
+            if (m.Groups[4].Success && !(m.Groups[4].Value == "00" && m.Groups[5].Value == "00")) result += " " + m.Groups[4].Value + ":" + m.Groups[5].Value;
+            return result;
+        });
+    }
+
+    public static string FormatDisplayDate(DateTime value)
+    {
+        return value.TimeOfDay == TimeSpan.Zero
+            ? value.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)
+            : value.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+    }
+
     public static SqlParameter DateParameter(string name, DateTime value)
     {
         return new SqlParameter(name, SqlDbType.Date) { Value = value };

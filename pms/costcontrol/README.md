@@ -76,7 +76,7 @@ A person can never approve a budget they submitted themselves (AP-03). This is e
 - **Soft delete:** the `status=1 / archive=0` convention is used.
 - **Parameterised data access:** stored procedures with parameters, and no string-built SQL with user input.
 - **Existing Budget/Actual fields:** these fields on Project, Milestone, Task and Subtask are untouched.
-- **Dates:** business dates are sent as `yyyy-MM-dd` and stored as `DATE`. Timestamps use the database server's `GETDATE()`.
+- **Dates:** business dates are sent as `yyyy-MM-dd` and stored as `DATE`. Timestamps use the database server's `GETDATE()`. Every date shown on screen, in messages and in Excel uses **dd/mm/yyyy** (dd/mm/yyyy HH:mm for date-times): the `ccDate` filter / `formatDisplayDates` in JS and `PmsCostControl.FormatDisplayDates` in C#. Excel date columns are real dates formatted dd/mm/yyyy. Date pickers follow the browser's own regional format.
 
 ## Verification done and not done
 

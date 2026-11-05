@@ -3,7 +3,20 @@
 
     // PMS Cost Control (Phase 1) - AngularJS 1.x controller.
     // Server methods live in /pms/costcontrol/default.aspx.cs.
+    // Display format for every date on this page: dd/mm/yyyy (and dd/mm/yyyy HH:mm for date-times).
+    // Converts each yyyy-mm-dd[ HH:mm[:ss]] inside a text, so it also works for messages and combined texts.
+    // Data is still sent to the server as yyyy-mm-dd.
+    var ISO_DATE = /\b(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?)?\b/g;
+    function formatDisplayDates(text) {
+        if (text === null || text === undefined) return '';
+        return String(text).replace(ISO_DATE, function (all, y, m, d, hh, mm) {
+            return d + '/' + m + '/' + y + (hh && !(hh === '00' && mm === '00') ? ' ' + hh + ':' + mm : '');
+        });
+    }
+    window.ccFormatDisplayDates = formatDisplayDates;
+
     angular.module('pmsCostControlApp', [])
+        .filter('ccDate', function () { return formatDisplayDates; })
         /*
          * <cc-search-select> - searchable drop-down used by every list on this page.
          *   ng-model       selected value (works with ng-change)
@@ -209,11 +222,12 @@
                 return $http.post('default.aspx/' + method, payload || {}).then(function (response) {
                     var result = response && response.data ? response.data.d : null;
                     if (!result) throw new Error('No response from the server.');
+                    if (typeof result.Message === 'string') result.Message = formatDisplayDates(result.Message);
                     if (result.Success === false && !result.NeedsConfirm) throw new Error(result.Message || 'The request failed.');
                     return result;
                 }, function (response) {
                     var message = response && response.data && response.data.Message ? response.data.Message : 'The server request failed.';
-                    throw new Error(message);
+                    throw new Error(formatDisplayDates(message));
                 });
             }
             function showError(err) { $scope.notice = ''; $scope.error = err && err.message ? err.message : String(err); }
@@ -278,7 +292,8 @@
             }
             $scope.filteredEntries = function () {
                 return $scope.actuals.entries.filter(function (e) {
-                    return matches(e, $scope.actuals.search, ['EntryDate', 'CostCode', 'CostCodeName', 'MilestoneName', 'TaskName', 'SiteName', 'SourceDocType', 'ReferenceNo', 'Remarks']);
+                    e.EntryDateText = formatDisplayDates(e.EntryDate);   // search by dd/mm/yyyy as shown
+                    return matches(e, $scope.actuals.search, ['EntryDateText', 'EntryDate', 'CostCode', 'CostCodeName', 'MilestoneName', 'TaskName', 'SiteName', 'SourceDocType', 'ReferenceNo', 'Remarks']);
                 });
             };
             $scope.filteredCodes = function () {
@@ -306,7 +321,8 @@
                     if (row.OldData && row.NewData) { if (String(oldValue) !== String(newValue)) parts.push(key + ': ' + (oldValue == null ? '-' : oldValue) + ' -> ' + (newValue == null ? '-' : newValue)); }
                     else parts.push(key + ': ' + (row.NewData ? newValue : oldValue));
                 });
-                return parts.join('; ');
+                if (!parts.length && row.OldData && row.NewData) return 'Saved again, no field changed';
+                return formatDisplayDates(parts.join('; '));
             }
 
             // ---------- option builders ----------
@@ -666,7 +682,7 @@
                 });
             };
             $scope.openDeleteEntry = function (entry) {
-                openReason('Delete Cost Entry', 'Entry of ' + entry.EntryDate + ', amount ' + entry.Amount + '. The deletion and its reason are kept in the history.', 'Delete', function (reason) {
+                openReason('Delete Cost Entry', 'Entry of ' + formatDisplayDates(entry.EntryDate) + ', amount ' + entry.Amount + '. The deletion and its reason are kept in the history.', 'Delete', function (reason) {
                     return call('DeleteCostEntry', { costEntryId: entry.id, reason: reason }).then(function (r) { showNotice(r.Message); return loadEntries(); });
                 });
             };
