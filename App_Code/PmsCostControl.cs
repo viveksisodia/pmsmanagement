@@ -114,6 +114,38 @@ public static class PmsCostControl
         return context;
     }
 
+    /// <summary>
+    /// Per-project access (Phase 3): an employee with no project list may use every project;
+    /// otherwise only the listed ones. Administrators always may. Throws 403 when not allowed.
+    /// </summary>
+    public static void RequireProject(Context login, int projectId)
+    {
+        if (projectId <= 0) throw new HttpException(400, "Select a project.");
+        DataSet ds = RunProcedure("usp_pms_cc_ProjectAllowed",
+            new SqlParameter("@regid", login.RegId), new SqlParameter("@uid", login.EmployeeId),
+            new SqlParameter("@IsAdmin", login.IsAdmin), new SqlParameter("@ProjectId", projectId));
+        bool allowed = ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0 &&
+                       Convert.ToInt32(ds.Tables[0].Rows[0]["Allowed"], CultureInfo.InvariantCulture) == 1;
+        if (!allowed) throw new HttpException(403, "You do not have access to this project in Cost Control.");
+    }
+
+    /// <summary>Finds the project of a record (BudgetVersion, BudgetLine, CostEntry, Movement, Change, Reserve, Snapshot) and checks access to it.</summary>
+    public static int RequireRecordProject(Context login, string entityType, int id)
+    {
+        DataSet ds = RunProcedure("usp_pms_cc_ResolveProject",
+            new SqlParameter("@regid", login.RegId), new SqlParameter("@EntityType", entityType), new SqlParameter("@Id", id));
+        object value = ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0 ? ds.Tables[0].Rows[0]["ProjectId"] : null;
+        if (value == null || value == DBNull.Value) throw new HttpException(404, "The record was not found.");
+        int projectId = Convert.ToInt32(value, CultureInfo.InvariantCulture);
+        RequireProject(login, projectId);
+        return projectId;
+    }
+
+    public static string ToJson(object value)
+    {
+        return new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(value);
+    }
+
     /// <summary>True when the header menu should show the Cost Control link. Never throws.</summary>
     public static bool ShowMenuLink()
     {

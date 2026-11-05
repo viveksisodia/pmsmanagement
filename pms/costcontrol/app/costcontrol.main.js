@@ -141,7 +141,13 @@
             $scope.versionOptions = [];
             $scope.actuals = { entries: [], search: '' };
             $scope.forecast = { rows: [] };
-            $scope.report = { groupBy: 'COSTCODE', rows: [], header: null };
+            $scope.report = { groupBy: 'COSTCODE', rows: [], header: null, snapshotId: 0, showBreakdown: false };
+            $scope.movements = { rows: [], reserves: [] };
+            $scope.changes = { rows: [] };
+            $scope.approvals = { rows: [] };
+            $scope.snapshotOptions = [{ id: 0, Label: 'Live (today)' }];
+            $scope.reserveOptions = [];
+            $scope.changeOptions = [];
             $scope.summary = { rows: [] };
             $scope.periods = { rows: [] };
             $scope.history = { rows: [], search: '', companyLevel: false };
@@ -167,7 +173,10 @@
                 { id: 'actuals', name: 'Cost Entries', project: true },
                 { id: 'forecast', name: 'Forecast (ETC)', project: true },
                 { id: 'report', name: 'Budget vs Actual', project: true },
+                { id: 'movements', name: 'Movements & Reserves', project: true },
+                { id: 'changes', name: 'Changes', project: true },
                 { id: 'summary', name: 'Project Summary', project: false },
+                { id: 'approvals', name: 'Pending Approvals', project: false },
                 { id: 'periods', name: 'Periods', project: true },
                 { id: 'history', name: 'History', project: true },
                 { id: 'codes', name: 'Cost Codes', project: false, admin: true },
@@ -335,7 +344,8 @@
             function loadEntries() {
                 if (!$scope.selection.projectId) return;
                 return call('GetCostEntries', { projectId: $scope.selection.projectId }).then(function (result) {
-                    $scope.actuals.entries = result.Entries || [];
+                    var splits = result.Splits || [];
+                    $scope.actuals.entries = (result.Entries || []).map(function (e) { e.splits = splits.filter(function (s) { return s.EntryId === e.id; }); return e; });
                 }).catch(showError);
             }
             function loadForecast() {
@@ -346,7 +356,7 @@
             }
             $scope.loadReport = function () {
                 if (!$scope.selection.projectId) return;
-                return call('GetBudgetVsActual', { projectId: $scope.selection.projectId, groupBy: $scope.report.groupBy }).then(function (result) {
+                return call('GetBudgetVsActual', { projectId: $scope.selection.projectId, groupBy: $scope.report.groupBy, snapshotId: $scope.report.snapshotId || 0 }).then(function (result) {
                     $scope.report.rows = result.Rows || [];
                     $scope.report.header = result.Header || null;
                 }).catch(showError);
@@ -377,7 +387,10 @@
                     case 'budget': return $scope.loadBudget();
                     case 'actuals': return loadEntries();
                     case 'forecast': return loadForecast();
-                    case 'report': return $scope.loadReport();
+                    case 'report': return loadSnapshots().then($scope.loadReport);
+                    case 'movements': return loadMovements();
+                    case 'changes': return loadChanges();
+                    case 'approvals': return $scope.loadApprovals();
                     case 'summary': return $scope.loadSummary();
                     case 'periods': return $scope.loadPeriods();
                     case 'history': return $scope.loadHistory();
@@ -398,11 +411,17 @@
                 $scope.versionOptions = [];
                 $scope.actuals.entries = [];
                 $scope.forecast.rows = [];
-                $scope.report.rows = []; $scope.report.header = null;
+                $scope.report.rows = []; $scope.report.header = null; $scope.report.snapshotId = 0;
+                $scope.snapshotOptions = [{ id: 0, Label: 'Live (today)' }];
+                $scope.movements = { rows: [], reserves: [] }; $scope.reserveOptions = [];
+                $scope.changes = { rows: [] }; $scope.changeOptions = [];
                 $scope.periods.rows = [];
                 $scope.history.rows = [];
                 saveSelection();
                 loadStructure();
+                // Changes and reserves feed the cost-entry and movement forms.
+                if ($scope.tab !== 'changes') loadChanges();
+                if ($scope.tab !== 'movements') loadMovements();
                 refreshTab();
             };
             $scope.openProjectReport = function (projectId) {
@@ -413,7 +432,7 @@
             $scope.exportFile = function (type) {
                 var url = 'export.aspx?type=' + encodeURIComponent(type);
                 if (type !== 'summary') url += '&projectId=' + encodeURIComponent($scope.selection.projectId);
-                if (type === 'report') url += '&groupBy=' + encodeURIComponent($scope.report.groupBy);
+                if (type === 'report') url += '&groupBy=' + encodeURIComponent($scope.report.groupBy) + '&snapshotId=' + encodeURIComponent($scope.report.snapshotId || 0);
                 if (type === 'budget' && $scope.budget.versionId) url += '&versionId=' + encodeURIComponent($scope.budget.versionId);
                 window.location.href = url;
             };
@@ -445,10 +464,13 @@
             $scope.saveQuickUnit = function () {
                 var q = $scope.quickUnit;
                 if (!(q.Name || '').trim()) { q.error = 'Enter a unit name.'; return; }
+                var wanted = q.Name.replace(/\s+/g, ' ').trim().toUpperCase();
+                var existing = $scope.units.filter(function (u) { return String(u.UnitName || '').replace(/\s+/g, ' ').trim().toUpperCase() === wanted; })[0];
+                if (existing) { $scope.modal.data.UnitId = existing.id; $scope.quickUnit = { open: false }; showNotice('Unit "' + existing.UnitName + '" already exists, so it has been selected instead of adding a duplicate.'); return; }
                 q.saving = true; q.error = '';
                 call('AddUnit', { unitName: q.Name.trim() })
                     .then(function (result) {
-                        return loadLookups().then(function () { $scope.modal.data.UnitId = result.Id; $scope.quickUnit = { open: false }; });
+                        return loadLookups().then(function () { $scope.modal.data.UnitId = result.Id; $scope.quickUnit = { open: false }; if (result.AlreadyExists) showNotice(result.Message); });
                     })
                     .catch(function (err) { q.saving = false; q.error = err.message; });
             };
@@ -486,7 +508,9 @@
                     MilestoneId: entry.MilestoneId || null, TaskId: entry.TaskId || null,
                     EntryDateValue: entry.EntryDate ? fromDateText(entry.EntryDate) : new Date(),
                     Amount: toNumber(entry.Amount), SourceDocType: entry.SourceDocType || null, ReferenceNo: entry.ReferenceNo || '',
-                    SiteName: entry.SiteName || '', Remarks: entry.Remarks || '', Reason: ''
+                    SiteName: entry.SiteName || '', Remarks: entry.Remarks || '', Reason: '', ChangeId: entry.ChangeId || null,
+                    IsSplit: !!(entry.splits && entry.splits.length),
+                    Splits: (entry.splits || []).map(function (s) { return { CostCodeId: s.CostCodeId, MilestoneId: s.MilestoneId || null, TaskId: s.TaskId || null, Amount: toNumber(s.Amount), Percent: toNumber(s.SplitPercent) }; })
                 });
             };
             $scope.openEtc = function (row) {
@@ -524,6 +548,8 @@
 
             function validateModal() {
                 var d = $scope.modal.data;
+                var phase3Message = validatePhase3Modal($scope.modal.type, d);
+                if (phase3Message) return phase3Message;
                 switch ($scope.modal.type) {
                     case 'version': if ($scope.budget.versions.length && !(d.reason || '').trim()) return 'A reason is required for a revision.'; break;
                     case 'reason': if (!(d.reason || '').trim()) return 'Enter a reason.'; break;
@@ -533,8 +559,13 @@
                         break;
                     case 'entry':
                         if (!d.EntryDateValue) return 'Enter the cost date.';
-                        if (!d.CostCodeId) return 'Select a cost code.';
                         if (!d.Amount) return 'Enter a non-zero amount.';
+                        if (d.IsSplit) {
+                            if (d.Splits.length < 2) return 'A split needs at least two rows.';
+                            if (d.Splits.some(function (s) { return !s.CostCodeId || !s.Amount; })) return 'Each split row needs a cost code and an amount.';
+                            if (!$scope.splitBalanced()) return 'The split rows must total exactly the entry amount (100 %).';
+                            d.CostCodeId = d.Splits[0].CostCodeId;
+                        } else if (!d.CostCodeId) return 'Select a cost code.';
                         if (d.Id && !(d.Reason || '').trim()) return 'Enter the reason for changing this saved entry.';
                         break;
                     case 'etc':
@@ -556,14 +587,17 @@
                     Id: d.Id, ProjectId: $scope.selection.projectId, MilestoneId: toIntOrNull(d.MilestoneId), TaskId: toIntOrNull(d.TaskId),
                     CostCodeId: d.CostCodeId, EntryDate: toDateText(d.EntryDateValue), Amount: d.Amount,
                     SourceDocType: d.SourceDocType || '', ReferenceNo: d.ReferenceNo, SiteName: d.SiteName, Remarks: d.Remarks,
-                    Reason: d.Reason || '', ConfirmDuplicate: !!confirmDuplicate } };
+                    Reason: d.Reason || '', ConfirmDuplicate: !!confirmDuplicate, ChangeId: toIntOrNull(d.ChangeId),
+                    Splits: d.IsSplit ? d.Splits.map(function (s) { return { CostCodeId: s.CostCodeId, MilestoneId: toIntOrNull(s.MilestoneId), TaskId: toIntOrNull(s.TaskId), Amount: s.Amount }; }) : [] } };
             }
 
             $scope.saveModal = function () {
                 var message = validateModal();
                 if (message) { $scope.modal.error = message; return; }
                 var d = $scope.modal.data, request, after;
-                switch ($scope.modal.type) {
+                var phase3 = savePhase3Modal($scope.modal.type, d);
+                if (phase3) { request = phase3.request; after = phase3.after; }
+                else switch ($scope.modal.type) {
                     case 'version':
                         request = call('CreateBudgetVersion', { projectId: $scope.selection.projectId, reason: d.reason || '' });
                         after = function (result) { $scope.budget.versionId = result.Id; return $scope.loadBudget(); };
@@ -653,6 +687,303 @@
                     .then(function () { a.saving = false; a.message = 'Saved'; })
                     .catch(function (err) { a.saving = false; a.message = ''; showError(err); return loadAccess(); });
             };
+
+            // =====================================================================
+            // Phase 3: snapshots, movements & reserves, changes & at-risk, splits,
+            // pending approvals, per-project access
+            // =====================================================================
+            $scope.reserveTypeOptions = [
+                { id: 'ContractorContingency', Name: 'Contractor contingency (internal)' },
+                { id: 'ClientAllowance', Name: 'Client allowance' },
+                { id: 'ProvisionalSum', Name: 'Provisional sum' }];
+            $scope.movementTypeOptions = [
+                { id: 'Transfer', Name: 'Transfer between budget lines' },
+                { id: 'ReserveAddition', Name: 'Reserve addition' },
+                { id: 'ReserveRelease', Name: 'Reserve release (reserve to budget)' },
+                { id: 'ReserveReturn', Name: 'Reserve return (budget to reserve)' },
+                { id: 'Correction', Name: 'Baseline correction' }];
+            $scope.changeClassOptions = [
+                { id: 'ClientVariation', Name: 'Client variation' }, { id: 'InternalBudgetChange', Name: 'Internal budget change' },
+                { id: 'SubcontractVariation', Name: 'Subcontract variation' }, { id: 'BaselineCorrection', Name: 'Baseline correction' },
+                { id: 'BudgetTransfer', Name: 'Budget transfer' }, { id: 'ContingencyRelease', Name: 'Contingency release' }];
+            $scope.statusFieldOptions = [{ id: 'Client', Name: 'Client approval' }, { id: 'Subcontract', Name: 'Subcontract approval' }];
+            var STATUS_VALUES = {
+                Client: ['NotApplicable', 'Pending', 'Submitted', 'Approved', 'Rejected'],
+                Subcontract: ['NotApplicable', 'Pending', 'Approved', 'Rejected']
+            };
+            $scope.statusValueOptions = [];
+            function labelOf(options, id) { var o = options.filter(function (x) { return x.id === id; })[0]; return o ? o.Name : id; }
+            $scope.reserveTypeLabel = function (id) { return labelOf($scope.reserveTypeOptions, id); };
+            $scope.movementTypeLabel = function (id) { return id === 'ApprovedChange' ? 'Approved change' : labelOf($scope.movementTypeOptions, id); };
+            $scope.changeClassLabel = function (id) { return labelOf($scope.changeClassOptions, id); };
+            $scope.statusBadge = function (s) {
+                if (s === 'Approved' || s === 'Posted' || s === 'Locked') return 'cc-badge-approved';
+                if (s === 'Rejected') return 'cc-badge-rejected';
+                if (s === 'Submitted') return 'cc-badge-submitted';
+                if (s === 'Draft' || s === 'Pending') return 'cc-badge-draft';
+                return 'cc-badge-muted';
+            };
+            $scope.vacP = function () {
+                var h = $scope.report.header || {};
+                return $scope.sum($scope.report.rows, 'CurrentBudget') + (toNumber(h.RSV) || 0) - $scope.sum($scope.report.rows, 'Eac') - (toNumber(h.PPC) || 0);
+            };
+
+            // ---------- snapshots ----------
+            function loadSnapshots() {
+                if (!$scope.selection.projectId) return Promise.resolve();
+                return call('GetSnapshots', { projectId: $scope.selection.projectId }).then(function (result) {
+                    var options = [{ id: 0, Label: 'Live (today)' }];
+                    (result.Rows || []).forEach(function (s) { options.push({ id: s.id, Label: $scope.monthLabel(s.PeriodStart) + ' - snapshot v' + s.SnapshotVersion }); });
+                    $scope.snapshotOptions = options;
+                    if (!options.some(function (o) { return o.id === $scope.report.snapshotId; })) $scope.report.snapshotId = 0;
+                }).catch(showError);
+            }
+            $scope.viewSnapshot = function (snapshotId) {
+                $scope.report.snapshotId = snapshotId;
+                $scope.tab = 'report';
+                saveSelection();
+                loadSnapshots().then(function () { $scope.report.snapshotId = snapshotId; return $scope.loadReport(); });
+            };
+
+            // ---------- movements & reserves ----------
+            function loadMovements() {
+                if (!$scope.selection.projectId) return;
+                return call('GetMovements', { projectId: $scope.selection.projectId }).then(function (result) {
+                    var lines = result.Lines || [];
+                    $scope.movements.rows = (result.Movements || []).map(function (m) { m.lines = lines.filter(function (l) { return l.MovementId === m.id; }); return m; });
+                    $scope.movements.reserves = result.Reserves || [];
+                    $scope.reserveOptions = $scope.movements.reserves.map(function (r) { return { id: r.id, Label: r.Name + ' (' + $scope.reserveTypeLabel(r.ReserveType) + ', ' + (toNumber(r.Remaining) || 0).toFixed(2) + ')' }; });
+                }).catch(showError);
+            }
+            $scope.openReserve = function (r) {
+                r = r || {};
+                openModal('reserve', { Id: r.id || 0, ReserveType: r.ReserveType || null, Name: r.Name || '', Remarks: r.Remarks || '' });
+            };
+            var MOVEMENT_KINDS = {
+                Transfer: ['Budget'], Correction: ['Budget'], ApprovedChange: ['Budget'],
+                ReserveAddition: ['Reserve'], ReserveRelease: ['Reserve', 'Budget'], ReserveReturn: ['Reserve', 'Budget']
+            };
+            $scope.movementAllows = function (kind) { return (MOVEMENT_KINDS[$scope.modal.data.MovementType] || []).indexOf(kind) >= 0; };
+            $scope.movementMustNet = function () { var t = $scope.modal.data.MovementType; return t === 'Transfer' || t === 'ReserveRelease' || t === 'ReserveReturn'; };
+            $scope.movementTypeHint = function (t) {
+                switch (t) {
+                    case 'Transfer': return 'Move budget from one line (negative amount) to another (positive amount). The total must be zero.';
+                    case 'ReserveAddition': return 'Sets or increases a reserve. Reserve lines only, positive amounts. This changes the total available budget, so it needs approval.';
+                    case 'ReserveRelease': return 'Reserve line negative, budget lines positive; the total must be zero, so RB + RSV stays the same.';
+                    case 'ReserveReturn': return 'Budget lines negative, reserve line positive; the total must be zero.';
+                    case 'Correction': return 'Corrects an error in the approved baseline (ADJ). Budget lines only; the reason is mandatory.';
+                    case 'ApprovedChange': return 'Created from an internally authorised change. When approved, the change becomes budget-posted.';
+                    default: return 'Choose the movement type.';
+                }
+            };
+            $scope.movementTypeChanged = function () {
+                var allowed = MOVEMENT_KINDS[$scope.modal.data.MovementType] || [];
+                $scope.modal.data.Lines = ($scope.modal.data.Lines || []).filter(function (l) { return allowed.indexOf(l.LineKind) >= 0; });
+            };
+            $scope.addMovementLine = function (kind) {
+                $scope.modal.data.Lines.push({ LineKind: kind, CostCodeId: null, MilestoneId: null, ReserveId: null, Amount: null });
+            };
+            $scope.movementTotals = function () {
+                var budget = 0, reserve = 0;
+                (($scope.modal.data && $scope.modal.data.Lines) || []).forEach(function (l) { var a = toNumber(l.Amount) || 0; if (l.LineKind === 'Reserve') reserve += a; else budget += a; });
+                budget = Math.round(budget * 100) / 100; reserve = Math.round(reserve * 100) / 100;
+                return { budget: budget, reserve: reserve, net: Math.round((budget + reserve) * 100) / 100 };
+            };
+            $scope.openMovement = function (m) {
+                if (!m && !$scope.reserveOptions.length) loadMovements();
+                m = m || {};
+                openModal('movement', {
+                    Id: m.id || 0, MovementType: m.MovementType || null, Reason: m.Reason || '', RiskReference: m.RiskReference || '', ChangeId: m.ChangeId || null,
+                    Lines: (m.lines || []).map(function (l) { return { LineKind: l.LineKind, CostCodeId: l.CostCodeId, MilestoneId: l.MilestoneId || null, ReserveId: l.ReserveId, Amount: toNumber(l.Amount) }; })
+                });
+            };
+            $scope.movementAction = function (m, action) {
+                if (action === 'Reject') {
+                    openReason('Return Movement #' + m.MovementNo, 'The preparer will see this reason and can correct and resubmit.', 'Return to Draft', function (reason) {
+                        return call('SetMovementStatus', { movementId: m.id, action: 'Reject', reason: reason }).then(function (r) { showNotice(r.Message); return loadMovements(); });
+                    });
+                    return;
+                }
+                var question = { Submit: 'Submit this movement for approval?', Discard: 'Discard this draft movement?', Approve: 'Approve this movement? The revised budget changes immediately.' }[action];
+                confirmAndRun(question, 'SetMovementStatus', { movementId: m.id, action: action, reason: '' }, function () { loadChanges(); return loadMovements(); });
+            };
+
+            // ---------- change register & at-risk ----------
+            function loadChanges() {
+                if (!$scope.selection.projectId) return;
+                return call('GetChanges', { projectId: $scope.selection.projectId }).then(function (result) {
+                    var allocations = result.Allocations || [];
+                    $scope.changes.rows = (result.Changes || []).map(function (c) { c.allocations = allocations.filter(function (a) { return a.ChangeId === c.id; }); return c; });
+                    // Cost entries may be linked to open changes; at-risk ones only once authorised (AR-03).
+                    $scope.changeOptions = $scope.changes.rows
+                        .filter(function (c) { return c.RecordStatus === 'Open' && (c.IsAtRisk != 1 || c.AtRiskAuthorisedOn); })
+                        .map(function (c) { return { id: c.id, Label: '#' + c.ChangeNo + ' ' + c.Title + (c.IsAtRisk == 1 ? ' (at risk - authorised)' : '') }; });
+                }).catch(showError);
+            }
+            $scope.changeTotals = function () {
+                var t = { pce: 0, ppc: 0, atRisk: 0, clientApproved: 0 };
+                $scope.changes.rows.forEach(function (c) {
+                    var pending = c.RecordStatus === 'Open' && c.BudgetPostingStatus === 'NotPosted' && c.InternalStatus !== 'Rejected';
+                    if (pending) { t.pce += toNumber(c.EstimatedCost) || 0; if (c.IsProbable == 1) t.ppc += Math.max((toNumber(c.EstimatedCost) || 0) - (toNumber(c.AmountInEtc) || 0), 0); }
+                    if (c.IsAtRisk == 1 && c.ClientStatus !== 'Approved') t.atRisk += toNumber(c.CostIncurred) || 0;
+                    if (c.ClientValueApproved !== null) t.clientApproved += toNumber(c.ClientValueApproved) || 0;
+                });
+                return t;
+            };
+            $scope.openChange = function (c) {
+                c = c || {};
+                openModal('change', {
+                    Id: c.id || 0, Title: c.Title || '', Description: c.Description || '', ChangeClass: c.ChangeClass || null,
+                    EstimatedCost: toNumber(c.EstimatedCost), AmountInEtc: toNumber(c.AmountInEtc) || 0, IsProbable: c.IsProbable == 1,
+                    ClientValueProposed: toNumber(c.ClientValueProposed), SubcontractValue: toNumber(c.SubcontractValue), IsAtRisk: c.IsAtRisk == 1,
+                    Allocations: (c.allocations || []).map(function (a) { return { CostCodeId: a.CostCodeId, MilestoneId: a.MilestoneId || null, Amount: toNumber(a.Amount) }; })
+                });
+            };
+            $scope.statusFieldChanged = function () {
+                $scope.statusValueOptions = (STATUS_VALUES[$scope.modal.data.Field] || []).map(function (v) { return { id: v, Name: v }; });
+                $scope.modal.data.Value = null;
+            };
+            $scope.openChangeStatus = function (c) {
+                openModal('changeStatus', { ChangeId: c.id, ChangeNo: c.ChangeNo, Field: 'Client', Value: null, Reason: '', DecisionDateValue: new Date(), Amount: toNumber(c.ClientValueProposed) });
+                $scope.statusValueOptions = STATUS_VALUES.Client.map(function (v) { return { id: v, Name: v }; });
+            };
+            function changeStatusCall(c, field, value, reason) {
+                return call('SetChangeStatus', { changeId: c.id, field: field, value: value, reason: reason || '', decisionDate: '', amount: null })
+                    .then(function (r) { showNotice(r.Message); return loadChanges(); });
+            }
+            $scope.changeAction = function (c, field, value) {
+                if (value === 'Rejected' || value === 'Withdrawn') {
+                    openReason((value === 'Rejected' ? 'Reject cost authorisation of' : 'Withdraw') + ' change #' + c.ChangeNo, 'The change record and this reason are kept (CM-3).',
+                        value === 'Rejected' ? 'Reject' : 'Withdraw', function (reason) { return changeStatusCall(c, field, value, reason); });
+                    return;
+                }
+                var question = field === 'Internal' ? 'Authorise the internal cost of change #' + c.ChangeNo + '? This does not change client approval or the budget.'
+                    : field === 'AtRisk' ? 'Authorise at-risk work for change #' + c.ChangeNo + '? Cost may then be booked before client approval and will show as at-risk exposure.'
+                    : 'Close change #' + c.ChangeNo + '?';
+                if (!window.confirm(question)) return;
+                $scope.busy = true;
+                changeStatusCall(c, field, value, '').then(function () { $scope.busy = false; }).catch(function (err) { $scope.busy = false; showError(err); });
+            };
+            $scope.postChange = function (c) {
+                confirmAndRun('Create the budget posting for change #' + c.ChangeNo + '? A draft movement is created in Movements & Reserves; it changes the budget only after approval.',
+                    'CreateChangePosting', { changeId: c.id }, function () { loadMovements(); return loadChanges(); });
+            };
+
+            // ---------- split allocation of a cost entry ----------
+            $scope.splitToggled = function () {
+                var d = $scope.modal.data;
+                if (d.IsSplit && (!d.Splits || d.Splits.length < 2)) {
+                    d.Splits = [{ CostCodeId: d.CostCodeId || null, MilestoneId: d.MilestoneId || null, Amount: null, Percent: 50 },
+                                { CostCodeId: null, MilestoneId: null, Amount: null, Percent: 50 }];
+                    d.Splits.forEach(function (s) { $scope.splitPercentChanged(s); });
+                }
+            };
+            $scope.addSplit = function () { $scope.modal.data.Splits.push({ CostCodeId: null, MilestoneId: null, Amount: null, Percent: null }); };
+            $scope.removeSplit = function (i) { $scope.modal.data.Splits.splice(i, 1); };
+            $scope.splitPercentChanged = function (s) {
+                var total = toNumber($scope.modal.data.Amount);
+                if (total !== null && s.Percent !== null && s.Percent !== undefined) s.Amount = Math.round(total * s.Percent) / 100;
+            };
+            $scope.splitAmountChanged = function (s) {
+                var total = toNumber($scope.modal.data.Amount);
+                if (total) s.Percent = Math.round((toNumber(s.Amount) || 0) * 10000 / total) / 100;
+            };
+            $scope.balanceSplits = function () {
+                var d = $scope.modal.data, rows = d.Splits;
+                if (!rows.length) return;
+                var others = 0;
+                for (var i = 0; i < rows.length - 1; i++) others += toNumber(rows[i].Amount) || 0;
+                var last = rows[rows.length - 1];
+                last.Amount = Math.round(((toNumber(d.Amount) || 0) - others) * 100) / 100;
+                $scope.splitAmountChanged(last);
+            };
+            $scope.splitTotals = function () {
+                var rows = ($scope.modal.data && $scope.modal.data.Splits) || [];
+                return { amount: $scope.sum(rows, 'Amount'), percent: $scope.sum(rows, 'Percent') };
+            };
+            $scope.splitBalanced = function () {
+                var d = $scope.modal.data || {};
+                return Math.round(($scope.splitTotals().amount - (toNumber(d.Amount) || 0)) * 100) === 0;
+            };
+
+            // ---------- pending approvals ----------
+            $scope.loadApprovals = function () {
+                return call('GetPendingApprovals').then(function (result) { $scope.approvals.rows = result.Rows || []; }).catch(showError);
+            };
+            $scope.openApproval = function (a) {
+                $scope.selection.projectId = a.ProjectId;
+                $scope.tab = a.ItemType === 'Budget' ? 'budget' : (a.ItemType === 'Movement' ? 'movements' : 'changes');
+                if (a.ItemType === 'Budget') $scope.budget.versionId = a.ItemId;
+                $scope.projectChanged();
+                if (a.ItemType === 'Budget') { $scope.budget.versionId = a.ItemId; $scope.loadBudget(); }
+            };
+
+            // ---------- per-project access ----------
+            $scope.openAccessProjects = function (a) {
+                call('GetAccessProjects', { employeeId: a.EmployeeId }).then(function (result) {
+                    var selected = {};
+                    (result.ProjectIds || []).forEach(function (id) { selected[id] = true; });
+                    openModal('accessProjects', { EmployeeId: a.EmployeeId, EmployeeName: a.EmployeeName, selected: selected, search: '' });
+                }).catch(showError);
+            };
+
+            function savePhase3Modal(type, d) {
+                switch (type) {
+                    case 'reserve':
+                        return { request: call('SaveReserve', { request: { Id: d.Id, ProjectId: $scope.selection.projectId, ReserveType: d.ReserveType, Name: d.Name, Remarks: d.Remarks } }), after: loadMovements };
+                    case 'movement':
+                        return { request: call('SaveMovement', { request: {
+                            Id: d.Id, ProjectId: $scope.selection.projectId, MovementType: d.MovementType, Reason: d.Reason, RiskReference: d.RiskReference,
+                            Lines: d.Lines.map(function (l) { return { LineKind: l.LineKind, CostCodeId: l.LineKind === 'Budget' ? toIntOrNull(l.CostCodeId) : null,
+                                MilestoneId: l.LineKind === 'Budget' ? toIntOrNull(l.MilestoneId) : null, ReserveId: l.LineKind === 'Reserve' ? toIntOrNull(l.ReserveId) : null,
+                                Amount: toNumber(l.Amount) || 0, Remarks: '' }; }) } }), after: loadMovements };
+                    case 'change':
+                        return { request: call('SaveChange', { request: {
+                            Id: d.Id, ProjectId: $scope.selection.projectId, Title: d.Title, Description: d.Description, ChangeClass: d.ChangeClass,
+                            EstimatedCost: d.EstimatedCost, AmountInEtc: d.AmountInEtc || 0, IsProbable: !!d.IsProbable,
+                            ClientValueProposed: d.ClientValueProposed, SubcontractValue: d.SubcontractValue, IsAtRisk: !!d.IsAtRisk,
+                            Allocations: d.Allocations.map(function (a) { return { CostCodeId: a.CostCodeId, MilestoneId: toIntOrNull(a.MilestoneId), Amount: toNumber(a.Amount) || 0 }; }) } }),
+                            after: loadChanges };
+                    case 'changeStatus':
+                        var needsDate = d.Value === 'Approved' || d.Value === 'Rejected';
+                        return { request: call('SetChangeStatus', { changeId: d.ChangeId, field: d.Field, value: d.Value, reason: d.Reason || '',
+                            decisionDate: needsDate ? toDateText(d.DecisionDateValue) : '', amount: d.Field === 'Client' && d.Value === 'Approved' ? d.Amount : null }), after: loadChanges };
+                    case 'accessProjects':
+                        var ids = Object.keys(d.selected).filter(function (k) { return d.selected[k]; }).map(function (k) { return parseInt(k, 10); });
+                        return { request: call('SaveAccessProjects', { employeeId: d.EmployeeId, projectIds: ids }).then(function (r) { showNotice(r.Message); return r; }), after: function () { } };
+                }
+                return null;
+            }
+            function validatePhase3Modal(type, d) {
+                switch (type) {
+                    case 'reserve':
+                        if (!d.ReserveType) return 'Select the reserve type.';
+                        if (!(d.Name || '').trim()) return 'Enter the reserve name.';
+                        break;
+                    case 'movement':
+                        if (!d.MovementType) return 'Select the movement type.';
+                        if (!(d.Reason || '').trim()) return 'A reason is required.';
+                        if (!d.Lines.length) return 'Add at least one line.';
+                        if (d.Lines.some(function (l) { return !toNumber(l.Amount); })) return 'Every line needs a non-zero amount.';
+                        if (d.Lines.some(function (l) { return l.LineKind === 'Budget' ? !l.CostCodeId : !l.ReserveId; })) return 'Every line needs a cost code or a reserve.';
+                        if ($scope.movementMustNet() && $scope.movementTotals().net !== 0) return 'This movement must net to zero (currently ' + $scope.movementTotals().net.toFixed(2) + ').';
+                        break;
+                    case 'change':
+                        if (!(d.Title || '').trim()) return 'Enter a title.';
+                        if (!d.ChangeClass) return 'Select the change class.';
+                        if (d.EstimatedCost === null || d.EstimatedCost === undefined) return 'Enter the estimated cost (0 if none).';
+                        if ((d.AmountInEtc || 0) < 0 || (d.AmountInEtc || 0) > Math.abs(d.EstimatedCost)) return 'The part already in ETC must be between 0 and the estimated cost.';
+                        if (d.Allocations.some(function (a) { return !a.CostCodeId || !toNumber(a.Amount); })) return 'Each allocation needs a cost code and an amount.';
+                        break;
+                    case 'changeStatus':
+                        if (!d.Field || !d.Value) return 'Select the status and its new value.';
+                        if (d.Value === 'Rejected' && !(d.Reason || '').trim()) return 'A reason is required.';
+                        if ((d.Value === 'Approved' || d.Value === 'Rejected') && !d.DecisionDateValue) return 'Enter the decision date.';
+                        if (d.Field === 'Client' && d.Value === 'Approved' && (d.Amount === null || d.Amount === undefined)) return 'Enter the approved client value.';
+                        break;
+                }
+                return '';
+            }
 
             // ---------- start ----------
             var saved = readSelection();

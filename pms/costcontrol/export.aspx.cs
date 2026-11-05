@@ -38,6 +38,12 @@ public partial class pms_costcontrol_export : Page
         int projectId = ReadInt("projectId");
         string projectName = projectId > 0 ? FindProjectName(login, projectId) : "All projects";
         if (projectId > 0 && projectName == null) { Response.StatusCode = 404; Response.Write("Project was not found."); return; }
+        if (projectId > 0)
+        {
+            // Per-project access: a user cannot export a project they cannot view (RP-17).
+            try { PmsCostControl.RequireProject(login, projectId); }
+            catch (HttpException ex) { Response.StatusCode = ex.GetHttpCode(); Response.Write(HttpUtility.HtmlEncode(ex.Message)); return; }
+        }
 
         try { Export(login, type, projectId, projectName); }
         catch (ArgumentException ex) { Response.StatusCode = 400; Response.Write(HttpUtility.HtmlEncode(ex.Message)); }
@@ -53,12 +59,14 @@ public partial class pms_costcontrol_export : Page
         {
             case "summary":
                 title = "Cost Control - Project summary"; fileStem = "CostControl_Summary";
-                data = Table(PmsCostControl.RunProcedure("usp_pms_cc_ProjectSummary", Reg(login)), 0);
+                data = Table(PmsCostControl.RunProcedure("usp_pms_cc_ProjectSummary", Reg(login), new SqlParameter("@uid", login.EmployeeId), new SqlParameter("@IsAdmin", login.IsAdmin)), 0);
                 columns = new List<Column> {
                     new Column("Project", "ProjectName", false), new Column("Current version", "CurrentVersionNo", false),
-                    new Column("Open version", "OpenVersionStatus", false), new Column("Current budget", "CurrentBudget", true),
-                    new Column("Actual", "Actual", true), new Column("ETC", "Etc", true), new Column("EAC", "Eac", true),
-                    new Column("VAC", "Vac", true), new Column("Consumed %", "ConsumedPercent", true) };
+                    new Column("Open version", "OpenVersionStatus", false), new Column("Revised budget (RB)", "CurrentBudget", true),
+                    new Column("Reserve (RSV)", "RSV", true), new Column("Actual (manual entries)", "Actual", true), new Column("ETC", "Etc", true),
+                    new Column("EAC", "Eac", true), new Column("VAC", "Vac", true), new Column("Pending changes (PCE)", "PCE", true),
+                    new Column("Probable pending (PPC)", "PPC", true), new Column("EAC incl. probable (EACp)", "EacP", true), new Column("VACp", "VacP", true),
+                    new Column("At-risk exposure", "AtRiskExposure", true), new Column("Unrecovered at-risk", "Unrecovered", true), new Column("Consumed %", "ConsumedPercent", true) };
                 break;
 
             case "entries":
@@ -95,20 +103,53 @@ public partial class pms_costcontrol_export : Page
                     new Column("As of", "AsOfDate", false), new Column("Remarks", "Remarks", false) };
                 break;
 
-            default: // report
+            case "reserves":
+                RequireProject(projectId);
+                title = "Cost Control - Reserves"; fileStem = "CostControl_Reserves";
+                data = Table(PmsCostControl.RunProcedure("usp_pms_cc_Reserve_Report", Reg(login), new SqlParameter("@ProjectId", projectId)), 0);
+                filter = "Includes internal contractor contingency: do not send this file to the client (RS-7, RP-18).";
+                columns = new List<Column> {
+                    new Column("Reserve type", "ReserveType", false), new Column("Name", "Name", false), new Column("Additions", "Additions", true),
+                    new Column("Releases", "Releases", true), new Column("Returns", "Returns", true), new Column("Remaining", "Remaining", true), new Column("Remarks", "Remarks", false) };
+                break;
+
+            case "changes":
+                RequireProject(projectId);
+                title = "Cost Control - Change register"; fileStem = "CostControl_Changes";
+                data = Table(PmsCostControl.RunProcedure("usp_pms_cc_Change_List", Reg(login), new SqlParameter("@ProjectId", projectId)), 0);
+                filter = "Includes internal estimated cost and margin: do not send this file to the client (RP-18).";
+                columns = new List<Column> {
+                    new Column("No.", "ChangeNo", false), new Column("Title", "Title", false), new Column("Class", "ChangeClass", false), new Column("Record", "RecordStatus", false),
+                    new Column("Internal", "InternalStatus", false), new Column("Client", "ClientStatus", false), new Column("Subcontract", "SubcontractStatus", false),
+                    new Column("Budget posting", "BudgetPostingStatus", false), new Column("Estimated cost", "EstimatedCost", true), new Column("Already in ETC", "AmountInEtc", true),
+                    new Column("Client value proposed", "ClientValueProposed", true), new Column("Client value approved", "ClientValueApproved", true),
+                    new Column("Subcontract value", "SubcontractValue", true), new Column("At risk", "IsAtRisk", false), new Column("Cost incurred", "CostIncurred", true),
+                    new Column("Approved margin", "ApprovedMargin", true) };
+                break;
+
+            default: // report (live, or a month-end snapshot)
                 RequireProject(projectId);
                 string groupBy = PmsCostControl.NormalizeGroupBy(Request.QueryString["groupBy"]);
                 title = "Cost Control - Budget vs Actual"; fileStem = "CostControl_BudgetVsActual";
-                DataSet report = PmsCostControl.RunProcedure("usp_pms_cc_BudgetVsActual", Reg(login), new SqlParameter("@ProjectId", projectId), new SqlParameter("@GroupBy", groupBy));
+                int snapshotId = ReadInt("snapshotId");
+                if (snapshotId > 0 && PmsCostControl.RequireRecordProject(login, "Snapshot", snapshotId) != projectId)
+                    throw new ArgumentException("The snapshot belongs to another project.");
+                DataSet report = snapshotId > 0
+                    ? PmsCostControl.RunProcedure("usp_pms_cc_Snapshot_Report", Reg(login), new SqlParameter("@SnapshotId", snapshotId), new SqlParameter("@GroupBy", groupBy))
+                    : PmsCostControl.RunProcedure("usp_pms_cc_BudgetVsActual", Reg(login), new SqlParameter("@ProjectId", projectId), new SqlParameter("@GroupBy", groupBy));
                 data = Table(report, 0);
                 DataTable header = Table(report, 1);
-                string version = header.Rows.Count > 0 && header.Rows[0]["CurrentVersionNo"] != DBNull.Value ? "locked version " + header.Rows[0]["CurrentVersionNo"] : "no locked budget";
-                filter = "Grouped by " + (groupBy == "MILESTONE" ? "milestone" : groupBy == "COSTTYPE" ? "cost type" : "cost code") + "; current budget = " + version;
+                string version = header.Rows.Count > 0 && header.Rows[0]["CurrentVersionNo"] != DBNull.Value ? "approved version " + header.Rows[0]["CurrentVersionNo"] : "no approved budget";
+                string asAt = snapshotId > 0 && header.Rows.Count > 0
+                    ? "SNAPSHOT of month starting " + header.Rows[0]["PeriodStart"] + ", version " + header.Rows[0]["SnapshotVersion"] + " (frozen at month close)"
+                    : "Live figures (not a snapshot)";
+                filter = "Grouped by " + (groupBy == "MILESTONE" ? "milestone" : groupBy == "COSTTYPE" ? "cost type" : "cost code") + "; baseline = " + version + "; " + asAt;
                 columns = new List<Column> { new Column(groupBy == "MILESTONE" ? "Milestone" : groupBy == "COSTTYPE" ? "Cost type" : "Cost code", "GroupName", false) };
                 if (groupBy == "COSTCODE") columns.Add(new Column("Cost type", "CostType", false));
                 columns.AddRange(new[] {
-                    new Column("Original budget", "OriginalBudget", true), new Column("Current budget", "CurrentBudget", true),
-                    new Column("Actual", "Actual", true), new Column("Remaining budget", "Variance", true), new Column("ETC", "Etc", true),
+                    new Column("Original budget (OB)", "OriginalBudget", true), new Column("Revisions", "RevisionAdj", true), new Column("Corrections (ADJ)", "Corrections", true),
+                    new Column("Approved changes (ACH)", "ApprovedChanges", true), new Column("Net transfers (NTR)", "NetTransfers", true), new Column("Revised budget (RB)", "CurrentBudget", true),
+                    new Column("Actual (manual entries)", "Actual", true), new Column("Remaining budget", "Variance", true), new Column("ETC", "Etc", true),
                     new Column("EAC", "Eac", true), new Column("VAC", "Vac", true), new Column("Consumed %", "ConsumedPercent", true) });
                 break;
         }
@@ -169,6 +210,7 @@ public partial class pms_costcontrol_export : Page
         sheet.Range[2, 1].Text = "Project: " + projectName;
         sheet.Range[3, 1].Text = String.IsNullOrEmpty(filter) ? "Filter: none" : filter;
         sheet.Range[4, 1].Text = "Generated: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " by " + userName;
+        sheet.Range[5, 1].Text = "Currency: amounts as entered, one currency per project, not converted (multi-currency is not set up yet).";
 
         const int headerRow = 6;
         for (int c = 0; c < columns.Count; c++)
@@ -192,7 +234,7 @@ public partial class pms_costcontrol_export : Page
                     cell.NumberValue = Convert.ToDouble(value, CultureInfo.InvariantCulture);
                     cell.NumberFormat = "#,##0.00";
                 }
-                else if (column.Field == "IsPeriodClosed")
+                else if (column.Field == "IsPeriodClosed" || column.Field == "IsAtRisk")
                     cell.Text = Convert.ToInt32(value, CultureInfo.InvariantCulture) == 1 ? "Yes" : "No";
                 else
                     cell.Text = Convert.ToString(value, CultureInfo.InvariantCulture);

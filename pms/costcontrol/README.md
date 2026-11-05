@@ -1,4 +1,16 @@
-# Cost Control (Phase 1 + Phase 2)
+# Cost Control (Phases 1–3)
+
+> **Phase 3 (2026-11-05)** adds:
+> - monthly **snapshots**;
+> - **budget movements**: transfers, reserves, corrections;
+> - a **change register** with at-risk work;
+> - **split** cost entries;
+> - **per-project access** and **Pending Approvals**;
+> - the label fixes and the unit duplicate check.
+>
+> **Install order: `costcontrol_phase1.sql` → `costcontrol_phase2.sql` → `costcontrol_phase3.sql`.** Each later script replaces some procedures of the earlier ones, so always re-run the whole chain in this order.
+>
+> See [Phase 3 details](#phase-3-details) at the end of this file.
 
 Module at `/pms/costcontrol/`.
 
@@ -91,3 +103,35 @@ See `GAP-REVIEW.md` §5:
 Sites are free text until a site master is chosen. `tbl_locationdetails` is a branch/office master, so it was not assumed to be a site list.
 
 Spire.XLS adds an "Evaluation Warning" sheet if it is not licensed on the server. The PMS already uses it in the same way.
+
+## Phase 3 details
+
+| Item | Requirements | What it does | New tables (Cost Control only) |
+|---|---|---|---|
+| Monthly snapshots | PE-01, PE-03, PE-06, AC-20 | **Close Month** freezes, per cost code × milestone: OB, revision/correction/change/transfer breakdown, RB, actual to month end and ETC. It also freezes RSV, PCE, PPC and at-risk exposure. The snapshot is immutable (a trigger refuses changes). Reopening keeps it, and the next close saves version n+1. **Budget vs Actual > As at** shows any snapshot, and Excel export marks it as a snapshot. | `Pms_tbl_CostControlSnapshot`, `Pms_tbl_CostControlSnapshotLine` |
+| Budget movements | BV-1, BV-3, RS-1…RS-7, RP-04, AC-15, AC-16 | Types: **Transfer** (must net to zero), **Reserve addition**, **Reserve release** and **Reserve return** (total zero, so ΣRB + RSV is unchanged), **Baseline correction**, and **Approved change** (from the change register). Every type follows Draft → Submitted → Approved by another person, or is returned with a reason. On approval, no budget line or reserve may go below zero. RB = latest approved version + corrections + approved changes + net transfers. A new revision starts from RB. | `Pms_tbl_ProjectReserve`, `Pms_tbl_BudgetMovement`, `Pms_tbl_BudgetMovementLine` |
+| Change register and at-risk | CM-1…CM-7, AR-01…AR-05, RP-05, AC-14, AC-17, AC-47 | There are six classes and four **independent** statuses: internal cost authorisation (approver ≠ person who raised it), client, subcontract, and budget posting. PCE = open, unposted changes. PPC = probable ones minus the part already in ETC. **Post to budget** creates an Approved-change movement. When that movement is approved, the change becomes Posted, and its remaining cost moves into ETC, so EACp does not jump (F-3). At-risk work needs its own authorisation before cost can be linked. Its cost stays in actuals and appears as at-risk exposure, or as unrecovered if the client rejects. | `Pms_tbl_ChangeRecord`, `Pms_tbl_ChangeAllocation` |
+| Split cost entries | DM-03, REQ-005, AC-22 | One entry split across at least two cost codes and milestones. Rows must total exactly the entry amount (100 %), and each keeps its link to the source entry. Every report uses the split rows (view `vw_pms_cc_CostAllocation`). | `Pms_tbl_CostEntrySplit` |
+| Per-project access | NF-04 | **Access > Choose projects**. No projects ticked means all projects, which keeps the old behaviour. Every server method and export checks it. | `Pms_tbl_CostControlAccessProject` |
+| Pending approvals | — | One list of submitted budgets, submitted movements, change cost authorisations and at-risk authorisations, across the projects you can see. | — |
+| Fixes | D-2, D-3, D-8, D-9, D-10 | Labels now read "Revised Budget (RB)" and "Actual (manual entries)", and the ETC help text says to include ordered-not-received value until commitments exist. Future-dated cost entries are rejected. Approval rights are checked inside the procedures. The Excel header shows currency and live-or-snapshot. | — |
+| Unit duplicates | — | Adding a unit ignores case and extra spaces. An existing name is selected, with a message, instead of being added again. The Unit list shows each name once. Your unit master already contains duplicate names such as PCS ×3, CM ×2 and METER ×2; they were **not** changed. | — |
+
+### Verification (Phase 3)
+
+- **Compiles:** all C# (csc 4.x with CommonClass and Spire.XLS).
+- **Syntax:** JavaScript checked.
+- **Browser test against a mock server.** The real markup and controller were run with the Phase 3 rules mirrored in the mock. Every check passed:
+  - **Reserves:** reserve addition; own-approval block.
+  - **Transfers:** a transfer that doesn't net to zero is rejected.
+  - **Reserve release:** RB CO-001 40,000 → 44,000 and RSV 10,000 → 6,000; ΣRB + RSV stays 50,000.
+  - **Change register:** a change gives PCE 5,000 and PPC 4,000; internal and at-risk authorisation work; at-risk cost 1,500 shows as exposure; posting gives an approved movement, the change becomes Posted, and PCE/PPC drop to 0.
+  - **Splits:** an unbalanced split is rejected; a balanced 60/40 split saves.
+  - **Future dates:** rejected.
+  - **Snapshots:** after Close Month, the snapshot stays at 14,500 while the live figure changes to 15,499.
+  - **Other screens:** Pending Approvals, the unit duplicate check, project access, and the view-only user.
+- **Not done:**
+  - the Phase 3 SQL script has not been run;
+  - saving and reloading on the real database;
+  - Excel downloads;
+  - the "approved change moves its cost into ETC" step, which happens only in SQL and not in the mock.

@@ -82,6 +82,15 @@
         .cc-diff{font-size:11px;color:#4a525c;white-space:normal;max-width:520px}
         .cc-link{border:0;background:none;color:#285ca8;cursor:pointer;padding:0;font-size:12px;text-align:left}
         .cc-link:hover{text-decoration:underline}
+        .cc-link:disabled{color:#8a9099;cursor:not-allowed;text-decoration:none}
+        .cc-subhead{margin:10px 12px 4px;font-size:14px;font-weight:600}
+        .cc-measures{display:flex;flex-wrap:wrap;gap:8px;padding:8px 12px;border-bottom:1px solid #eceef1}
+        .cc-measures>div{min-width:150px;padding:6px 10px;border:1px solid #e3e9ee;border-radius:6px;background:#fafbfd}
+        .cc-measures span{display:block;font-size:11px;color:#5e6672}
+        .cc-measures b{font-size:14px}
+        .cc-badge-approved{background:#dff5e5;color:#23743c}.cc-badge-rejected{background:#fbe9e9;color:#a61b1b}.cc-badge-muted{background:#f1f3f5;color:#5e6672}
+        .cc-mini{min-width:0!important}.cc-mini td,.cc-mini th{padding:3px 5px!important}
+        .cc-modal{width:760px}
     </style>
 </asp:Content>
 <asp:Content ID="CostControlContent" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
@@ -160,13 +169,16 @@
                 </div>
                 <div class="cc-tablewrap">
                     <table class="cc-table">
-                        <thead><tr><th>Date</th><th>Cost Code</th><th>Milestone</th><th>Task</th><th>Site</th><th>Source Doc</th><th>Reference</th><th class="cc-num">Amount</th><th>Remarks</th><th class="cc-actions"></th></tr></thead>
+                        <thead><tr><th>Date</th><th>Cost Code</th><th>Milestone</th><th>Task</th><th>Site</th><th>Source Doc</th><th>Reference</th><th>Change</th><th class="cc-num">Amount</th><th>Remarks</th><th class="cc-actions"></th></tr></thead>
                         <tbody>
-                            <tr ng-if="!filteredEntries().length"><td colspan="10" class="cc-empty">No cost entries.</td></tr>
+                            <tr ng-if="!filteredEntries().length"><td colspan="11" class="cc-empty">No cost entries.</td></tr>
                             <tr ng-repeat="entry in filteredEntries() track by entry.id">
-                                <td>{{entry.EntryDate}}</td><td>{{entry.CostCode}} - {{entry.CostCodeName}}</td>
-                                <td>{{entry.MilestoneName || 'Project level'}}</td><td>{{entry.TaskName}}</td>
+                                <td>{{entry.EntryDate}}</td>
+                                <td ng-if="!entry.splits.length">{{entry.CostCode}} - {{entry.CostCodeName}}</td>
+                                <td ng-if="entry.splits.length" colspan="3" class="cc-diff"><b>Split ({{entry.splits.length}})</b><div ng-repeat="s in entry.splits track by s.id">{{s.CostCodeLabel}}{{s.MilestoneName ? ' / ' + s.MilestoneName : ''}}: {{s.Amount | number:2}} ({{s.SplitPercent | number:2}} %)</div></td>
+                                <td ng-if="!entry.splits.length">{{entry.MilestoneName || 'Project level'}}</td><td ng-if="!entry.splits.length">{{entry.TaskName}}</td>
                                 <td>{{entry.SiteName}}</td><td>{{entry.SourceDocType}}</td><td>{{entry.ReferenceNo}}</td>
+                                <td>{{entry.ChangeNo ? '#' + entry.ChangeNo : ''}}<span class="cc-warn" ng-if="entry.IsAtRisk==1"> at risk</span></td>
                                 <td class="cc-num" ng-class="{'cc-neg':entry.Amount<0}">{{entry.Amount | number:2}}</td>
                                 <td>{{entry.Remarks}}</td>
                                 <td class="cc-actions">
@@ -176,7 +188,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tfoot ng-if="filteredEntries().length"><tr><td colspan="7">Total</td><td class="cc-num">{{sum(filteredEntries(),'Amount') | number:2}}</td><td colspan="2"></td></tr></tfoot>
+                        <tfoot ng-if="filteredEntries().length"><tr><td colspan="8">Total</td><td class="cc-num">{{sum(filteredEntries(),'Amount') | number:2}}</td><td colspan="2"></td></tr></tfoot>
                     </table>
                 </div>
             </div>
@@ -184,14 +196,14 @@
             <!-- ================= FORECAST (ETC) ================= -->
             <div ng-if="tab==='forecast' && selection.projectId">
                 <div class="cc-toolbar">
-                    <span class="cc-meta">Estimate to complete (ETC) = cost still expected for the remaining work. EAC = Actual + ETC. VAC = Current budget - EAC.</span>
+                    <span class="cc-meta">Estimate to complete (ETC) = cost still expected for the remaining work. <b>Until purchase orders and subcontracts are recorded in Cost Control, include ordered-but-not-yet-received value in ETC.</b> EAC = Actual + ETC. VAC = Revised budget (RB) - EAC.</span>
                     <span class="cc-spacer"></span>
                     <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanEnter" ng-click="openEtc()" ng-disabled="busy">Add ETC</button>
                     <button type="button" class="cc-btn" ng-click="exportFile('etc')" ng-disabled="!forecast.rows.length">Export Excel</button>
                 </div>
                 <div class="cc-tablewrap">
                     <table class="cc-table">
-                        <thead><tr><th>Cost Code</th><th>Milestone</th><th class="cc-num">Current Budget</th><th class="cc-num">Actual</th><th class="cc-num">ETC</th><th class="cc-num">EAC</th><th class="cc-num">VAC</th><th>As of</th><th>Remarks</th><th class="cc-actions"></th></tr></thead>
+                        <thead><tr><th>Cost Code</th><th>Milestone</th><th class="cc-num">Revised Budget (RB)</th><th class="cc-num">Actual (manual entries)</th><th class="cc-num">ETC</th><th class="cc-num">EAC</th><th class="cc-num">VAC</th><th>As of</th><th>Remarks</th><th class="cc-actions"></th></tr></thead>
                         <tbody>
                             <tr ng-if="!forecast.rows.length"><td colspan="10" class="cc-empty">No budget, cost or estimate yet.</td></tr>
                             <tr ng-repeat="row in forecast.rows track by $index">
@@ -217,22 +229,48 @@
             <!-- ================= BUDGET VS ACTUAL ================= -->
             <div ng-if="tab==='report' && selection.projectId">
                 <div class="cc-toolbar">
+                    <label style="margin:0;font-size:12px">As at</label>
+                    <cc-search-select class="cc-ss-version" ng-model="report.snapshotId" items="snapshotOptions" value-key="id" label-key="Label" ng-change="loadReport()"></cc-search-select>
                     <label style="margin:0;font-size:12px">Group by</label>
                     <cc-search-select class="cc-ss-small" ng-model="report.groupBy" items="groupByOptions" value-key="id" label-key="Name" ng-change="loadReport()"></cc-search-select>
-                    <span class="cc-meta" ng-if="report.header.CurrentVersionNo">Current budget = locked version {{report.header.CurrentVersionNo}}</span>
-                    <span class="cc-warn" style="font-size:12px" ng-if="report.header.DraftCount>0">A draft or submitted revision exists and is not included until it is approved.</span>
+                    <label class="cc-meta" style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" class="cc-check" ng-model="report.showBreakdown" /> Show budget breakdown</label>
                     <span class="cc-spacer"></span>
                     <button type="button" class="cc-btn" ng-click="loadReport()" ng-disabled="busy">Refresh</button>
                     <button type="button" class="cc-btn" ng-click="exportFile('report')" ng-disabled="!report.rows.length">Export Excel</button>
                 </div>
+                <div class="cc-toolbar cc-meta">
+                    <span ng-if="report.header.SnapshotId" class="cc-badge cc-badge-locked">Snapshot {{monthLabel(report.header.PeriodStart)}} v{{report.header.SnapshotVersion}} - frozen at month close</span>
+                    <span ng-if="!report.header.SnapshotId">Live figures.</span>
+                    <span ng-if="report.header.CurrentVersionNo">Baseline = approved version {{report.header.CurrentVersionNo}}.</span>
+                    <span class="cc-warn" ng-if="!report.header.SnapshotId && report.header.DraftCount>0">A draft or submitted revision is not included until approved.</span>
+                    <span class="cc-warn" ng-if="!report.header.SnapshotId && report.header.OpenMovements>0">{{report.header.OpenMovements}} budget movement(s) waiting - not included until approved.</span>
+                </div>
+                <div class="cc-measures" ng-if="report.header">
+                    <div><span>Revised budget (ΣRB)</span><b>{{sum(report.rows,'CurrentBudget') | number:2}}</b></div>
+                    <div><span>Reserves (RSV)</span><b>{{report.header.RSV | number:2}}</b></div>
+                    <div><span>Total available (ΣRB + RSV)</span><b>{{sum(report.rows,'CurrentBudget') + (report.header.RSV||0) | number:2}}</b></div>
+                    <div><span>EAC</span><b>{{sum(report.rows,'Eac') | number:2}}</b></div>
+                    <div><span>Pending changes (PCE)</span><b>{{report.header.PCE | number:2}}</b></div>
+                    <div><span>Probable pending (PPC)</span><b>{{report.header.PPC | number:2}}</b></div>
+                    <div><span>EAC incl. probable (EACp)</span><b>{{sum(report.rows,'Eac') + (report.header.PPC||0) | number:2}}</b></div>
+                    <div><span>VACp (ΣRB + RSV − EACp)</span><b ng-class="{'cc-neg':vacP()<0}">{{vacP() | number:2}}</b></div>
+                    <div><span>At-risk exposure</span><b ng-class="{'cc-warn':report.header.AtRiskExposure>0}">{{report.header.AtRiskExposure | number:2}}</b></div>
+                    <div><span>Unrecovered at-risk</span><b ng-class="{'cc-neg':report.header.Unrecovered>0}">{{report.header.Unrecovered | number:2}}</b></div>
+                </div>
                 <div class="cc-tablewrap">
                     <table class="cc-table">
-                        <thead><tr><th>{{groupLabel()}}</th><th ng-if="report.groupBy==='COSTCODE'">Type</th><th class="cc-num">Original Budget</th><th class="cc-num">Current Budget</th><th class="cc-num">Actual</th><th class="cc-num">Remaining Budget</th><th class="cc-num">ETC</th><th class="cc-num">EAC</th><th class="cc-num">VAC</th><th class="cc-num">Consumed %</th></tr></thead>
+                        <thead><tr><th>{{groupLabel()}}</th><th ng-if="report.groupBy==='COSTCODE'">Type</th><th class="cc-num">Original (OB)</th>
+                            <th class="cc-num" ng-if="report.showBreakdown">Revisions</th><th class="cc-num" ng-if="report.showBreakdown">Corrections (ADJ)</th>
+                            <th class="cc-num" ng-if="report.showBreakdown">Approved changes (ACH)</th><th class="cc-num" ng-if="report.showBreakdown">Net transfers (NTR)</th>
+                            <th class="cc-num">Revised Budget (RB)</th><th class="cc-num">Actual (manual entries)</th><th class="cc-num">Remaining</th><th class="cc-num">ETC</th><th class="cc-num">EAC</th><th class="cc-num">VAC</th><th class="cc-num">Consumed %</th></tr></thead>
                         <tbody>
-                            <tr ng-if="!report.rows.length"><td colspan="10" class="cc-empty">No approved budget, cost entries or estimates yet.</td></tr>
+                            <tr ng-if="!report.rows.length"><td colspan="14" class="cc-empty">No approved budget, cost entries or estimates yet.</td></tr>
                             <tr ng-repeat="row in report.rows track by row.GroupId">
                                 <td>{{row.GroupName}}</td><td ng-if="report.groupBy==='COSTCODE'">{{row.CostType}}</td>
-                                <td class="cc-num">{{row.OriginalBudget | number:2}}</td><td class="cc-num">{{row.CurrentBudget | number:2}}</td>
+                                <td class="cc-num">{{row.OriginalBudget | number:2}}</td>
+                                <td class="cc-num" ng-if="report.showBreakdown">{{row.RevisionAdj | number:2}}</td><td class="cc-num" ng-if="report.showBreakdown">{{row.Corrections | number:2}}</td>
+                                <td class="cc-num" ng-if="report.showBreakdown">{{row.ApprovedChanges | number:2}}</td><td class="cc-num" ng-if="report.showBreakdown">{{row.NetTransfers | number:2}}</td>
+                                <td class="cc-num">{{row.CurrentBudget | number:2}}</td>
                                 <td class="cc-num">{{row.Actual | number:2}}</td>
                                 <td class="cc-num" ng-class="{'cc-neg':row.Variance<0}">{{row.Variance | number:2}}</td>
                                 <td class="cc-num">{{row.Etc | number:2}}</td><td class="cc-num">{{row.Eac | number:2}}</td>
@@ -242,7 +280,10 @@
                         </tbody>
                         <tfoot ng-if="report.rows.length"><tr>
                             <td ng-attr-colspan="{{report.groupBy==='COSTCODE' ? 2 : 1}}">Total</td>
-                            <td class="cc-num">{{sum(report.rows,'OriginalBudget') | number:2}}</td><td class="cc-num">{{sum(report.rows,'CurrentBudget') | number:2}}</td>
+                            <td class="cc-num">{{sum(report.rows,'OriginalBudget') | number:2}}</td>
+                            <td class="cc-num" ng-if="report.showBreakdown">{{sum(report.rows,'RevisionAdj') | number:2}}</td><td class="cc-num" ng-if="report.showBreakdown">{{sum(report.rows,'Corrections') | number:2}}</td>
+                            <td class="cc-num" ng-if="report.showBreakdown">{{sum(report.rows,'ApprovedChanges') | number:2}}</td><td class="cc-num" ng-if="report.showBreakdown">{{sum(report.rows,'NetTransfers') | number:2}}</td>
+                            <td class="cc-num">{{sum(report.rows,'CurrentBudget') | number:2}}</td>
                             <td class="cc-num">{{sum(report.rows,'Actual') | number:2}}</td>
                             <td class="cc-num" ng-class="{'cc-neg':sum(report.rows,'Variance')<0}">{{sum(report.rows,'Variance') | number:2}}</td>
                             <td class="cc-num">{{sum(report.rows,'Etc') | number:2}}</td><td class="cc-num">{{sum(report.rows,'Eac') | number:2}}</td>
@@ -253,32 +294,158 @@
                 </div>
             </div>
 
+            <!-- ================= MOVEMENTS & RESERVES ================= -->
+            <div ng-if="tab==='movements' && selection.projectId">
+                <div class="cc-toolbar">
+                    <span class="cc-meta">Changes to an approved budget: transfers between lines (must net to zero), reserve additions, releases and returns (ΣRB + RSV stays the same), and corrections. Each movement needs a reason and another person's approval.</span>
+                    <span class="cc-spacer"></span>
+                    <button type="button" class="cc-btn" ng-if="access.CanEnter" ng-click="openReserve()" ng-disabled="busy">Add Reserve</button>
+                    <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanEnter" ng-click="openMovement()" ng-disabled="busy">New Movement</button>
+                    <button type="button" class="cc-btn" ng-click="exportFile('reserves')" ng-disabled="!movements.reserves.length">Export Reserves</button>
+                </div>
+                <h5 class="cc-subhead">Reserves <span class="cc-meta">(held at project level; never receive cost)</span></h5>
+                <div class="cc-tablewrap" style="max-height:none">
+                    <table class="cc-table" style="min-width:700px">
+                        <thead><tr><th>Type</th><th>Name</th><th>Visibility</th><th class="cc-num">Additions</th><th class="cc-num">Releases</th><th class="cc-num">Returns</th><th class="cc-num">Remaining</th><th class="cc-actions"></th></tr></thead>
+                        <tbody>
+                            <tr ng-if="!movements.reserves.length"><td colspan="8" class="cc-empty">No reserves. Add one, then record its amount with a "Reserve addition" movement.</td></tr>
+                            <tr ng-repeat="r in movements.reserves track by r.id">
+                                <td>{{reserveTypeLabel(r.ReserveType)}}</td><td>{{r.Name}}</td><td>{{r.IsInternal==1 ? 'Internal only' : 'Per contract'}}</td>
+                                <td class="cc-num">{{r.Additions | number:2}}</td><td class="cc-num">{{r.Releases | number:2}}</td><td class="cc-num">{{r.Returns | number:2}}</td>
+                                <td class="cc-num"><b>{{r.Remaining | number:2}}</b></td>
+                                <td class="cc-actions"><button type="button" class="cc-btn" ng-if="access.CanEnter" ng-click="openReserve(r)">Edit</button></td>
+                            </tr>
+                        </tbody>
+                        <tfoot ng-if="movements.reserves.length"><tr><td colspan="6">Total reserves (RSV)</td><td class="cc-num">{{sum(movements.reserves,'Remaining') | number:2}}</td><td></td></tr></tfoot>
+                    </table>
+                </div>
+                <h5 class="cc-subhead">Budget movements</h5>
+                <div class="cc-tablewrap">
+                    <table class="cc-table">
+                        <thead><tr><th>No.</th><th>Type</th><th>Status</th><th>Reason</th><th>Lines</th><th class="cc-num">Budget net</th><th class="cc-num">Reserve net</th><th>Submitted</th><th>Approved</th><th class="cc-actions"></th></tr></thead>
+                        <tbody>
+                            <tr ng-if="!movements.rows.length"><td colspan="10" class="cc-empty">No budget movements.</td></tr>
+                            <tr ng-repeat="m in movements.rows track by m.id">
+                                <td>#{{m.MovementNo}}</td><td>{{movementTypeLabel(m.MovementType)}}<span class="cc-meta" ng-if="m.ChangeNo"> (change #{{m.ChangeNo}})</span></td>
+                                <td><span class="cc-badge" ng-class="statusBadge(m.MovementStatus)">{{m.MovementStatus}}</span></td>
+                                <td>{{m.Reason}}<div class="cc-warn" ng-if="m.MovementStatus==='Draft' && m.RejectReason">Returned: {{m.RejectReason}}</div></td>
+                                <td class="cc-diff"><div ng-repeat="l in m.lines track by l.id">{{l.LineKind==='Reserve' ? 'Reserve: ' + l.ReserveName : l.CostCodeLabel + (l.MilestoneName ? ' / ' + l.MilestoneName : '')}} <b ng-class="{'cc-neg':l.Amount<0}">{{l.Amount | number:2}}</b></div></td>
+                                <td class="cc-num">{{m.BudgetNet | number:2}}</td><td class="cc-num">{{m.ReserveNet | number:2}}</td>
+                                <td>{{m.SubmittedOn ? m.SubmittedByName + ', ' + m.SubmittedOn : ''}}</td><td>{{m.ApprovedOn ? m.ApprovedByName + ', ' + m.ApprovedOn : ''}}</td>
+                                <td class="cc-actions">
+                                    <button type="button" class="cc-btn" ng-if="access.CanEnter && m.MovementStatus==='Draft'" ng-click="openMovement(m)">Edit</button>
+                                    <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanEnter && m.MovementStatus==='Draft'" ng-click="movementAction(m,'Submit')">Submit</button>
+                                    <button type="button" class="cc-btn cc-btn-danger" ng-if="access.CanEnter && m.MovementStatus==='Draft'" ng-click="movementAction(m,'Discard')">Discard</button>
+                                    <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanApprove && m.MovementStatus==='Submitted'" ng-disabled="m.SubmittedBy===access.EmployeeId" title="{{m.SubmittedBy===access.EmployeeId ? 'You submitted it; another approver must approve.' : 'Approve'}}" ng-click="movementAction(m,'Approve')">Approve</button>
+                                    <button type="button" class="cc-btn cc-btn-danger" ng-if="access.CanApprove && m.MovementStatus==='Submitted'" ng-disabled="m.SubmittedBy===access.EmployeeId" ng-click="movementAction(m,'Reject')">Return</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ================= CHANGE REGISTER ================= -->
+            <div ng-if="tab==='changes' && selection.projectId">
+                <div class="cc-toolbar">
+                    <span class="cc-meta">Four independent statuses: internal cost authorisation, client approval, subcontract approval and budget posting. None sets another. Pending changes appear as PCE / PPC only; budget changes only when the posting movement is approved.</span>
+                    <span class="cc-spacer"></span>
+                    <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanEnter" ng-click="openChange()" ng-disabled="busy">New Change</button>
+                    <button type="button" class="cc-btn" ng-click="exportFile('changes')" ng-disabled="!changes.rows.length">Export Excel</button>
+                </div>
+                <div class="cc-measures">
+                    <div><span>Pending changes (PCE)</span><b>{{changeTotals().pce | number:2}}</b></div>
+                    <div><span>Probable pending (PPC)</span><b>{{changeTotals().ppc | number:2}}</b></div>
+                    <div><span>At-risk cost booked</span><b ng-class="{'cc-warn':changeTotals().atRisk>0}">{{changeTotals().atRisk | number:2}}</b></div>
+                    <div><span>Approved client value</span><b>{{changeTotals().clientApproved | number:2}}</b></div>
+                </div>
+                <div class="cc-tablewrap">
+                    <table class="cc-table" style="min-width:1500px">
+                        <thead><tr><th>No.</th><th>Title</th><th>Class</th><th class="cc-num">Est. cost</th><th class="cc-num">In ETC</th><th>Probable</th><th>Internal</th><th>Client</th><th>Subcontract</th><th>Budget posting</th><th>At risk</th><th class="cc-num">Cost booked</th><th class="cc-num">Approved margin</th><th>Record</th><th class="cc-actions"></th></tr></thead>
+                        <tbody>
+                            <tr ng-if="!changes.rows.length"><td colspan="15" class="cc-empty">No changes.</td></tr>
+                            <tr ng-repeat="c in changes.rows track by c.id">
+                                <td>#{{c.ChangeNo}}</td><td>{{c.Title}}<div class="cc-diff" ng-repeat="a in c.allocations track by a.id">{{a.CostCodeLabel}}{{a.MilestoneName ? ' / ' + a.MilestoneName : ''}}: {{a.Amount | number:2}}</div></td>
+                                <td>{{changeClassLabel(c.ChangeClass)}}</td>
+                                <td class="cc-num">{{c.EstimatedCost | number:2}}</td><td class="cc-num">{{c.AmountInEtc | number:2}}</td><td>{{c.IsProbable==1 ? 'Yes' : 'No'}}</td>
+                                <td><span class="cc-badge" ng-class="statusBadge(c.InternalStatus)">{{c.InternalStatus}}</span><div class="cc-meta" ng-if="c.InternalDecisionOn">{{c.InternalDecisionByName}}</div></td>
+                                <td><span class="cc-badge" ng-class="statusBadge(c.ClientStatus)">{{c.ClientStatus}}</span><div class="cc-meta" ng-if="c.ClientValueApproved!==null">{{c.ClientValueApproved | number:2}} on {{c.ClientDecisionOn}}</div><div class="cc-meta" ng-if="c.ClientValueApproved===null && c.ClientValueProposed!==null">proposed {{c.ClientValueProposed | number:2}}</div></td>
+                                <td><span class="cc-badge" ng-class="statusBadge(c.SubcontractStatus)">{{c.SubcontractStatus}}</span></td>
+                                <td><span class="cc-badge" ng-class="statusBadge(c.BudgetPostingStatus)">{{c.BudgetPostingStatus}}</span><div class="cc-meta" ng-if="c.MovementStatus && c.BudgetPostingStatus!=='Posted'">movement {{c.MovementStatus}}</div></td>
+                                <td>{{c.IsAtRisk==1 ? (c.AtRiskAuthorisedOn ? 'Authorised' : 'Awaiting authorisation') : 'No'}}</td>
+                                <td class="cc-num">{{c.CostIncurred | number:2}}</td>
+                                <td class="cc-num" ng-class="{'cc-neg':c.ApprovedMargin<0}">{{c.ClientValueApproved!==null ? (c.ApprovedMargin | number:2) : '-'}}</td>
+                                <td>{{c.RecordStatus}}</td>
+                                <td class="cc-actions">
+                                    <button type="button" class="cc-btn" ng-if="access.CanEnter && c.RecordStatus==='Open' && c.BudgetPostingStatus!=='Posted'" ng-click="openChange(c)">Edit</button>
+                                    <button type="button" class="cc-btn" ng-if="access.CanEnter && c.RecordStatus==='Open'" ng-click="openChangeStatus(c)">Client / Subcontract</button>
+                                    <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanApprove && c.RecordStatus==='Open' && c.InternalStatus==='Pending'" ng-disabled="c.cby===access.EmployeeId" title="{{c.cby===access.EmployeeId ? 'You raised it; another approver must authorise.' : ''}}" ng-click="changeAction(c,'Internal','Approved')">Authorise cost</button>
+                                    <button type="button" class="cc-btn cc-btn-danger" ng-if="access.CanApprove && c.RecordStatus==='Open' && c.InternalStatus==='Pending'" ng-disabled="c.cby===access.EmployeeId" ng-click="changeAction(c,'Internal','Rejected')">Reject</button>
+                                    <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanApprove && c.IsAtRisk==1 && !c.AtRiskAuthorisedOn && c.RecordStatus==='Open'" ng-disabled="c.cby===access.EmployeeId" ng-click="changeAction(c,'AtRisk','Authorise')">Authorise at-risk</button>
+                                    <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanEnter && c.RecordStatus==='Open' && c.InternalStatus==='Approved' && c.BudgetPostingStatus!=='Posted' && !c.MovementStatus" ng-click="postChange(c)">Post to budget</button>
+                                    <button type="button" class="cc-btn cc-btn-danger" ng-if="access.CanEnter && c.RecordStatus==='Open' && c.BudgetPostingStatus!=='Posted'" ng-click="changeAction(c,'Record','Withdrawn')">Withdraw</button>
+                                    <button type="button" class="cc-btn" ng-if="access.CanEnter && c.RecordStatus==='Open' && c.BudgetPostingStatus==='Posted'" ng-click="changeAction(c,'Record','Closed')">Close</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ================= PENDING APPROVALS ================= -->
+            <div ng-if="tab==='approvals'">
+                <div class="cc-toolbar">
+                    <span class="cc-meta">Everything waiting for a decision in the projects you can see: budgets, budget movements, change cost authorisations and at-risk authorisations. You cannot approve your own submissions.</span>
+                    <span class="cc-spacer"></span>
+                    <button type="button" class="cc-btn" ng-click="loadApprovals()" ng-disabled="busy">Refresh</button>
+                </div>
+                <div class="cc-tablewrap">
+                    <table class="cc-table">
+                        <thead><tr><th>Type</th><th>Project</th><th>Item</th><th class="cc-num">Amount</th><th>Requested by</th><th>Requested on</th><th class="cc-actions"></th></tr></thead>
+                        <tbody>
+                            <tr ng-if="!approvals.rows.length"><td colspan="7" class="cc-empty">Nothing is waiting for approval.</td></tr>
+                            <tr ng-repeat="a in approvals.rows track by $index">
+                                <td>{{a.ItemType==='AtRisk' ? 'At-risk work' : a.ItemType}}</td><td>{{a.ProjectName}}</td><td>{{a.Title}}</td>
+                                <td class="cc-num">{{a.Amount | number:2}}</td><td>{{a.RequestedByName}}<span class="cc-warn" ng-if="a.IsOwn==1"> (you)</span></td><td>{{a.RequestedOn}}</td>
+                                <td class="cc-actions"><button type="button" class="cc-btn cc-btn-primary" ng-click="openApproval(a)">Open</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- ================= PROJECT SUMMARY ================= -->
             <div ng-if="tab==='summary'">
                 <div class="cc-toolbar">
-                    <span class="cc-meta">All projects with a budget, cost or estimate. Click a project to open its Budget vs Actual.</span>
+                    <span class="cc-meta">All projects you can see that have a budget, cost or estimate. Click a project to open its Budget vs Actual.</span>
                     <span class="cc-spacer"></span>
                     <button type="button" class="cc-btn" ng-click="loadSummary()" ng-disabled="busy">Refresh</button>
                     <button type="button" class="cc-btn" ng-click="exportFile('summary')" ng-disabled="!summary.rows.length">Export Excel</button>
                 </div>
                 <div class="cc-tablewrap">
-                    <table class="cc-table">
-                        <thead><tr><th>Project</th><th>Budget</th><th class="cc-num">Current Budget</th><th class="cc-num">Actual</th><th class="cc-num">ETC</th><th class="cc-num">EAC</th><th class="cc-num">VAC</th><th class="cc-num">Consumed %</th></tr></thead>
+                    <table class="cc-table" style="min-width:1300px">
+                        <thead><tr><th>Project</th><th>Budget</th><th class="cc-num">Revised Budget (RB)</th><th class="cc-num">Reserves (RSV)</th><th class="cc-num">Actual (manual entries)</th><th class="cc-num">ETC</th><th class="cc-num">EAC</th><th class="cc-num">VAC</th><th class="cc-num">PCE</th><th class="cc-num">EACp</th><th class="cc-num">VACp</th><th class="cc-num">At-risk</th><th class="cc-num">Consumed %</th></tr></thead>
                         <tbody>
-                            <tr ng-if="!summary.rows.length"><td colspan="8" class="cc-empty">No project has Cost Control data yet.</td></tr>
+                            <tr ng-if="!summary.rows.length"><td colspan="13" class="cc-empty">No project has Cost Control data yet.</td></tr>
                             <tr ng-repeat="row in summary.rows track by row.ProjectId">
                                 <td><button type="button" class="cc-link" ng-click="openProjectReport(row.ProjectId)">{{row.ProjectName}}</button></td>
-                                <td>{{row.CurrentVersionNo ? 'V' + row.CurrentVersionNo + ' locked' : 'No approved budget'}}<span class="cc-warn" ng-if="row.OpenVersionStatus"> ({{row.OpenVersionStatus}} revision open)</span></td>
-                                <td class="cc-num">{{row.CurrentBudget | number:2}}</td><td class="cc-num">{{row.Actual | number:2}}</td>
+                                <td>{{row.CurrentVersionNo ? 'V' + row.CurrentVersionNo + ' approved' : 'No approved budget'}}<span class="cc-warn" ng-if="row.OpenVersionStatus"> ({{row.OpenVersionStatus}} revision open)</span></td>
+                                <td class="cc-num">{{row.CurrentBudget | number:2}}</td><td class="cc-num">{{row.RSV | number:2}}</td><td class="cc-num">{{row.Actual | number:2}}</td>
                                 <td class="cc-num">{{row.Etc | number:2}}</td><td class="cc-num">{{row.Eac | number:2}}</td>
                                 <td class="cc-num" ng-class="{'cc-neg':row.Vac<0}">{{row.Vac | number:2}}</td>
+                                <td class="cc-num">{{row.PCE | number:2}}</td><td class="cc-num">{{row.EacP | number:2}}</td>
+                                <td class="cc-num" ng-class="{'cc-neg':row.VacP<0}">{{row.VacP | number:2}}</td>
+                                <td class="cc-num" ng-class="{'cc-warn':row.AtRiskExposure>0}">{{row.AtRiskExposure | number:2}}</td>
                                 <td class="cc-num" ng-class="{'cc-neg':row.ConsumedPercent>100}">{{row.ConsumedPercent===null ? '-' : (row.ConsumedPercent | number:2) + ' %'}}</td>
                             </tr>
                         </tbody>
                         <tfoot ng-if="summary.rows.length"><tr><td colspan="2">Total</td>
-                            <td class="cc-num">{{sum(summary.rows,'CurrentBudget') | number:2}}</td><td class="cc-num">{{sum(summary.rows,'Actual') | number:2}}</td>
+                            <td class="cc-num">{{sum(summary.rows,'CurrentBudget') | number:2}}</td><td class="cc-num">{{sum(summary.rows,'RSV') | number:2}}</td><td class="cc-num">{{sum(summary.rows,'Actual') | number:2}}</td>
                             <td class="cc-num">{{sum(summary.rows,'Etc') | number:2}}</td><td class="cc-num">{{sum(summary.rows,'Eac') | number:2}}</td>
                             <td class="cc-num" ng-class="{'cc-neg':sum(summary.rows,'Vac')<0}">{{sum(summary.rows,'Vac') | number:2}}</td>
+                            <td class="cc-num">{{sum(summary.rows,'PCE') | number:2}}</td><td class="cc-num">{{sum(summary.rows,'EacP') | number:2}}</td>
+                            <td class="cc-num" ng-class="{'cc-neg':sum(summary.rows,'VacP')<0}">{{sum(summary.rows,'VacP') | number:2}}</td>
+                            <td class="cc-num">{{sum(summary.rows,'AtRiskExposure') | number:2}}</td>
                             <td class="cc-num">{{totalConsumed(summary.rows)}}</td></tr></tfoot>
                     </table>
                 </div>
@@ -287,13 +454,13 @@
             <!-- ================= PERIODS ================= -->
             <div ng-if="tab==='periods' && selection.projectId">
                 <div class="cc-toolbar">
-                    <span class="cc-meta">A closed month blocks adding, changing or deleting cost entries dated in that month. Reopening needs a reason.</span>
+                    <span class="cc-meta">Closing a month blocks cost entries dated in it and freezes a snapshot of the figures (budget, actual to month end, ETC, reserves, pending changes). Reopening needs a reason and keeps the snapshot; closing again saves version n+1.</span>
                     <span class="cc-spacer"></span>
                     <button type="button" class="cc-btn" ng-click="loadPeriods()" ng-disabled="busy">Refresh</button>
                 </div>
                 <div class="cc-tablewrap">
                     <table class="cc-table">
-                        <thead><tr><th>Month</th><th>Status</th><th class="cc-num">Entries</th><th class="cc-num">Amount</th><th>Closed</th><th>Last reopened</th><th class="cc-actions"></th></tr></thead>
+                        <thead><tr><th>Month</th><th>Status</th><th class="cc-num">Entries</th><th class="cc-num">Amount</th><th>Closed</th><th>Last reopened</th><th>Snapshots</th><th class="cc-actions"></th></tr></thead>
                         <tbody>
                             <tr ng-repeat="p in periods.rows track by p.PeriodStart">
                                 <td>{{monthLabel(p.PeriodStart)}}</td>
@@ -301,6 +468,7 @@
                                 <td class="cc-num">{{p.EntryCount}}</td><td class="cc-num">{{p.EntryTotal | number:2}}</td>
                                 <td>{{p.ClosedOn ? p.ClosedByName + ', ' + p.ClosedOn : ''}}</td>
                                 <td>{{p.ReopenedOn ? p.ReopenedByName + ', ' + p.ReopenedOn + ' - ' + p.ReopenReason : ''}}</td>
+                                <td><button type="button" class="cc-link" ng-if="p.SnapshotCount>0" ng-click="viewSnapshot(p.LatestSnapshotId)">{{p.SnapshotCount}} version(s) - view latest</button></td>
                                 <td class="cc-actions">
                                     <button type="button" class="cc-btn cc-btn-primary" ng-if="access.CanApprove && p.IsClosed!=1" ng-click="closePeriod(p)" ng-disabled="busy">Close Month</button>
                                     <button type="button" class="cc-btn cc-btn-danger" ng-if="access.CanApprove && p.IsClosed==1" ng-click="openReopen(p)" ng-disabled="busy">Reopen</button>
@@ -370,14 +538,15 @@
                 </div>
                 <div class="cc-tablewrap">
                     <table class="cc-table" style="min-width:600px">
-                        <thead><tr><th>Employee</th><th>View</th><th>Enter</th><th>Approve</th><th></th></tr></thead>
+                        <thead><tr><th>Employee</th><th>View</th><th>Enter</th><th>Approve</th><th>Projects</th><th></th></tr></thead>
                         <tbody>
-                            <tr ng-if="!filteredAccess().length"><td colspan="5" class="cc-empty">No employees.</td></tr>
+                            <tr ng-if="!filteredAccess().length"><td colspan="6" class="cc-empty">No employees.</td></tr>
                             <tr ng-repeat="a in filteredAccess() track by a.EmployeeId">
                                 <td>{{a.EmployeeName}}</td>
                                 <td><input type="checkbox" class="cc-check" ng-model="a.view" ng-change="saveAccess(a,'view')" ng-disabled="a.saving || a.enter || a.approve" aria-label="View" /></td>
                                 <td><input type="checkbox" class="cc-check" ng-model="a.enter" ng-change="saveAccess(a,'enter')" ng-disabled="a.saving" aria-label="Enter" /></td>
                                 <td><input type="checkbox" class="cc-check" ng-model="a.approve" ng-change="saveAccess(a,'approve')" ng-disabled="a.saving" aria-label="Approve" /></td>
+                                <td><button type="button" class="cc-link" ng-click="openAccessProjects(a)" ng-disabled="!a.view">Choose projects</button></td>
                                 <td class="cc-meta">{{a.saving ? 'Saving...' : a.message}}</td>
                             </tr>
                         </tbody>
@@ -434,14 +603,34 @@
                         <div><label>Date *</label><input type="date" ng-model="modal.data.EntryDateValue" /></div>
                         <div><label>Amount *</label><input type="number" step="0.01" ng-model="modal.data.Amount" /><div class="cc-hint">Use a negative amount for a reversal.</div></div>
                     </div>
-                    <label>Cost Code *</label>
-                    <cc-search-select ng-model="modal.data.CostCodeId" items="postingCodeOptions" value-key="id" label-key="Label" placeholder="-- Select --" add-new-label="{{access.IsAdmin ? '+ Add new cost code' : ''}}" on-add-new="startQuickCode()"></cc-search-select>
-                    <div class="cc-quickadd" ng-if="quickCode.open" ng-include="'quickCode.html'"></div>
-                    <div class="cc-grid2">
-                        <div><label>Milestone</label>
-                            <cc-search-select ng-model="modal.data.MilestoneId" items="structure.milestones" value-key="id" label-key="MilestoneName" empty-label="Project level" ng-change="milestoneChanged()"></cc-search-select></div>
-                        <div><label>Task</label>
-                            <cc-search-select ng-model="modal.data.TaskId" items="modalTasks" value-key="id" label-key="TaskName" empty-label="-- None --" is-disabled="!modal.data.MilestoneId"></cc-search-select></div>
+                    <label class="cc-meta" style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="cc-check" ng-model="modal.data.IsSplit" ng-change="splitToggled()" /> Split this cost across several cost codes / milestones</label>
+                    <div ng-if="!modal.data.IsSplit">
+                        <label>Cost Code *</label>
+                        <cc-search-select ng-model="modal.data.CostCodeId" items="postingCodeOptions" value-key="id" label-key="Label" placeholder="-- Select --" add-new-label="{{access.IsAdmin ? '+ Add new cost code' : ''}}" on-add-new="startQuickCode()"></cc-search-select>
+                        <div class="cc-quickadd" ng-if="quickCode.open" ng-include="'quickCode.html'"></div>
+                        <div class="cc-grid2">
+                            <div><label>Milestone</label>
+                                <cc-search-select ng-model="modal.data.MilestoneId" items="structure.milestones" value-key="id" label-key="MilestoneName" empty-label="Project level" ng-change="milestoneChanged()"></cc-search-select></div>
+                            <div><label>Task</label>
+                                <cc-search-select ng-model="modal.data.TaskId" items="modalTasks" value-key="id" label-key="TaskName" empty-label="-- None --" is-disabled="!modal.data.MilestoneId"></cc-search-select></div>
+                        </div>
+                    </div>
+                    <div ng-if="modal.data.IsSplit" class="cc-quickadd">
+                        <table class="cc-table cc-mini">
+                            <thead><tr><th>Cost Code *</th><th>Milestone</th><th class="cc-num">%</th><th class="cc-num">Amount</th><th></th></tr></thead>
+                            <tbody>
+                                <tr ng-repeat="s in modal.data.Splits track by $index">
+                                    <td><cc-search-select ng-model="s.CostCodeId" items="postingCodeOptions" value-key="id" label-key="Label" placeholder="-- Select --"></cc-search-select></td>
+                                    <td><cc-search-select ng-model="s.MilestoneId" items="structure.milestones" value-key="id" label-key="MilestoneName" empty-label="Project level"></cc-search-select></td>
+                                    <td class="cc-num"><input type="number" step="0.01" style="width:80px" ng-model="s.Percent" ng-change="splitPercentChanged(s)" /></td>
+                                    <td class="cc-num"><input type="number" step="0.01" style="width:120px" ng-model="s.Amount" ng-change="splitAmountChanged(s)" /></td>
+                                    <td><button type="button" class="cc-btn cc-btn-danger" ng-click="removeSplit($index)" ng-disabled="modal.data.Splits.length<=2">x</button></td>
+                                </tr>
+                            </tbody>
+                            <tfoot><tr><td colspan="2"><button type="button" class="cc-btn" ng-click="addSplit()">+ Add row</button> <button type="button" class="cc-btn" ng-click="balanceSplits()">Put remainder on last row</button></td>
+                                <td class="cc-num">{{splitTotals().percent | number:2}} %</td><td class="cc-num" ng-class="{'cc-neg':!splitBalanced()}">{{splitTotals().amount | number:2}}</td><td></td></tr></tfoot>
+                        </table>
+                        <div class="cc-hint" ng-class="{'cc-neg':!splitBalanced()}">The rows must total exactly the entry amount ({{modal.data.Amount | number:2}}) = 100 %. Reports use the split rows; the entry keeps the link to them.</div>
                     </div>
                     <div class="cc-grid2">
                         <div><label>Source Document</label>
@@ -449,6 +638,9 @@
                         <div><label>Reference No.</label><input type="text" maxlength="100" ng-model="modal.data.ReferenceNo" placeholder="Bill / voucher / PO number" /></div>
                     </div>
                     <label>Site / Location</label><input type="text" maxlength="100" ng-model="modal.data.SiteName" placeholder="Site where the cost was incurred" />
+                    <label>Change / at-risk work</label>
+                    <cc-search-select ng-model="modal.data.ChangeId" items="changeOptions" value-key="id" label-key="Label" empty-label="-- Not linked to a change --"></cc-search-select>
+                    <div class="cc-hint">Link cost of work done for a change. At-risk work appears here only after its at-risk authorisation; the cost stays in project actuals either way.</div>
                     <label>Remarks</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Remarks"></textarea>
                     <div ng-if="modal.data.Id"><label>Reason for change *</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Reason" placeholder="Why is this saved entry being changed?"></textarea></div>
                 </div>
@@ -481,6 +673,102 @@
                     </div>
                     <label>Name *</label><input type="text" maxlength="200" ng-model="modal.data.Name" ng-disabled="modal.data.IsUsed" />
                     <label>Description</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Description"></textarea>
+                </div>
+
+                <div ng-if="modal.type==='reserve'">
+                    <h4>{{modal.data.Id ? 'Edit' : 'Add'}} Reserve</h4>
+                    <label>Reserve type *</label>
+                    <cc-search-select ng-model="modal.data.ReserveType" items="reserveTypeOptions" value-key="id" label-key="Name" placeholder="-- Select --"></cc-search-select>
+                    <div class="cc-hint">Contractor contingency is internal only (never shown to the client). Client allowances and provisional sums follow the contract. The amount is set with a "Reserve addition" movement, which needs approval. No default percentage is applied.</div>
+                    <label>Name *</label><input type="text" maxlength="200" ng-model="modal.data.Name" placeholder="e.g. Design development contingency" />
+                    <label>Remarks</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Remarks"></textarea>
+                </div>
+
+                <div ng-if="modal.type==='movement'">
+                    <h4>{{modal.data.Id ? 'Edit' : 'New'}} Budget Movement</h4>
+                    <div class="cc-grid2">
+                        <div><label>Type *</label><cc-search-select ng-model="modal.data.MovementType" items="movementTypeOptions" value-key="id" label-key="Name" placeholder="-- Select --" is-disabled="modal.data.ChangeId" ng-change="movementTypeChanged()"></cc-search-select></div>
+                        <div><label>Risk / document reference</label><input type="text" maxlength="100" ng-model="modal.data.RiskReference" /></div>
+                    </div>
+                    <div class="cc-hint">{{movementTypeHint(modal.data.MovementType)}}</div>
+                    <label>Reason *</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Reason"></textarea>
+                    <table class="cc-table cc-mini" style="margin-top:8px">
+                        <thead><tr><th>Line</th><th>Cost Code / Reserve</th><th>Milestone</th><th class="cc-num">Amount (+ / -)</th><th></th></tr></thead>
+                        <tbody>
+                            <tr ng-if="!modal.data.Lines.length"><td colspan="5" class="cc-empty">Add lines below.</td></tr>
+                            <tr ng-repeat="l in modal.data.Lines track by $index">
+                                <td>{{l.LineKind}}</td>
+                                <td>
+                                    <cc-search-select ng-if="l.LineKind==='Budget'" ng-model="l.CostCodeId" items="postingCodeOptions" value-key="id" label-key="Label" placeholder="-- Cost code --"></cc-search-select>
+                                    <cc-search-select ng-if="l.LineKind==='Reserve'" ng-model="l.ReserveId" items="reserveOptions" value-key="id" label-key="Label" placeholder="-- Reserve --"></cc-search-select>
+                                </td>
+                                <td><cc-search-select ng-if="l.LineKind==='Budget'" ng-model="l.MilestoneId" items="structure.milestones" value-key="id" label-key="MilestoneName" empty-label="Project level"></cc-search-select></td>
+                                <td class="cc-num"><input type="number" step="0.01" style="width:130px" ng-model="l.Amount" /></td>
+                                <td><button type="button" class="cc-btn cc-btn-danger" ng-click="modal.data.Lines.splice($index,1)">x</button></td>
+                            </tr>
+                        </tbody>
+                        <tfoot><tr><td colspan="3">
+                            <button type="button" class="cc-btn" ng-if="movementAllows('Budget')" ng-click="addMovementLine('Budget')">+ Budget line</button>
+                            <button type="button" class="cc-btn" ng-if="movementAllows('Reserve')" ng-click="addMovementLine('Reserve')">+ Reserve line</button></td>
+                            <td class="cc-num">Budget {{movementTotals().budget | number:2}}<br />Reserve {{movementTotals().reserve | number:2}}<br /><b ng-class="{'cc-neg':movementTotals().net!==0 && movementMustNet()}">Net {{movementTotals().net | number:2}}</b></td><td></td></tr></tfoot>
+                    </table>
+                </div>
+
+                <div ng-if="modal.type==='change'">
+                    <h4>{{modal.data.Id ? 'Edit' : 'New'}} Change</h4>
+                    <label>Title *</label><input type="text" maxlength="200" ng-model="modal.data.Title" />
+                    <div class="cc-grid2">
+                        <div><label>Class *</label><cc-search-select ng-model="modal.data.ChangeClass" items="changeClassOptions" value-key="id" label-key="Name" placeholder="-- Select --"></cc-search-select></div>
+                        <div><label>Estimated cost *</label><input type="number" step="0.01" ng-model="modal.data.EstimatedCost" /></div>
+                    </div>
+                    <div class="cc-grid2">
+                        <div><label>Part already in ETC</label><input type="number" step="0.01" min="0" ng-model="modal.data.AmountInEtc" /><div class="cc-hint">So probable pending cost (PPC) does not double count (rule F-2).</div></div>
+                        <div><label style="display:flex;align-items:center;gap:6px;margin-top:28px"><input type="checkbox" class="cc-check" ng-model="modal.data.IsProbable" /> Probable (counts in PPC / EACp)</label></div>
+                    </div>
+                    <div class="cc-grid2">
+                        <div><label>Client value proposed</label><input type="number" step="0.01" ng-model="modal.data.ClientValueProposed" /></div>
+                        <div><label>Subcontract value</label><input type="number" step="0.01" ng-model="modal.data.SubcontractValue" /></div>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" class="cc-check" ng-model="modal.data.IsAtRisk" /> At-risk work: work will start before client approval (needs a separate at-risk authorisation)</label>
+                    <label>Description</label><textarea rows="2" maxlength="2000" ng-model="modal.data.Description"></textarea>
+                    <label>Cost allocations (used when the change is posted to the budget)</label>
+                    <table class="cc-table cc-mini">
+                        <thead><tr><th>Cost Code *</th><th>Milestone</th><th class="cc-num">Amount</th><th></th></tr></thead>
+                        <tbody>
+                            <tr ng-repeat="a in modal.data.Allocations track by $index">
+                                <td><cc-search-select ng-model="a.CostCodeId" items="postingCodeOptions" value-key="id" label-key="Label" placeholder="-- Select --"></cc-search-select></td>
+                                <td><cc-search-select ng-model="a.MilestoneId" items="structure.milestones" value-key="id" label-key="MilestoneName" empty-label="Project level"></cc-search-select></td>
+                                <td class="cc-num"><input type="number" step="0.01" style="width:130px" ng-model="a.Amount" /></td>
+                                <td><button type="button" class="cc-btn cc-btn-danger" ng-click="modal.data.Allocations.splice($index,1)">x</button></td>
+                            </tr>
+                        </tbody>
+                        <tfoot><tr><td colspan="2"><button type="button" class="cc-btn" ng-click="modal.data.Allocations.push({CostCodeId:null,MilestoneId:null,Amount:null})">+ Allocation</button></td>
+                            <td class="cc-num" ng-class="{'cc-warn':sum(modal.data.Allocations,'Amount')!==(modal.data.EstimatedCost||0)}">{{sum(modal.data.Allocations,'Amount') | number:2}}</td><td></td></tr></tfoot>
+                    </table>
+                </div>
+
+                <div ng-if="modal.type==='changeStatus'">
+                    <h4>Change #{{modal.data.ChangeNo}}: client / subcontract status</h4>
+                    <div class="cc-hint">Each status is independent. Client approval does not authorise internal cost or post the budget.</div>
+                    <div class="cc-grid2">
+                        <div><label>Which status *</label><cc-search-select ng-model="modal.data.Field" items="statusFieldOptions" value-key="id" label-key="Name" ng-change="statusFieldChanged()"></cc-search-select></div>
+                        <div><label>New value *</label><cc-search-select ng-model="modal.data.Value" items="statusValueOptions" value-key="id" label-key="Name" placeholder="-- Select --"></cc-search-select></div>
+                    </div>
+                    <div class="cc-grid2" ng-if="modal.data.Value==='Approved' || modal.data.Value==='Rejected'">
+                        <div><label>Decision date *</label><input type="date" ng-model="modal.data.DecisionDateValue" /></div>
+                        <div ng-if="modal.data.Field==='Client' && modal.data.Value==='Approved'"><label>Approved client value *</label><input type="number" step="0.01" ng-model="modal.data.Amount" /></div>
+                    </div>
+                    <label>Reason{{modal.data.Value==='Rejected' ? ' *' : ''}}</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Reason"></textarea>
+                </div>
+
+                <div ng-if="modal.type==='accessProjects'">
+                    <h4>Projects for {{modal.data.EmployeeName}}</h4>
+                    <div class="cc-hint">Tick the projects this employee may use in Cost Control. Leave all unticked for access to every project.</div>
+                    <input type="search" ng-model="modal.data.search" placeholder="Search projects..." style="width:100%;margin:8px 0" />
+                    <div style="max-height:300px;overflow:auto">
+                        <label ng-repeat="p in projects | filter:{ProjectName: modal.data.search} track by p.id" style="display:flex;align-items:center;gap:8px;margin:4px 0">
+                            <input type="checkbox" class="cc-check" ng-model="modal.data.selected[p.id]" /> {{p.ProjectName}}</label>
+                    </div>
                 </div>
 
                 <div class="cc-modal-footer">

@@ -9,6 +9,24 @@
 - Read-only queries on the dev database (`absolutebook_2172`) confirmed that all Phase 2 objects are installed. This includes the fixed `usp_pms_cc_Period_SetStatus`.
 - Nothing was changed.
 
+> **Update after Phase 3 (2026-11-05).** The Phase 3 code addresses every item in §F(i), but the database script hasn't been run yet. Details are in README "Phase 3 details".
+>
+> | Area | Requirements / findings | New status |
+> |---|---|---|
+> | Monthly snapshots | REQ-017, PE-01/03/06, AC-20; conflict D-1 | **Covered**, simplified: monthly per project. Entity calendars are still TBP. |
+> | Budget movements | REQ-013 (transfers, RB breakdown), BV-1/3, conflict D-4 | **Covered** |
+> | Reserves | REQ-014, RS-1…7, RP-04, AC-15/16 | **Covered**. RS-8 values are TBP; BV-4/RS-5 need subprojects. |
+> | Change register | REQ-015, CM-1…7, RP-05, AC-14/17; PCE, PPC, EACp, VACp | **Covered**. CM-4 subcontract-variation links wait for subcontracts. |
+> | At-risk work | REQ-028, AR-01…05, AC-47 | **Covered**. AR-03 over-budget approval (AP-07) is still missing. |
+> | Split allocation | REQ-005, DM-03, AC-22 | **Covered** |
+> | Per-project access | NF-04 (part), conflict D-7 | **Partial**: per project yes; per entity waits for entities; SSO/MFA not done. |
+> | Pending approvals | — | **Added** |
+> | Fixes | conflicts D-2, D-3 (labels), D-8 (future dates), D-9 (approval checked in the procedures), D-10 (export header) | **Fixed** |
+>
+> **Still open:**
+> - everything listed as Blocked in §F(ii);
+> - D-5 (posting level), D-6 (legacy budget fields), D-11 (close order), D-12 ("Other" cost type) and D-13 (units in the ERP master).
+
 **Status key**
 
 | Status | Meaning |
