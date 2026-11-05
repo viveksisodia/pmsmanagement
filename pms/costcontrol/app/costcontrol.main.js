@@ -535,9 +535,14 @@
                     IsSplit: !!(entry.splits && entry.splits.length),
                     Splits: (entry.splits || []).map(function (s) { return { CostCodeId: s.CostCodeId, MilestoneId: s.MilestoneId || null, TaskId: s.TaskId || null, Amount: toNumber(s.Amount), Percent: toNumber(s.SplitPercent) }; }),
                     Documents: (entry.documents || []).slice(), NewFiles: [], RemovedDocs: [], FileError: '',
-                    History: null, HistoryError: ''
+                    History: null, HistoryError: '', ShowHistory: false
                 });
-                if (entry.id) loadEntryHistory($scope.modal.data, entry.id);
+            };
+            // Previous changes are hidden by default; the icon next to "Reason for change" shows them (loaded on first click).
+            $scope.toggleEntryHistory = function () {
+                var d = $scope.modal.data;
+                d.ShowHistory = !d.ShowHistory;
+                if (d.ShowHistory && d.History === null && d.Id) loadEntryHistory(d, d.Id);
             };
             // Earlier changes of the entry (with their reasons), shown above "Reason for change".
             function loadEntryHistory(d, entryId) {

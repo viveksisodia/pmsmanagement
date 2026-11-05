@@ -114,6 +114,12 @@
         .cc-ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
         .cc-clip{margin-left:6px;border:1px solid #d6c3d3;border-radius:10px;background:#fbf7fb;color:#6b1e63;font-size:11px;padding:0 6px;cursor:pointer}
         .cc-clip:hover{background:#f4ebf3}
+        .cc-reason-label{display:flex;align-items:center;gap:8px;margin:9px 0 3px;font-size:12px;color:#4a525c}
+        .cc-hist-btn{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid #d6c3d3;border-radius:12px;background:#fbf7fb;color:#6b1e63;font-size:11px;cursor:pointer}
+        .cc-hist-btn:hover,.cc-hist-btn:focus{background:#f4ebf3;outline:2px solid #6b1e63;outline-offset:1px}
+        .cc-hist-btn .cc-ico{width:14px;height:14px}
+        .cc-hist-on{background:#6b1e63;color:#fff;border-color:#6b1e63}.cc-hist-on:hover{background:#5a1853}
+        .cc-hist{margin-bottom:6px}
         .cc-hist-list{max-height:150px;overflow:auto;border:1px solid #e3e9ee;border-radius:6px;background:#fafbfd}
         .cc-hist-row{padding:6px 9px;border-bottom:1px solid #eceef1;font-size:12px}
         .cc-hist-row:last-child{border-bottom:0}
@@ -702,8 +708,14 @@
                     <cc-search-select ng-model="modal.data.ChangeId" items="changeOptions" value-key="id" label-key="Label" empty-label="-- Not linked to a change --"></cc-search-select>
                     <div class="cc-hint">Link cost of work done for a change. At-risk work appears here only after its at-risk authorisation; the cost stays in project actuals either way.</div>
                     <label>Remarks</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Remarks"></textarea>
-                    <div ng-if="modal.data.Id" class="cc-hist">
-                        <label>Previous changes</label>
+                    <div ng-if="modal.data.Id" class="cc-reason-label">Reason for change *
+                        <button type="button" class="cc-hist-btn" ng-class="{'cc-hist-on':modal.data.ShowHistory}" ng-click="toggleEntryHistory()"
+                                title="{{modal.data.ShowHistory ? 'Hide previous changes' : 'Show previous changes and their reasons'}}" aria-expanded="{{!!modal.data.ShowHistory}}" aria-label="Previous changes">
+                            <svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6M3.5 3.5V8H8M12 7.5V12l3 2"/></svg>
+                            <span>Previous changes</span>
+                        </button>
+                    </div>
+                    <div ng-if="modal.data.Id && modal.data.ShowHistory" class="cc-hist">
                         <div class="cc-hint" ng-if="modal.data.History === null">Loading...</div>
                         <div class="cc-hint cc-neg" ng-if="modal.data.HistoryError">{{modal.data.HistoryError}}</div>
                         <div class="cc-hint" ng-if="modal.data.History && !modal.data.History.length && !modal.data.HistoryError">No earlier changes recorded.</div>
@@ -714,7 +726,7 @@
                             </div>
                         </div>
                     </div>
-                    <div ng-if="modal.data.Id"><label>Reason for change *</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Reason" placeholder="Why is this saved entry being changed?"></textarea></div>
+                    <div ng-if="modal.data.Id"><textarea rows="2" maxlength="1000" ng-model="modal.data.Reason" placeholder="Why is this saved entry being changed?"></textarea></div>
                 </div>
 
                 <div ng-if="modal.type==='docs'">
