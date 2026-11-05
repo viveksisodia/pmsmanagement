@@ -529,6 +529,20 @@ public partial class pms_costcontrol_default : Page
         catch (Exception ex) { return Failure(ex); }
     }
 
+    /// <summary>Change history of one cost entry and its documents (reasons of earlier changes), newest first.</summary>
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object GetCostEntryHistory(int costEntryId)
+    {
+        try
+        {
+            var login = RequireOnRecord(PmsCostControl.Need.View, "CostEntry", costEntryId);
+            DataSet ds = Run("usp_pms_cc_Audit_ListCostEntry", Reg(login), new SqlParameter("@EntryId", costEntryId));
+            return new { Success = true, Rows = Rows(ds, 0) };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
     /// <summary>Removes (soft-deletes) a supporting document. Upload and viewing are in document.ashx.</summary>
     [WebMethod(EnableSession = true)]
     [ScriptMethod(ResponseFormat = ResponseFormat.Json)]

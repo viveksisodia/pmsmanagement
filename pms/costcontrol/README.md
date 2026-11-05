@@ -144,6 +144,7 @@ Spire.XLS adds an "Evaluation Warning" sheet if it is not licensed on the server
 
 - **Choosing files:** several files can be chosen at once. Each file shows as a tile; hovering over a tile shows **View** and **Remove** icons (on touch screens the icons are always shown).
 - **When files are saved:** new files are uploaded when you click **Save**, after the entry itself is saved, one file per request. A saved file you remove is only marked; it is removed on Save, using the entry's "Reason for change", and **Undo** puts it back. If an upload fails after the entry is saved, the dialog closes and the message says which file failed, so the entry is never saved twice.
+- **Previous changes:** Edit Cost Entry lists the entry's earlier changes above "Reason for change", newest first. Each shows date, user, what changed, the reason given, and any document attached or removed (procedure `usp_pms_cc_Audit_ListCostEntry`, WebMethod `GetCostEntryHistory`). "Reason for change" itself always starts empty, because every change needs its own reason.
 - **Cost Entries list:** the Source Doc column shows a paperclip with the number of files. Clicking it opens a read-only list with **View** and **Download**, available to every user with View rights.
 - **Rules:**
   - PDF, JPG, PNG, GIF, WEBP, DOC(X), XLS(X), CSV or TXT only;

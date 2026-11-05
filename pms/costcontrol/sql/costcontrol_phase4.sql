@@ -128,3 +128,24 @@ BEGIN
     SELECT 1 AS Result, N'Document removed.' AS Message, @id AS id;
 END
 GO
+
+-- History of one cost entry and its documents, newest first (shown in the edit form).
+IF OBJECT_ID('dbo.usp_pms_cc_Audit_ListCostEntry', 'P') IS NULL EXEC('CREATE PROCEDURE dbo.usp_pms_cc_Audit_ListCostEntry AS RETURN 0');
+GO
+ALTER PROCEDURE dbo.usp_pms_cc_Audit_ListCostEntry
+    @regid INT, @EntryId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT a.id, CONVERT(VARCHAR(16), a.cdate, 120) AS ActionTime, a.EntityType, a.EntityId, a.Action,
+           ISNULL(a.Reason, N'') AS Reason, ISNULL(a.OldData, N'') AS OldData, ISNULL(a.NewData, N'') AS NewData,
+           ISNULL(e.DisplayName, N'') AS UserName
+      FROM dbo.Pms_tbl_CostControlAudit a WITH (NOLOCK)
+      LEFT JOIN dbo.tbl_employee e WITH (NOLOCK) ON e.id = a.uid
+     WHERE a.regid = @regid
+       AND ((a.EntityType = N'CostEntry' AND a.EntityId = @EntryId)
+            OR (a.EntityType = N'CostEntryDocument' AND a.EntityId IN
+                (SELECT d.id FROM dbo.Pms_tbl_CostEntryDocument d WHERE d.regid = @regid AND d.EntryId = @EntryId)))
+     ORDER BY a.id DESC;
+END
+GO

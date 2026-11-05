@@ -114,6 +114,11 @@
         .cc-ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
         .cc-clip{margin-left:6px;border:1px solid #d6c3d3;border-radius:10px;background:#fbf7fb;color:#6b1e63;font-size:11px;padding:0 6px;cursor:pointer}
         .cc-clip:hover{background:#f4ebf3}
+        .cc-hist-list{max-height:150px;overflow:auto;border:1px solid #e3e9ee;border-radius:6px;background:#fafbfd}
+        .cc-hist-row{padding:6px 9px;border-bottom:1px solid #eceef1;font-size:12px}
+        .cc-hist-row:last-child{border-bottom:0}
+        .cc-hist-head{color:#4a525c;word-break:break-word}
+        .cc-hist-reason{margin-top:2px;color:#6b1e63;font-weight:600;word-break:break-word}
     </style>
 </asp:Content>
 <asp:Content ID="CostControlContent" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
@@ -697,6 +702,18 @@
                     <cc-search-select ng-model="modal.data.ChangeId" items="changeOptions" value-key="id" label-key="Label" empty-label="-- Not linked to a change --"></cc-search-select>
                     <div class="cc-hint">Link cost of work done for a change. At-risk work appears here only after its at-risk authorisation; the cost stays in project actuals either way.</div>
                     <label>Remarks</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Remarks"></textarea>
+                    <div ng-if="modal.data.Id" class="cc-hist">
+                        <label>Previous changes</label>
+                        <div class="cc-hint" ng-if="modal.data.History === null">Loading...</div>
+                        <div class="cc-hint cc-neg" ng-if="modal.data.HistoryError">{{modal.data.HistoryError}}</div>
+                        <div class="cc-hint" ng-if="modal.data.History && !modal.data.History.length && !modal.data.HistoryError">No earlier changes recorded.</div>
+                        <div class="cc-hist-list" ng-if="modal.data.History.length">
+                            <div class="cc-hist-row" ng-repeat="h in modal.data.History track by h.id">
+                                <div class="cc-hist-head"><b>{{h.ActionTime}}</b> &middot; {{h.UserName || 'Unknown user'}} &middot; {{h.Summary}}</div>
+                                <div ng-if="h.Reason" class="cc-hist-reason">Reason: {{h.Reason}}</div>
+                            </div>
+                        </div>
+                    </div>
                     <div ng-if="modal.data.Id"><label>Reason for change *</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Reason" placeholder="Why is this saved entry being changed?"></textarea></div>
                 </div>
 

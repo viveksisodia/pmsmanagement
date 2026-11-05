@@ -534,9 +534,23 @@
                     SiteName: entry.SiteName || '', Remarks: entry.Remarks || '', Reason: '', ChangeId: entry.ChangeId || null,
                     IsSplit: !!(entry.splits && entry.splits.length),
                     Splits: (entry.splits || []).map(function (s) { return { CostCodeId: s.CostCodeId, MilestoneId: s.MilestoneId || null, TaskId: s.TaskId || null, Amount: toNumber(s.Amount), Percent: toNumber(s.SplitPercent) }; }),
-                    Documents: (entry.documents || []).slice(), NewFiles: [], RemovedDocs: [], FileError: ''
+                    Documents: (entry.documents || []).slice(), NewFiles: [], RemovedDocs: [], FileError: '',
+                    History: null, HistoryError: ''
                 });
+                if (entry.id) loadEntryHistory($scope.modal.data, entry.id);
             };
+            // Earlier changes of the entry (with their reasons), shown above "Reason for change".
+            function loadEntryHistory(d, entryId) {
+                call('GetCostEntryHistory', { costEntryId: entryId }).then(function (result) {
+                    d.History = (result.Rows || []).map(function (h) {
+                        var data = {};
+                        try { data = JSON.parse(h.NewData || h.OldData || '{}'); } catch (e) { data = {}; }
+                        if (h.EntityType === 'CostEntryDocument') h.Summary = (h.Action === 'Remove' ? 'Removed document ' : 'Attached document ') + (data.FileName || '');
+                        else h.Summary = h.Action === 'Create' ? 'Entry created' : describeChanges(h);
+                        return h;
+                    });
+                }).catch(function (err) { d.History = []; d.HistoryError = err.message; });
+            }
 
             // ---------- supporting documents (Phase 4) ----------
             var DOC_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'];
