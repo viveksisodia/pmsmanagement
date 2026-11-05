@@ -91,6 +91,29 @@
         .cc-badge-approved{background:#dff5e5;color:#23743c}.cc-badge-rejected{background:#fbe9e9;color:#a61b1b}.cc-badge-muted{background:#f1f3f5;color:#5e6672}
         .cc-mini{min-width:0!important}.cc-mini td,.cc-mini th{padding:3px 5px!important}
         .cc-modal{width:760px}
+        /* Supporting documents (Phase 4) */
+        .cc-docs{margin-top:4px}
+        .cc-drop{position:relative;display:flex!important;flex-direction:column;align-items:center;gap:2px;margin:4px 0 0!important;padding:12px;border:1px dashed #b98ab2;border-radius:6px;background:#fbf7fb;color:#6b1e63!important;font-size:13px!important;cursor:pointer;text-align:center}
+        .cc-drop:hover,.cc-drop:focus-within{background:#f4ebf3;border-color:#6b1e63}
+        .cc-drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+        .cc-drop-off{opacity:.55;cursor:not-allowed}.cc-drop-off input[type=file]{cursor:not-allowed}
+        .cc-doclist{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:8px}
+        .cc-doc{position:relative;display:flex;align-items:center;gap:8px;min-width:0;padding:7px 8px;border:1px solid #e3e9ee;border-radius:6px;background:#fff}
+        .cc-doc-new{border-style:dashed;background:#fafbfd}
+        .cc-doc-icon{flex:none;width:34px;height:34px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;background:#6b737d}
+        .cc-doc-pdf{background:#c0392b}.cc-doc-img{background:#2e7d4f}.cc-doc-doc{background:#285ca8}.cc-doc-xls{background:#1d6f42}
+        .cc-doc-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+        .cc-doc-size{position:absolute;left:50px;bottom:2px;font-size:10px;color:#8a9099;white-space:nowrap;overflow:hidden;max-width:calc(100% - 58px)}
+        .cc-doc-name{align-self:flex-start;margin-top:2px}
+        .cc-doc-tools{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:6px;background:rgba(40,20,40,.62);opacity:0;transition:opacity .12s}
+        .cc-doc:hover .cc-doc-tools,.cc-doc:focus-within .cc-doc-tools{opacity:1}
+        @media (hover:none){.cc-doc-tools{position:static;background:none;opacity:1;gap:4px}}
+        .cc-doc-btn{width:32px;height:32px;border:0;border-radius:50%;background:#fff;color:#333;font-size:15px;line-height:1;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+        .cc-doc-btn:hover,.cc-doc-btn:focus{background:#f4ebf3;outline:2px solid #6b1e63}
+        .cc-doc-del:hover,.cc-doc-del:focus{background:#fbe9e9;color:#a61b1b;outline-color:#a61b1b}
+        .cc-ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+        .cc-clip{margin-left:6px;border:1px solid #d6c3d3;border-radius:10px;background:#fbf7fb;color:#6b1e63;font-size:11px;padding:0 6px;cursor:pointer}
+        .cc-clip:hover{background:#f4ebf3}
     </style>
 </asp:Content>
 <asp:Content ID="CostControlContent" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
@@ -177,7 +200,9 @@
                                 <td ng-if="!entry.splits.length">{{entry.CostCode}} - {{entry.CostCodeName}}</td>
                                 <td ng-if="entry.splits.length" colspan="3" class="cc-diff"><b>Split ({{entry.splits.length}})</b><div ng-repeat="s in entry.splits track by s.id">{{s.CostCodeLabel}}{{s.MilestoneName ? ' / ' + s.MilestoneName : ''}}: {{s.Amount | number:2}} ({{s.SplitPercent | number:2}} %)</div></td>
                                 <td ng-if="!entry.splits.length">{{entry.MilestoneName || 'Project level'}}</td><td ng-if="!entry.splits.length">{{entry.TaskName}}</td>
-                                <td>{{entry.SiteName}}</td><td>{{entry.SourceDocType}}</td><td>{{entry.ReferenceNo}}</td>
+                                <td>{{entry.SiteName}}</td>
+                                <td>{{entry.SourceDocType}}<button type="button" class="cc-clip" ng-if="entry.documents.length" ng-click="openEntryDocs(entry)" title="View attached documents" aria-label="{{entry.documents.length}} attached document(s)"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true" style="width:13px;height:13px"><path d="M20 11.5l-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.4 3.4 0 0 1 4.8 4.8l-8.4 8.4a1.7 1.7 0 0 1-2.4-2.4l7.7-7.7"/></svg> {{entry.documents.length}}</button></td>
+                                <td>{{entry.ReferenceNo}}</td>
                                 <td>{{entry.ChangeNo ? '#' + entry.ChangeNo : ''}}<span class="cc-warn" ng-if="entry.IsAtRisk==1"> at risk</span></td>
                                 <td class="cc-num" ng-class="{'cc-neg':entry.Amount<0}">{{entry.Amount | number:2}}</td>
                                 <td>{{entry.Remarks}}</td>
@@ -637,12 +662,57 @@
                             <cc-search-select ng-model="modal.data.SourceDocType" items="sourceDocOptions" value-key="id" label-key="Name" empty-label="-- None --"></cc-search-select></div>
                         <div><label>Reference No.</label><input type="text" maxlength="100" ng-model="modal.data.ReferenceNo" placeholder="Bill / voucher / PO number" /></div>
                     </div>
+                    <div class="cc-docs" ng-if="showDocArea(modal.data)">
+                        <label>Documents <span class="cc-meta">({{modal.data.SourceDocType || 'select the source document type'}})</span></label>
+                        <label class="cc-drop" ng-class="{'cc-drop-off':!modal.data.SourceDocType}">
+                            <input type="file" multiple accept="{{docAccept}}" cc-file-picker="addFiles(files)" ng-disabled="!modal.data.SourceDocType" />
+                            <span><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 8.5l5-5 5 5M5 20h14"/></svg> Click to choose files (you can select several)</span>
+                            <span class="cc-hint">PDF, images, Word, Excel, CSV or text; up to 10 MB each, 20 per entry. Files are uploaded when you click Save.</span>
+                        </label>
+                        <div class="cc-hint cc-neg" ng-if="modal.data.FileError">{{modal.data.FileError}}</div>
+                        <div class="cc-doclist" ng-if="modal.data.Documents.length || modal.data.NewFiles.length">
+                            <div class="cc-doc" ng-repeat="doc in modal.data.Documents track by doc.id" title="{{doc.FileName}}">
+                                <span class="cc-doc-icon cc-doc-{{docKind(doc.FileName)}}">{{docKindLabel(doc.FileName)}}</span>
+                                <span class="cc-doc-name">{{doc.FileName}}</span><span class="cc-doc-size">{{fileSize(doc.FileSize)}}</span>
+                                <span class="cc-doc-tools">
+                                    <button type="button" class="cc-doc-btn" ng-click="viewSavedDoc(doc)" title="View" aria-label="View {{doc.FileName}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
+                                    <button type="button" class="cc-doc-btn cc-doc-del" ng-click="removeSavedDoc($index)" title="Remove" aria-label="Remove {{doc.FileName}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></button>
+                                </span>
+                            </div>
+                            <div class="cc-doc cc-doc-new" ng-repeat="f in modal.data.NewFiles track by $index" title="{{f.name}}">
+                                <span class="cc-doc-icon cc-doc-{{docKind(f.name)}}">{{docKindLabel(f.name)}}</span>
+                                <span class="cc-doc-name">{{f.name}}</span><span class="cc-doc-size">New &middot; {{fileSize(f.size)}}</span>
+                                <span class="cc-doc-tools">
+                                    <button type="button" class="cc-doc-btn" ng-click="viewNewFile(f)" ng-if="f.url" title="View" aria-label="View {{f.name}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
+                                    <button type="button" class="cc-doc-btn cc-doc-del" ng-click="removeNewFile($index)" title="Remove" aria-label="Remove {{f.name}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="cc-hint" ng-repeat="doc in modal.data.RemovedDocs track by doc.id">
+                            <s>{{doc.FileName}}</s> will be removed when you save. <a href="" ng-click="undoRemoveDoc($index)">Undo</a>
+                        </div>
+                    </div>
                     <label>Site / Location</label><input type="text" maxlength="100" ng-model="modal.data.SiteName" placeholder="Site where the cost was incurred" />
                     <label>Change / at-risk work</label>
                     <cc-search-select ng-model="modal.data.ChangeId" items="changeOptions" value-key="id" label-key="Label" empty-label="-- Not linked to a change --"></cc-search-select>
                     <div class="cc-hint">Link cost of work done for a change. At-risk work appears here only after its at-risk authorisation; the cost stays in project actuals either way.</div>
                     <label>Remarks</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Remarks"></textarea>
                     <div ng-if="modal.data.Id"><label>Reason for change *</label><textarea rows="2" maxlength="1000" ng-model="modal.data.Reason" placeholder="Why is this saved entry being changed?"></textarea></div>
+                </div>
+
+                <div ng-if="modal.type==='docs'">
+                    <h4>Documents &middot; {{modal.data.entry.EntryDate}} &middot; {{modal.data.entry.SourceDocType}} {{modal.data.entry.ReferenceNo}}</h4>
+                    <div class="cc-doclist">
+                        <div class="cc-doc" ng-repeat="doc in modal.data.entry.documents track by doc.id" title="{{doc.FileName}}">
+                            <span class="cc-doc-icon cc-doc-{{docKind(doc.FileName)}}">{{docKindLabel(doc.FileName)}}</span>
+                            <span class="cc-doc-name">{{doc.FileName}}</span><span class="cc-doc-size">{{fileSize(doc.FileSize)}} &middot; {{doc.UploadedBy}} {{doc.cdate}}</span>
+                            <span class="cc-doc-tools">
+                                <button type="button" class="cc-doc-btn" ng-click="viewSavedDoc(doc)" title="View" aria-label="View {{doc.FileName}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg></button>
+                                <button type="button" class="cc-doc-btn" ng-click="downloadSavedDoc(doc)" title="Download" aria-label="Download {{doc.FileName}}"><svg class="cc-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="cc-hint" ng-if="access.CanEnter && modal.data.entry.IsPeriodClosed!=1">To add or remove documents, edit the cost entry.</div>
                 </div>
 
                 <div ng-if="modal.type==='etc'">
@@ -772,8 +842,8 @@
                 </div>
 
                 <div class="cc-modal-footer">
-                    <button type="button" class="cc-btn" ng-click="closeModal()" ng-disabled="busy">Cancel</button>
-                    <button type="button" class="cc-btn cc-btn-primary" ng-click="saveModal()" ng-disabled="busy">{{busy ? 'Saving...' : (modal.type==='reason' ? modal.data.button : 'Save')}}</button>
+                    <button type="button" class="cc-btn" ng-click="closeModal()" ng-disabled="busy">{{modal.type==='docs' ? 'Close' : 'Cancel'}}</button>
+                    <button type="button" class="cc-btn cc-btn-primary" ng-if="modal.type!=='docs'" ng-click="saveModal()" ng-disabled="busy">{{busy ? 'Saving...' : (modal.type==='reason' ? modal.data.button : 'Save')}}</button>
                 </div>
             </div>
         </div>

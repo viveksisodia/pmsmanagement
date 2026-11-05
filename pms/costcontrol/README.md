@@ -8,9 +8,11 @@
 > - **per-project access** and **Pending Approvals**;
 > - the label fixes and the unit duplicate check.
 >
-> **Install order: `costcontrol_phase1.sql` → `costcontrol_phase2.sql` → `costcontrol_phase3.sql`.** Each later script replaces some procedures of the earlier ones, so always re-run the whole chain in this order.
+> **Phase 4 (2026-11-05)** adds supporting **documents on cost entries** (several files per entry, view / remove on hover).
 >
-> See [Phase 3 details](#phase-3-details) at the end of this file.
+> **Install order: `costcontrol_phase1.sql` → `costcontrol_phase2.sql` → `costcontrol_phase3.sql` → `costcontrol_phase4.sql`.** Each later script replaces some procedures of the earlier ones, so always re-run the whole chain in this order.
+>
+> See [Phase 3 details](#phase-3-details) and [Phase 4 details](#phase-4-details) at the end of this file.
 
 Module at `/pms/costcontrol/`.
 
@@ -135,3 +137,52 @@ Spire.XLS adds an "Evaluation Warning" sheet if it is not licensed on the server
   - saving and reloading on the real database;
   - Excel downloads;
   - the "approved change moves its cost into ETC" step, which happens only in SQL and not in the mock.
+
+## Phase 4 details
+
+**Cost entry documents.** In **Add / Edit Cost Entry**, the upload area appears once a **Source Document** type is selected.
+
+- **Choosing files:** several files can be chosen at once. Each file shows as a tile; hovering over a tile shows **View** and **Remove** icons (on touch screens the icons are always shown).
+- **When files are saved:** new files are uploaded when you click **Save**, after the entry itself is saved, one file per request. A saved file you remove is only marked; it is removed on Save, using the entry's "Reason for change", and **Undo** puts it back. If an upload fails after the entry is saved, the dialog closes and the message says which file failed, so the entry is never saved twice.
+- **Cost Entries list:** the Source Doc column shows a paperclip with the number of files. Clicking it opens a read-only list with **View** and **Download**, available to every user with View rights.
+- **Rules:**
+  - PDF, JPG, PNG, GIF, WEBP, DOC(X), XLS(X), CSV or TXT only;
+  - up to 10 MB per file and 20 per entry;
+  - the first bytes of each file must match its extension;
+  - if documents are attached, a Source Document type is required;
+  - documents of an entry in a closed month cannot be added or removed;
+  - only manual entries can have documents.
+- **Storage:** files go under `~/App_Data/CostControlDocs/<regid>/<entry id>/`, with a generated name (GUID). IIS never serves `App_Data` directly; files are only read through `document.ashx`, which checks the login, rights and project access and sends the file with a fixed content type. The table keeps the original name, type, size, uploader and date. Removal is a soft delete recorded in the History tab. The file itself stays on disk.
+- **New objects:**
+  - table `Pms_tbl_CostEntryDocument`;
+  - procedures `usp_pms_cc_CostEntryDoc_List`, `_Get`, `_Add` and `_Remove`;
+  - handler `pms/costcontrol/document.ashx`;
+  - WebMethod `RemoveCostEntryDocument`.
+  - `GetCostEntries` also returns the documents. It returns an empty list until the Phase 4 script is installed.
+- **Deploy:**
+  - run `costcontrol_phase4.sql`;
+  - copy `document.ashx`, `default.aspx`, `default.aspx.cs` and `app/costcontrol.main.js`;
+  - give the IIS application pool identity **modify** rights on the site's `App_Data` folder (it is created if missing);
+  - include `App_Data/CostControlDocs` in the server backup.
+
+The existing PMS upload handlers (`FileUploadHandler*.ashx`) were **not** reused. They save files with their original names in public folders, build SQL by joining strings, and do not check the user's rights.
+
+### Verification (Phase 4)
+
+- **Checks run:**
+  - the C# for the handler, page and shared class compiles (csc 4.x);
+  - JavaScript syntax is checked;
+  - SQL bracket and BEGIN/END balance is checked.
+- **Browser test against a mock server (all passed):**
+  - **Upload area:** it is hidden until a source document type is chosen. An .exe and an 11 MB file are refused, and choosing the same file twice is ignored.
+  - **New entry:** two files upload after Save, and the list shows a paperclip with 2.
+  - **Edit:** removing a saved file and adding another needs the change reason, and the reason is passed to the removal.
+  - **Source type:** clearing it while files are attached is refused.
+  - **Failed upload:** the message says the entry was saved and which file failed.
+  - **Closed month:** nothing changes.
+  - **Paperclip list:** it is read-only, and View and Download open `document.ashx?id=…` (plus `&download=1` for Download).
+  - **View-only user:** they can view documents but get no upload or remove options.
+  - **Multiple files:** three files go up as three requests.
+- **Not done:**
+  - the Phase 4 SQL script has not been run;
+  - a real upload to IIS (folder permissions, file signature check, `TransmitFile`) has not been tried.

@@ -521,7 +521,27 @@ public partial class pms_costcontrol_default : Page
         {
             var login = RequireOnProject(PmsCostControl.Need.View, projectId);
             DataSet ds = Run("usp_pms_cc_CostEntry_List", Reg(login), Project(projectId));
-            return new { Success = true, Entries = Rows(ds, 0), Splits = Rows(ds, 1) };
+            List<Dictionary<string, object>> documents;
+            try { documents = Rows(Run("usp_pms_cc_CostEntryDoc_List", Reg(login), Project(projectId)), 0); }
+            catch (SqlException) { documents = new List<Dictionary<string, object>>(); }   // phase 4 script not installed yet
+            return new { Success = true, Entries = Rows(ds, 0), Splits = Rows(ds, 1), Documents = documents };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    /// <summary>Removes (soft-deletes) a supporting document. Upload and viewing are in document.ashx.</summary>
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object RemoveCostEntryDocument(int documentId, string reason)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.Enter);
+            DataSet doc = Run("usp_pms_cc_CostEntryDoc_Get", Reg(login), new SqlParameter("@id", documentId));
+            if (doc == null || doc.Tables.Count == 0 || doc.Tables[0].Rows.Count == 0) throw new HttpException(404, "The document was not found.");
+            PmsCostControl.RequireProject(login, Convert.ToInt32(doc.Tables[0].Rows[0]["ProjectId"], CultureInfo.InvariantCulture));
+            return SaveResult(Run("usp_pms_cc_CostEntryDoc_Remove", Reg(login), new SqlParameter("@id", documentId),
+                new SqlParameter("@Reason", PmsCostControl.DbText(reason)), Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }

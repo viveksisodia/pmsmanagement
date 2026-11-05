@@ -122,7 +122,22 @@
                 }
             };
         }])
-        .controller('CostControlController', ['$scope', '$http', function ($scope, $http) {
+        /* <input type="file" multiple cc-file-picker="addFiles(files)">: passes the chosen files, then clears the input
+           so the same file can be chosen again. */
+        .directive('ccFilePicker', [function () {
+            return {
+                restrict: 'A',
+                scope: { ccFilePicker: '&' },
+                link: function (scope, element) {
+                    element.on('change', function () {
+                        var files = Array.prototype.slice.call(element[0].files || []);
+                        scope.$apply(function () { scope.ccFilePicker({ files: files }); });
+                        element[0].value = '';
+                    });
+                }
+            };
+        }])
+        .controller('CostControlController', ['$scope', '$http', '$q', function ($scope, $http, $q) {
             var STORAGE_KEY = 'pmsCostControl.selection';
             var page = window.CostControlPage || {};
 
@@ -344,8 +359,12 @@
             function loadEntries() {
                 if (!$scope.selection.projectId) return;
                 return call('GetCostEntries', { projectId: $scope.selection.projectId }).then(function (result) {
-                    var splits = result.Splits || [];
-                    $scope.actuals.entries = (result.Entries || []).map(function (e) { e.splits = splits.filter(function (s) { return s.EntryId === e.id; }); return e; });
+                    var splits = result.Splits || [], documents = result.Documents || [];
+                    $scope.actuals.entries = (result.Entries || []).map(function (e) {
+                        e.splits = splits.filter(function (s) { return s.EntryId === e.id; });
+                        e.documents = documents.filter(function (d) { return d.EntryId === e.id; });
+                        return e;
+                    });
                 }).catch(showError);
             }
             function loadForecast() {
@@ -476,7 +495,11 @@
             };
 
             // ---------- modal handling ----------
-            $scope.closeModal = function () { if (!$scope.busy) $scope.modal = { type: null, data: {}, error: '' }; };
+            $scope.closeModal = function () {
+                if ($scope.busy) return;
+                if ($scope.modal && $scope.modal.type === 'entry') releaseNewFiles($scope.modal.data);
+                $scope.modal = { type: null, data: {}, error: '' };
+            };
             function openModal(type, data) {
                 $scope.quickCode = { open: false }; $scope.quickUnit = { open: false };
                 $scope.modal = { type: type, data: data, error: '' };
@@ -510,9 +533,98 @@
                     Amount: toNumber(entry.Amount), SourceDocType: entry.SourceDocType || null, ReferenceNo: entry.ReferenceNo || '',
                     SiteName: entry.SiteName || '', Remarks: entry.Remarks || '', Reason: '', ChangeId: entry.ChangeId || null,
                     IsSplit: !!(entry.splits && entry.splits.length),
-                    Splits: (entry.splits || []).map(function (s) { return { CostCodeId: s.CostCodeId, MilestoneId: s.MilestoneId || null, TaskId: s.TaskId || null, Amount: toNumber(s.Amount), Percent: toNumber(s.SplitPercent) }; })
+                    Splits: (entry.splits || []).map(function (s) { return { CostCodeId: s.CostCodeId, MilestoneId: s.MilestoneId || null, TaskId: s.TaskId || null, Amount: toNumber(s.Amount), Percent: toNumber(s.SplitPercent) }; }),
+                    Documents: (entry.documents || []).slice(), NewFiles: [], RemovedDocs: [], FileError: ''
                 });
             };
+
+            // ---------- supporting documents (Phase 4) ----------
+            var DOC_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'];
+            var DOC_MAX_BYTES = 10 * 1024 * 1024, DOC_MAX_PER_ENTRY = 20;
+            $scope.docAccept = DOC_EXTENSIONS.map(function (x) { return '.' + x; }).join(',');
+            function extensionOf(name) { var m = /\.([^.]+)$/.exec(name || ''); return m ? m[1].toLowerCase() : ''; }
+            $scope.docKind = function (name) {
+                var x = extensionOf(name);
+                if (x === 'pdf') return 'pdf';
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(x) >= 0) return 'img';
+                if (x === 'doc' || x === 'docx') return 'doc';
+                if (x === 'xls' || x === 'xlsx' || x === 'csv') return 'xls';
+                return 'txt';
+            };
+            $scope.docKindLabel = function (name) { return ({ pdf: 'PDF', img: 'IMG', doc: 'DOC', xls: 'XLS', txt: 'TXT' })[$scope.docKind(name)]; };
+            $scope.fileSize = function (bytes) {
+                bytes = Number(bytes) || 0;
+                if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+                return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+            };
+            $scope.showDocArea = function (d) {
+                return !!(d && (d.SourceDocType || (d.Documents && d.Documents.length) || (d.NewFiles && d.NewFiles.length) || (d.RemovedDocs && d.RemovedDocs.length)));
+            };
+            $scope.addFiles = function (files) {
+                var d = $scope.modal.data, problems = [];
+                d.FileError = '';
+                files.forEach(function (file) {
+                    var x = extensionOf(file.name);
+                    if (DOC_EXTENSIONS.indexOf(x) < 0) { problems.push('"' + file.name + '": this file type is not allowed'); return; }
+                    if (!file.size) { problems.push('"' + file.name + '" is empty'); return; }
+                    if (file.size > DOC_MAX_BYTES) { problems.push('"' + file.name + '" is larger than 10 MB'); return; }
+                    if (d.NewFiles.some(function (f) { return f.name === file.name && f.size === file.size; })) return;   // same file chosen twice
+                    if (d.Documents.length + d.NewFiles.length >= DOC_MAX_PER_ENTRY) { problems.push('a cost entry can have at most ' + DOC_MAX_PER_ENTRY + ' documents'); return; }
+                    d.NewFiles.push({ file: file, name: file.name, size: file.size, url: window.URL ? window.URL.createObjectURL(file) : null });
+                });
+                if (problems.length) d.FileError = 'Not added: ' + problems.filter(function (p, i) { return problems.indexOf(p) === i; }).join('; ') + '.';
+            };
+            $scope.viewSavedDoc = function (doc) { window.open('document.ashx?id=' + encodeURIComponent(doc.id), '_blank'); };
+            $scope.downloadSavedDoc = function (doc) { window.open('document.ashx?id=' + encodeURIComponent(doc.id) + '&download=1', '_blank'); };
+            $scope.viewNewFile = function (f) { if (f.url) window.open(f.url, '_blank'); };
+            $scope.removeNewFile = function (index) {
+                var f = $scope.modal.data.NewFiles.splice(index, 1)[0];
+                if (f && f.url && window.URL) window.URL.revokeObjectURL(f.url);
+            };
+            // A saved document is only marked here; it is removed when the entry is saved (with the change reason).
+            $scope.removeSavedDoc = function (index) { var d = $scope.modal.data; d.RemovedDocs.push(d.Documents.splice(index, 1)[0]); };
+            $scope.undoRemoveDoc = function (index) { var d = $scope.modal.data; d.Documents.push(d.RemovedDocs.splice(index, 1)[0]); };
+            $scope.openEntryDocs = function (entry) { openModal('docs', { entry: entry }); };
+            function releaseNewFiles(d) {
+                (d && d.NewFiles || []).forEach(function (f) { if (f.url && window.URL) window.URL.revokeObjectURL(f.url); });
+            }
+            // One file per request, so a request never exceeds the IIS request-size limit (30 MB by default).
+            function uploadEntryFiles(entryId, newFiles) {
+                return newFiles.reduce(function (chain, f) {
+                    return chain.then(function () {
+                        var data = new FormData();
+                        data.append('file', f.file, f.name);
+                        return $http.post('document.ashx?entryId=' + encodeURIComponent(entryId), data, {
+                            transformRequest: angular.identity, headers: { 'Content-Type': undefined, 'X-CC-Upload': '1' }
+                        }).then(function (response) {
+                            if (!response.data || response.data.Success !== true) throw new Error((response.data && response.data.Message) || 'The upload failed.');
+                        }, function (response) {
+                            throw new Error(response && response.data && response.data.Message ? response.data.Message : 'The upload of "' + f.name + '" failed.');
+                        });
+                    });
+                }, $q.when());
+            }
+            function removeEntryDocs(docs, reason) {
+                return docs.reduce(function (chain, doc) {
+                    return chain.then(function () { return call('RemoveCostEntryDocument', { documentId: doc.id, reason: reason }); });
+                }, $q.when());
+            }
+            // After the entry itself is saved: attach new files, then remove the marked ones.
+            // A failure here must not re-save the entry, so the modal closes and the message says what is left.
+            function saveEntryDocuments(entryId, d) {
+                var newFiles = d.NewFiles.slice(), removed = d.RemovedDocs.slice();
+                if (!newFiles.length && !removed.length) return Promise.resolve('');
+                return uploadEntryFiles(entryId, newFiles)
+                    .then(function () { return removeEntryDocs(removed, d.Reason || ''); })
+                    .then(function () {
+                        var parts = [];
+                        if (newFiles.length) parts.push(newFiles.length + ' document(s) attached');
+                        if (removed.length) parts.push(removed.length + ' removed');
+                        return parts.join(', ');
+                    }, function (err) {
+                        throw new Error('The cost entry was saved, but the documents were not all saved: ' + err.message + ' Open the entry to try again.');
+                    });
+            }
             $scope.openEtc = function (row) {
                 row = row || {};
                 openModal('etc', {
@@ -566,6 +678,7 @@
                             if (!$scope.splitBalanced()) return 'The split rows must total exactly the entry amount (100 %).';
                             d.CostCodeId = d.Splits[0].CostCodeId;
                         } else if (!d.CostCodeId) return 'Select a cost code.';
+                        if ((d.Documents.length || d.NewFiles.length) && !d.SourceDocType) return 'Select the source document type of the attached documents.';
                         if (d.Id && !(d.Reason || '').trim()) return 'Enter the reason for changing this saved entry.';
                         break;
                     case 'etc':
@@ -622,7 +735,16 @@
                                 return second;
                             });
                         });
-                        after = loadEntries;
+                        after = function (result) {
+                            return saveEntryDocuments(result.Id || d.Id, d).then(function (docText) {
+                                releaseNewFiles(d);
+                                showNotice((result.Message || 'Saved.') + (docText ? ' ' + docText + '.' : ''));
+                                return loadEntries();
+                            }, function (err) {
+                                releaseNewFiles(d);
+                                return loadEntries().then(function () { showError(err); });
+                            });
+                        };
                         break;
                     case 'etc':
                         request = call('SaveEtc', { request: {
@@ -730,7 +852,7 @@
 
             // ---------- snapshots ----------
             function loadSnapshots() {
-                if (!$scope.selection.projectId) return Promise.resolve();
+                if (!$scope.selection.projectId) return $q.when();
                 return call('GetSnapshots', { projectId: $scope.selection.projectId }).then(function (result) {
                     var options = [{ id: 0, Label: 'Live (today)' }];
                     (result.Rows || []).forEach(function (s) { options.push({ id: s.id, Label: $scope.monthLabel(s.PeriodStart) + ' - snapshot v' + s.SnapshotVersion }); });
