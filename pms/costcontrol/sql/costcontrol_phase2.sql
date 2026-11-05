@@ -1003,7 +1003,9 @@ BEGIN
          WHERE regid = @regid AND ProjectId = @ProjectId AND PeriodStart = @PeriodStart;
 
     DECLARE @Detail NVARCHAR(MAX) = (SELECT CONVERT(VARCHAR(10), @PeriodStart, 23) AS PeriodStart FOR JSON PATH, WITHOUT_ARRAY_WRAPPER);
-    EXEC dbo.usp_pms_cc_Audit_Add @regid, @ProjectId, N'Period', NULL, CASE WHEN @Close = 1 THEN N'Close' ELSE N'Reopen' END, @Reason, NULL, @Detail, @uid;
+    -- EXEC arguments must be variables or constants, so the action name is set first.
+    DECLARE @AuditAction NVARCHAR(30) = CASE WHEN @Close = 1 THEN N'Close' ELSE N'Reopen' END;
+    EXEC dbo.usp_pms_cc_Audit_Add @regid, @ProjectId, N'Period', NULL, @AuditAction, @Reason, NULL, @Detail, @uid;
     SELECT 1 AS Result, CASE WHEN @Close = 1 THEN N'Month closed.' ELSE N'Month reopened.' END AS Message;
 END
 GO
