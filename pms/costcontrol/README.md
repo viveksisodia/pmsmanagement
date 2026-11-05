@@ -1,47 +1,93 @@
-# Cost Control (Phase 1)
+# Cost Control (Phase 1 + Phase 2)
 
-New module at `/pms/costcontrol/`. Only company administrators can use it, and the menu link appears only for them.
+Module at `/pms/costcontrol/`.
 
-Existing PMS tables are **read only**. No existing table, column or stored procedure is changed.
+Existing PMS and ERP tables are **read only**:
+- `Pms_tbl_AddProject`
+- `Pms_tbl_AddMilestone`
+- `Pms_tbl_Addtask`
+- `tbl_employee`
+- `tbl_unitmaster`
+
+There is one exception: "+ Add new unit" inserts a unit through the existing ERP procedure `tbl_unitmasterInsertNew`.
 
 ## Install (non-production first)
 
 1. Back up the PMS database.
-2. Run `sql/costcontrol_phase1.sql`. It is safe to re-run:
-   - tables are created only if missing;
-   - procedures are created or altered, and only those named `usp_pms_cc_*`.
+2. Run `sql/costcontrol_phase1.sql`, then `sql/costcontrol_phase2.sql`.
+   - **Always run them in this order.** Phase 2 replaces several Phase 1 procedures, so running Phase 1 alone later would undo Phase 2 behaviour.
+   - Both are safe to re-run. Tables and columns are created only if missing, and only procedures named `usp_pms_cc_*` (plus two `ufn_pms_cc_*` functions) are created or altered.
+   - Phase 2 needs SQL Server 2016 or later (`FOR JSON`).
 3. Deploy these files:
+   - `App_Code/PmsCostControl.cs` (new, shared access rules)
    - `pms/costcontrol/default.aspx`
    - `pms/costcontrol/default.aspx.cs`
    - `pms/costcontrol/app/costcontrol.main.js`
-   - the edited `pms/angularmaster/angular_head.master` (4 added lines: the "Cost Control" link)
+   - `pms/costcontrol/export.aspx`
+   - `pms/costcontrol/export.aspx.cs`
+   - `pms/angularmaster/angular_head.master` (the "Cost Control" link)
+   - `pms/angularmaster/angular_head.master.cs` (one guarded call that decides whether to show the link)
+4. Grant access in **Cost Control > Access**. Tick **Approve** for at least one person who does not prepare budgets.
+
+## Who can do what
+
+| Right | Allows | Granted by |
+|---|---|---|
+| View | All tabs read-only, Excel export | Access tab |
+| Enter | Budgets (create, edit draft, submit), cost entries, forecasts (ETC), add unit | Access tab; administrators always have it |
+| Approve | Approve and lock or return a submitted budget; close and reopen months | Access tab only. Administrators do **not** get it automatically (requirements 5.1). |
+| Administrator | Cost Codes and Access tabs, company-level history | Existing PMS admin role |
+
+A person can never approve a budget they submitted themselves (AP-03). This is enforced in the database procedure, not only on screen.
 
 ## What it does
 
-| Requirement | Existing table/columns used | Implementation | Files | Verification |
-|---|---|---|---|---|
-| REQ-003 Cost-code library | none (new) | New table `Pms_tbl_CostCode`. Code is unique per regid. Cost types: Material, Labour, Subcontract, Equipment, Overhead, Other. A code that is in use cannot be deleted. | sql, default.aspx(.cs), costcontrol.main.js | C# compiles (csc 4.x); JS syntax checked. **Not run against a DB.** |
-| REQ-013 Locked baseline and versioned revisions | Pms_tbl_AddProject (id, ProjectName) | `Pms_tbl_ProjectBudgetVersion` and `Pms_tbl_ProjectBudgetLine`. Version 1 is the Original budget. Locked versions are immutable. A revision copies the last locked version and requires a reason. Only one draft is allowed at a time. | same | Same as above |
-| REQ-001 (partial) Budget/cost against existing hierarchy | Pms_tbl_AddMilestone (id, milestone, ProjectId, orderno); Pms_tbl_Addtask (id, taskname, Milestoneid, orderno) | Lines and entries may reference an existing milestone and task. The server checks that the task belongs to the milestone, the milestone to the project, and the project to the regid. | same | Same as above |
-| REQ-007 (partial) Actual cost | none (new) | `Pms_tbl_ProjectCostEntry`: manual cost entries with a date-only `EntryDate`. Negative amounts are reversals. `SourceType` is reserved for future ERP feeds. | same | Same as above |
-| REQ-024 (partial) Budget vs actual | — | Grouped by cost code or by milestone. Columns: Original, Current (latest locked), Actual, Variance, Consumed %. Drafts are excluded and flagged. | same | Same as above |
+| Requirement | Existing table/columns used | Implementation | Verification |
+|---|---|---|---|
+| REQ-003 / CC-01 Cost-code library and hierarchy | none (new `Pms_tbl_CostCode`) | Division > Section > Element. Only Element codes are posting codes: budget, cost entry and ETC refuse other levels. Codes are unique per company. | UI tested on a mock server |
+| CC-04 Lock once used | — | A used code can only have its description changed; code, name, type, level and parent are locked in the procedure. Every change is in the history. | UI tested on a mock server |
+| REQ-013 / AP-03 / AP-10 Baseline, revisions, maker-checker | Pms_tbl_AddProject | Draft > Submitted > Approved/Locked. "Return to Draft" needs a reason, which the preparer sees. A revision copies the last approved version and needs a reason. Only one open (draft or submitted) version at a time. | UI tested on a mock server |
+| REQ-001 (partial) Hierarchy link | Pms_tbl_AddMilestone (id, milestone, ProjectId, orderno); Pms_tbl_Addtask (id, taskname, Milestoneid, orderno) | Lines, entries and ETC may reference a milestone and task. The server checks that they belong to the project and the company. | UI tested on a mock server |
+| REQ-007 (partial) / DM-01 Actual cost | none (new `Pms_tbl_ProjectCostEntry`) | Manual entries with date-only `EntryDate`, site, source document type and reference. A duplicate reference with the same document type triggers a warning that must be confirmed. Negative amounts are reversals. | UI tested on a mock server |
+| AU-01 / NF-06 Audit history | none (new `Pms_tbl_CostControlAudit`) | Every create, change, delete, submit, approve, return, close, reopen and access change is recorded, with a before/after JSON snapshot. A reason is mandatory to change or delete a saved cost entry, return a budget or reopen a month. A trigger refuses any update or delete of history. | UI tested on a mock server |
+| RP-01 (partial) Forecast | none (new `Pms_tbl_ProjectEtc`) | One current ETC per project × cost code × milestone, with an as-of date and basis. EAC = Actual + ETC; VAC = Current budget − EAC. | UI tested on a mock server |
+| RP-01 / RP-16 (partial) Reports | — | Budget vs Actual grouped by cost code, milestone or **cost type**. Columns: Original, Current, Actual, Remaining, ETC, EAC, VAC, Consumed %. The **Project Summary** tab covers all projects. | UI tested on a mock server |
+| RP-17 Excel export | — | `export.aspx` (Spire.XLS, already in the PMS) for the report, summary, budget, cost entries and forecast. Each file carries title, project, filter/version, generation time and user. It is streamed to the browser, never saved on the server, and uses the same access check as the screen. | Compiles; **not run** |
+| PE-01 / PE-04 / PE-06 (simplified) Period lock | none (new `Pms_tbl_CostControlPeriod`) | Monthly close per project. Entries dated in a closed month cannot be added, changed or deleted. Reopening needs a reason and is recorded. | UI tested on a mock server |
+| 5.1 / NF-04 Access | tbl_employee (id, DisplayName, regid, status, archive), read only | New `Pms_tbl_CostControlAccess`: View / Enter / Approve per employee. The menu link shows for administrators and granted employees. | UI tested on a mock server |
 
 ## Rules preserved
 
-- **Tenant isolation:** every query is filtered by `regid` from the existing login cookie, and every row stores `regid`.
-- **Soft delete:** the existing `status=1 / archive=0` convention is used.
-- **Audit fields:** `cby`, `cdate`, `mby`, `mdate`. Locks record `LockedBy` / `LockedOn`.
-- **Parameterised access:** all data access uses stored procedures with parameters, with no string-built SQL for user input.
-- **Existing Budget/Actual fields:** these fields on Project, Milestone, Task and Subtask are **untouched**, and the module does not read or overwrite them.
-- **Dates:** cost dates are sent as `yyyy-MM-dd` and stored as `DATE`, so there is no time-zone shift. Timestamps use the database server's `GETDATE()`, the same source as `DataAccess.getcdatetime()`.
+- **Tenant isolation:** every query is filtered by `regid` from the existing login cookie.
+- **Soft delete:** the `status=1 / archive=0` convention is used.
+- **Parameterised data access:** stored procedures with parameters, and no string-built SQL with user input.
+- **Existing Budget/Actual fields:** these fields on Project, Milestone, Task and Subtask are untouched.
+- **Dates:** business dates are sent as `yyyy-MM-dd` and stored as `DATE`. Timestamps use the database server's `GETDATE()`.
 
-## Not tested (no database or test login available)
+## Verification done and not done
 
-- Running the SQL script, saving and reloading through the screens, and the menu link rendering.
-- Regression check of existing screens. The only existing file changed is the master page, and only by 4 added lines.
+- **Done:**
+  - all C# compiles (csc 4.x, with CommonClass and Spire.XLS references);
+  - JavaScript syntax is checked;
+  - the full page (real markup and controller) was driven in a browser against a mock server that applies the same rules as the procedures: budget revision, add line, submit, own-approval block, return with reason, duplicate-reference warning, closed-month block, edit/delete reason, ETC/EAC/VAC, cost-type grouping, month close/reopen, history, cost-code lock and hierarchy, access, and the view-only user's screens.
+- **Not done:**
+  - the Phase 2 SQL script has **not** been run on a database;
+  - saving and reloading against the real database;
+  - the Excel download;
+  - the menu link on the real site;
+  - regression of existing screens. The only existing files changed are `angular_head.master` (link condition) and `angular_head.master.cs` (one added field and one guarded call).
 
 ## Open decisions
 
-- Who may use the module beyond administrators (a role-permission module ID is needed).
-- Whether actuals should come from the ERP (PO, GRN, bills, payroll) instead of manual entry.
-- Currency per project, commitments, change orders, subcontracts and the other items listed in `pms-enhancement-coverage-map.md`.
+See `GAP-REVIEW.md` §5:
+- accounting entity;
+- currency;
+- the ERP source for commitments and actuals;
+- whether the "Other" cost type is allowed;
+- whether amounts are net of recoverable tax;
+- the period-close calendar;
+- whether to reuse the existing PMS audit log.
+
+Sites are free text until a site master is chosen. `tbl_locationdetails` is a branch/office master, so it was not assumed to be a site list.
+
+Spire.XLS adds an "Evaluation Warning" sheet if it is not licensed on the server. The PMS already uses it in the same way.

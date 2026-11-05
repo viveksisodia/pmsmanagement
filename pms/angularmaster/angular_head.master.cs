@@ -36,6 +36,7 @@ public partial class angular_head : System.Web.UI.MasterPage
     public int isteamwork = 0;
     public int isqc = 0;
     public int isissue = 0;
+    public int iscostcontrol = 0;
 
     public string strmenudata = "";
     public int ispmsdashboard_admin= 0;
@@ -112,6 +113,8 @@ public partial class angular_head : System.Web.UI.MasterPage
         { }
         chkisadmin = checkadmin(uid);
         issingleuser = checksingleuser(uid);
+        // Cost Control link: administrators and employees granted access (never throws).
+        iscostcontrol = PmsCostControl.ShowMenuLink() ? 1 : 0;
         if (Request.QueryString["empid"] != null)
         {
             

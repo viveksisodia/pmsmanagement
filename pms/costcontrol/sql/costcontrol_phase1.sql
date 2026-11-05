@@ -15,6 +15,9 @@
              Pms_tbl_AddMilestone (id, milestone, ProjectId, regid, ...)
              Pms_tbl_Addtask (id, taskname, ProjectId, Milestoneid, ...)
    Run on  : a NON-PRODUCTION copy first. Take a backup before running.
+   ORDER   : ALWAYS run costcontrol_phase2.sql after this script. Phase 2
+             replaces several procedures defined here; re-running only this
+             script would bring back the Phase 1 behaviour.
    ===================================================================== */
 
 SET ANSI_NULLS ON;

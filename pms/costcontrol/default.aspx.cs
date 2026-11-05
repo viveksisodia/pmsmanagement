@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -8,122 +8,58 @@ using System.Web;
 using System.Web.Script.Services;
 using System.Web.Services;
 using System.Web.UI;
-using CommonClass;
 
 /// <summary>
-/// PMS Cost Control (Phase 1): cost codes, versioned project budgets,
-/// cost entries and budget-vs-actual.
+/// PMS Cost Control: cost codes, versioned budgets with maker-checker approval,
+/// cost entries, estimate to complete, budget-vs-actual, project summary,
+/// monthly period lock, audit history and access management.
 /// All data access goes through the parameterised usp_pms_cc_* procedures
-/// (see pms/costcontrol/sql/costcontrol_phase1.sql). Existing PMS tables are
-/// only read, never written.
-/// Access: company administrators only (same admin rule as the Issues module).
+/// (pms/costcontrol/sql/costcontrol_phase1.sql + costcontrol_phase2.sql).
+/// Access rules live in App_Code/PmsCostControl.cs.
 /// </summary>
 public partial class pms_costcontrol_default : Page
 {
     public int pageRegId;
     public int pageEmployeeId;
     public int isadmin;
+    public int canEnter;
+    public int canApprove;
 
     protected void Page_Load(object sender, EventArgs e)
     {
-        pageRegId = GetCookieInt("cadmin", "id");
-        pageEmployeeId = GetCookieInt("user", "user_id");
-        isadmin = IsAdmin(pageRegId, pageEmployeeId) ? 1 : 0;
-        if (isadmin != 1) Response.Redirect("/pms/accessdenied.aspx");
+        PmsCostControl.Context login = PmsCostControl.Current();
+        pageRegId = login.RegId;
+        pageEmployeeId = login.EmployeeId;
+        isadmin = login.IsAdmin ? 1 : 0;
+        canEnter = login.Allows(PmsCostControl.Need.Enter) ? 1 : 0;
+        canApprove = login.Allows(PmsCostControl.Need.Approve) ? 1 : 0;
+        if (!login.Allows(PmsCostControl.Need.View)) Response.Redirect("/pms/accessdenied.aspx");
     }
 
-    #region Login and access helpers
+    #region Helpers
 
-    private static int GetCookieInt(string cookieName, string key)
-    {
-        HttpCookie cookie = HttpContext.Current.Request.Cookies[cookieName];
-        int value;
-        return cookie != null && Int32.TryParse(cookie[key], out value) ? value : 0;
-    }
+    private static PmsCostControl.Context Require(PmsCostControl.Need need) { return PmsCostControl.Require(need); }
+    private static DataSet Run(string procedureName, params SqlParameter[] parameters) { return PmsCostControl.RunProcedure(procedureName, parameters); }
+    private static List<Dictionary<string, object>> Rows(DataSet ds, int index) { return PmsCostControl.ToRows(ds, index); }
 
-    private static bool IsAdmin(int regId, int employeeId)
-    {
-        if (regId <= 0 || employeeId <= 0) return false;
-        string sql = "SELECT TOP 1 mp.id FROM dbo.Manage_Profile mp WITH (NOLOCK) " +
-                     "INNER JOIN dbo.tbl_employee e WITH (NOLOCK) ON mp.id=TRY_CONVERT(int,e.roleid) " +
-                     "WHERE e.id=" + employeeId.ToString(CultureInfo.InvariantCulture) +
-                     " AND e.regid=" + regId.ToString(CultureInfo.InvariantCulture) +
-                     " AND mp.status=1 AND mp.archive=0";
-        try
-        {
-            DataSet ds = new DataAccess().GetDataSetInline(sql);
-            return ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0 &&
-                   Convert.ToInt32(ds.Tables[0].Rows[0]["id"], CultureInfo.InvariantCulture) == 1;
-        }
-        catch { return false; }
-    }
-
-    private sealed class LoginContext { public int RegId; public int EmployeeId; }
-
-    private static LoginContext RequireAdminLogin()
-    {
-        int regId = GetCookieInt("cadmin", "id");
-        int employeeId = GetCookieInt("user", "user_id");
-        if (regId <= 0 || employeeId <= 0) throw new HttpException(401, "Login information was not found.");
-        if (!IsAdmin(regId, employeeId)) throw new HttpException(403, "Only administrators can use Cost Control.");
-        return new LoginContext { RegId = regId, EmployeeId = employeeId };
-    }
-
-    #endregion
-
-    #region Data helpers
-
-    private static DataSet RunProcedure(string procedureName, params SqlParameter[] parameters)
-    {
-        foreach (SqlParameter parameter in parameters)
-            if (parameter.Value == null) parameter.Value = DBNull.Value;
-        return new DataAccess().GetDataSet(procedureName, parameters);
-    }
-
-    private static object DbValue(int? value) { return value.HasValue && value.Value > 0 ? (object)value.Value : DBNull.Value; }
-    private static object DbValue(decimal? value) { return value.HasValue ? (object)value.Value : DBNull.Value; }
-    private static object DbText(string value) { return String.IsNullOrWhiteSpace(value) ? (object)DBNull.Value : value.Trim(); }
-
-    private static List<Dictionary<string, object>> ToRows(DataSet ds, int tableIndex)
-    {
-        var rows = new List<Dictionary<string, object>>();
-        if (ds == null || ds.Tables.Count <= tableIndex) return rows;
-        DataTable table = ds.Tables[tableIndex];
-        foreach (DataRow row in table.Rows)
-        {
-            var item = new Dictionary<string, object>();
-            foreach (DataColumn column in table.Columns)
-            {
-                object value = row[column];
-                if (value == DBNull.Value) value = null;
-                else if (value is DateTime) value = ((DateTime)value).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
-                item[column.ColumnName] = value;
-            }
-            rows.Add(item);
-        }
-        return rows;
-    }
-
-    /// <summary>Reads the Result / Message / id row returned by every save procedure.</summary>
+    /// <summary>
+    /// Reads the Result / Message / id row returned by every save procedure.
+    /// Result 2 means "needs confirmation" (for example a duplicate reference).
+    /// </summary>
     private static object SaveResult(DataSet ds)
     {
         if (ds == null || ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
             return new { Success = false, Message = "No response from the database." };
         DataRow row = ds.Tables[0].Rows[0];
-        bool success = Convert.ToInt32(row["Result"], CultureInfo.InvariantCulture) == 1;
+        int result = Convert.ToInt32(row["Result"], CultureInfo.InvariantCulture);
         int id = ds.Tables[0].Columns.Contains("id") && row["id"] != DBNull.Value ? Convert.ToInt32(row["id"], CultureInfo.InvariantCulture) : 0;
-        return new { Success = success, Message = Convert.ToString(row["Message"], CultureInfo.InvariantCulture), Id = id };
+        return new { Success = result == 1, NeedsConfirm = result == 2, Message = Convert.ToString(row["Message"], CultureInfo.InvariantCulture), Id = id };
     }
 
     private static object Failure(Exception ex) { return new { Success = false, Message = ex.Message }; }
 
-    private static DateTime ParseBusinessDate(string value)
-    {
-        DateTime date;
-        if (!DateTime.TryParseExact(value ?? "", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
-            throw new ArgumentException("Enter the cost date as a valid date.");
-        return date.Date;
-    }
+    private static SqlParameter Reg(PmsCostControl.Context login) { return new SqlParameter("@regid", login.RegId); }
+    private static SqlParameter Uid(PmsCostControl.Context login) { return new SqlParameter("@uid", login.EmployeeId); }
 
     #endregion
 
@@ -135,11 +71,31 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            DataSet projects = RunProcedure("usp_pms_cc_Project_List", new SqlParameter("@regid", login.RegId));
-            DataSet costCodes = RunProcedure("usp_pms_cc_CostCode_List", new SqlParameter("@regid", login.RegId));
-            DataSet units = RunProcedure("usp_pms_cc_Unit_List", new SqlParameter("@regid", login.RegId));
-            return new { Success = true, Projects = ToRows(projects, 0), CostCodes = ToRows(costCodes, 0), Units = ToRows(units, 0) };
+            var login = Require(PmsCostControl.Need.View);
+            DataSet projects = Run("usp_pms_cc_Project_List", Reg(login));
+            DataSet costCodes = Run("usp_pms_cc_CostCode_List", Reg(login));
+            DataSet units = Run("usp_pms_cc_Unit_List", Reg(login));
+            return new
+            {
+                Success = true,
+                Projects = Rows(projects, 0),
+                CostCodes = Rows(costCodes, 0),
+                Units = Rows(units, 0),
+                Access = new { IsAdmin = login.IsAdmin, CanEnter = login.Allows(PmsCostControl.Need.Enter), CanApprove = login.CanApprove, EmployeeId = login.EmployeeId }
+            };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object GetProjectStructure(int projectId)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.View);
+            DataSet ds = Run("usp_pms_cc_ProjectStructure", Reg(login), new SqlParameter("@ProjectId", projectId));
+            return new { Success = true, Milestones = Rows(ds, 0), Tasks = Rows(ds, 1) };
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -151,30 +107,15 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            return SaveResult(RunProcedure("usp_pms_cc_Unit_Add",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@UnitName", unitName ?? "")));
-        }
-        catch (Exception ex) { return Failure(ex); }
-    }
-
-    [WebMethod(EnableSession = true)]
-    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-    public static object GetProjectStructure(int projectId)
-    {
-        try
-        {
-            LoginContext login = RequireAdminLogin();
-            DataSet ds = RunProcedure("usp_pms_cc_ProjectStructure",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@ProjectId", projectId));
-            return new { Success = true, Milestones = ToRows(ds, 0), Tasks = ToRows(ds, 1) };
+            var login = Require(PmsCostControl.Need.Enter);
+            return SaveResult(Run("usp_pms_cc_Unit_Add", Reg(login), new SqlParameter("@UnitName", unitName ?? "")));
         }
         catch (Exception ex) { return Failure(ex); }
     }
 
     #endregion
 
-    #region Cost codes
+    #region Cost codes (administrators)
 
     public class CostCodeRequest
     {
@@ -183,6 +124,8 @@ public partial class pms_costcontrol_default : Page
         public string Name { get; set; }
         public string CostType { get; set; }
         public string Description { get; set; }
+        public string CodeLevel { get; set; }
+        public int? ParentId { get; set; }
     }
 
     [WebMethod(EnableSession = true)]
@@ -191,16 +134,18 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
+            var login = Require(PmsCostControl.Need.Admin);
             if (request == null) throw new ArgumentException("Nothing to save.");
-            return SaveResult(RunProcedure("usp_pms_cc_CostCode_Save",
-                new SqlParameter("@regid", login.RegId),
+            return SaveResult(Run("usp_pms_cc_CostCode_Save",
+                Reg(login),
                 new SqlParameter("@id", request.Id),
                 new SqlParameter("@Code", request.Code ?? ""),
                 new SqlParameter("@Name", request.Name ?? ""),
                 new SqlParameter("@CostType", request.CostType ?? ""),
-                new SqlParameter("@Description", DbText(request.Description)),
-                new SqlParameter("@uid", login.EmployeeId)));
+                new SqlParameter("@Description", PmsCostControl.DbText(request.Description)),
+                Uid(login),
+                new SqlParameter("@CodeLevel", String.IsNullOrWhiteSpace(request.CodeLevel) ? "Element" : request.CodeLevel),
+                new SqlParameter("@ParentId", PmsCostControl.DbValue(request.ParentId))));
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -211,9 +156,8 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            return SaveResult(RunProcedure("usp_pms_cc_CostCode_Delete",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@id", costCodeId), new SqlParameter("@uid", login.EmployeeId)));
+            var login = Require(PmsCostControl.Need.Admin);
+            return SaveResult(Run("usp_pms_cc_CostCode_Delete", Reg(login), new SqlParameter("@id", costCodeId), Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -228,12 +172,10 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            DataSet ds = RunProcedure("usp_pms_cc_Budget_Get",
-                new SqlParameter("@regid", login.RegId),
-                new SqlParameter("@ProjectId", projectId),
-                new SqlParameter("@VersionId", DbValue((int?)versionId)));
-            return new { Success = true, Versions = ToRows(ds, 0), Lines = ToRows(ds, 1) };
+            var login = Require(PmsCostControl.Need.View);
+            DataSet ds = Run("usp_pms_cc_Budget_Get", Reg(login), new SqlParameter("@ProjectId", projectId),
+                new SqlParameter("@VersionId", PmsCostControl.DbValue((int?)versionId)));
+            return new { Success = true, Versions = Rows(ds, 0), Lines = Rows(ds, 1) };
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -244,23 +186,47 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            return SaveResult(RunProcedure("usp_pms_cc_BudgetVersion_Create",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@ProjectId", projectId),
-                new SqlParameter("@Reason", DbText(reason)), new SqlParameter("@uid", login.EmployeeId)));
+            var login = Require(PmsCostControl.Need.Enter);
+            return SaveResult(Run("usp_pms_cc_BudgetVersion_Create", Reg(login), new SqlParameter("@ProjectId", projectId),
+                new SqlParameter("@Reason", PmsCostControl.DbText(reason)), Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }
 
     [WebMethod(EnableSession = true)]
     [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object SubmitBudgetVersion(int versionId)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.Enter);
+            return SaveResult(Run("usp_pms_cc_BudgetVersion_Submit", Reg(login), new SqlParameter("@VersionId", versionId), Uid(login)));
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    /// <summary>Approve and lock. The procedure refuses the person who submitted it (AP-03).</summary>
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
     public static object LockBudgetVersion(int versionId)
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            return SaveResult(RunProcedure("usp_pms_cc_BudgetVersion_Lock",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@VersionId", versionId), new SqlParameter("@uid", login.EmployeeId)));
+            var login = Require(PmsCostControl.Need.Approve);
+            return SaveResult(Run("usp_pms_cc_BudgetVersion_Lock", Reg(login), new SqlParameter("@VersionId", versionId), Uid(login)));
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object RejectBudgetVersion(int versionId, string reason)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.Approve);
+            return SaveResult(Run("usp_pms_cc_BudgetVersion_Reject", Reg(login), new SqlParameter("@VersionId", versionId),
+                new SqlParameter("@Reason", reason ?? ""), Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -271,9 +237,8 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            return SaveResult(RunProcedure("usp_pms_cc_BudgetVersion_DeleteDraft",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@VersionId", versionId), new SqlParameter("@uid", login.EmployeeId)));
+            var login = Require(PmsCostControl.Need.Enter);
+            return SaveResult(Run("usp_pms_cc_BudgetVersion_DeleteDraft", Reg(login), new SqlParameter("@VersionId", versionId), Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -298,21 +263,21 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
+            var login = Require(PmsCostControl.Need.Enter);
             if (request == null) throw new ArgumentException("Nothing to save.");
-            return SaveResult(RunProcedure("usp_pms_cc_BudgetLine_Save",
-                new SqlParameter("@regid", login.RegId),
+            return SaveResult(Run("usp_pms_cc_BudgetLine_Save",
+                Reg(login),
                 new SqlParameter("@id", request.Id),
                 new SqlParameter("@VersionId", request.VersionId),
-                new SqlParameter("@MilestoneId", DbValue(request.MilestoneId)),
-                new SqlParameter("@TaskId", DbValue(request.TaskId)),
+                new SqlParameter("@MilestoneId", PmsCostControl.DbValue(request.MilestoneId)),
+                new SqlParameter("@TaskId", PmsCostControl.DbValue(request.TaskId)),
                 new SqlParameter("@CostCodeId", request.CostCodeId),
-                new SqlParameter("@Quantity", DbValue(request.Quantity)),
-                new SqlParameter("@UnitId", DbValue(request.UnitId)),
-                new SqlParameter("@Rate", DbValue(request.Rate)),
-                new SqlParameter("@Amount", DbValue(request.Amount)),
-                new SqlParameter("@Remarks", DbText(request.Remarks)),
-                new SqlParameter("@uid", login.EmployeeId)));
+                new SqlParameter("@Quantity", PmsCostControl.DbValue(request.Quantity)),
+                new SqlParameter("@UnitId", PmsCostControl.DbValue(request.UnitId)),
+                new SqlParameter("@Rate", PmsCostControl.DbValue(request.Rate)),
+                new SqlParameter("@Amount", PmsCostControl.DbValue(request.Amount)),
+                new SqlParameter("@Remarks", PmsCostControl.DbText(request.Remarks)),
+                Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -323,9 +288,8 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            return SaveResult(RunProcedure("usp_pms_cc_BudgetLine_Delete",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@id", budgetLineId), new SqlParameter("@uid", login.EmployeeId)));
+            var login = Require(PmsCostControl.Need.Enter);
+            return SaveResult(Run("usp_pms_cc_BudgetLine_Delete", Reg(login), new SqlParameter("@id", budgetLineId), Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -340,10 +304,9 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            DataSet ds = RunProcedure("usp_pms_cc_CostEntry_List",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@ProjectId", projectId));
-            return new { Success = true, Entries = ToRows(ds, 0) };
+            var login = Require(PmsCostControl.Need.View);
+            DataSet ds = Run("usp_pms_cc_CostEntry_List", Reg(login), new SqlParameter("@ProjectId", projectId));
+            return new { Success = true, Entries = Rows(ds, 0) };
         }
         catch (Exception ex) { return Failure(ex); }
     }
@@ -357,8 +320,12 @@ public partial class pms_costcontrol_default : Page
         public int CostCodeId { get; set; }
         public string EntryDate { get; set; }   // yyyy-MM-dd, business date only
         public decimal? Amount { get; set; }
+        public string SourceDocType { get; set; }
         public string ReferenceNo { get; set; }
+        public string SiteName { get; set; }
         public string Remarks { get; set; }
+        public string Reason { get; set; }      // required when changing a saved entry
+        public bool ConfirmDuplicate { get; set; }
     }
 
     [WebMethod(EnableSession = true)]
@@ -367,42 +334,94 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
+            var login = Require(PmsCostControl.Need.Enter);
             if (request == null) throw new ArgumentException("Nothing to save.");
-            DateTime entryDate = ParseBusinessDate(request.EntryDate);
-            SqlParameter dateParameter = new SqlParameter("@EntryDate", SqlDbType.Date) { Value = entryDate };
-            return SaveResult(RunProcedure("usp_pms_cc_CostEntry_Save",
-                new SqlParameter("@regid", login.RegId),
+            DateTime entryDate = PmsCostControl.ParseBusinessDate(request.EntryDate, "the cost date");
+            return SaveResult(Run("usp_pms_cc_CostEntry_Save",
+                Reg(login),
                 new SqlParameter("@id", request.Id),
                 new SqlParameter("@ProjectId", request.ProjectId),
-                new SqlParameter("@MilestoneId", DbValue(request.MilestoneId)),
-                new SqlParameter("@TaskId", DbValue(request.TaskId)),
+                new SqlParameter("@MilestoneId", PmsCostControl.DbValue(request.MilestoneId)),
+                new SqlParameter("@TaskId", PmsCostControl.DbValue(request.TaskId)),
                 new SqlParameter("@CostCodeId", request.CostCodeId),
-                dateParameter,
-                new SqlParameter("@Amount", DbValue(request.Amount)),
-                new SqlParameter("@ReferenceNo", DbText(request.ReferenceNo)),
-                new SqlParameter("@Remarks", DbText(request.Remarks)),
-                new SqlParameter("@uid", login.EmployeeId)));
+                PmsCostControl.DateParameter("@EntryDate", entryDate),
+                new SqlParameter("@Amount", PmsCostControl.DbValue(request.Amount)),
+                new SqlParameter("@ReferenceNo", PmsCostControl.DbText(request.ReferenceNo)),
+                new SqlParameter("@Remarks", PmsCostControl.DbText(request.Remarks)),
+                Uid(login),
+                new SqlParameter("@SiteName", PmsCostControl.DbText(request.SiteName)),
+                new SqlParameter("@SourceDocType", PmsCostControl.DbText(request.SourceDocType)),
+                new SqlParameter("@Reason", PmsCostControl.DbText(request.Reason)),
+                new SqlParameter("@ConfirmDuplicate", request.ConfirmDuplicate)));
         }
         catch (Exception ex) { return Failure(ex); }
     }
 
     [WebMethod(EnableSession = true)]
     [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-    public static object DeleteCostEntry(int costEntryId)
+    public static object DeleteCostEntry(int costEntryId, string reason)
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            return SaveResult(RunProcedure("usp_pms_cc_CostEntry_Delete",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@id", costEntryId), new SqlParameter("@uid", login.EmployeeId)));
+            var login = Require(PmsCostControl.Need.Enter);
+            return SaveResult(Run("usp_pms_cc_CostEntry_Delete", Reg(login), new SqlParameter("@id", costEntryId), Uid(login),
+                new SqlParameter("@Reason", PmsCostControl.DbText(reason))));
         }
         catch (Exception ex) { return Failure(ex); }
     }
 
     #endregion
 
-    #region Budget vs actual
+    #region Forecast (ETC)
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object GetEtc(int projectId)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.View);
+            DataSet ds = Run("usp_pms_cc_Etc_List", Reg(login), new SqlParameter("@ProjectId", projectId));
+            return new { Success = true, Rows = Rows(ds, 0) };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    public class EtcRequest
+    {
+        public int ProjectId { get; set; }
+        public int CostCodeId { get; set; }
+        public int? MilestoneId { get; set; }
+        public decimal? EtcAmount { get; set; }
+        public string AsOfDate { get; set; }
+        public string Remarks { get; set; }
+    }
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object SaveEtc(EtcRequest request)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.Enter);
+            if (request == null) throw new ArgumentException("Nothing to save.");
+            DateTime asOf = PmsCostControl.ParseBusinessDate(request.AsOfDate, "the as-of date");
+            return SaveResult(Run("usp_pms_cc_Etc_Save",
+                Reg(login),
+                new SqlParameter("@ProjectId", request.ProjectId),
+                new SqlParameter("@CostCodeId", request.CostCodeId),
+                new SqlParameter("@MilestoneId", PmsCostControl.DbValue(request.MilestoneId)),
+                new SqlParameter("@EtcAmount", PmsCostControl.DbValue(request.EtcAmount)),
+                PmsCostControl.DateParameter("@AsOfDate", asOf),
+                new SqlParameter("@Remarks", PmsCostControl.DbText(request.Remarks)),
+                Uid(login)));
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    #endregion
+
+    #region Reports
 
     [WebMethod(EnableSession = true)]
     [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
@@ -410,12 +429,108 @@ public partial class pms_costcontrol_default : Page
     {
         try
         {
-            LoginContext login = RequireAdminLogin();
-            string grouping = String.Equals(groupBy, "MILESTONE", StringComparison.OrdinalIgnoreCase) ? "MILESTONE" : "COSTCODE";
-            DataSet ds = RunProcedure("usp_pms_cc_BudgetVsActual",
-                new SqlParameter("@regid", login.RegId), new SqlParameter("@ProjectId", projectId), new SqlParameter("@GroupBy", grouping));
-            List<Dictionary<string, object>> header = ToRows(ds, 1);
-            return new { Success = true, Rows = ToRows(ds, 0), Header = header.FirstOrDefault() };
+            var login = Require(PmsCostControl.Need.View);
+            string grouping = PmsCostControl.NormalizeGroupBy(groupBy);
+            DataSet ds = Run("usp_pms_cc_BudgetVsActual", Reg(login), new SqlParameter("@ProjectId", projectId), new SqlParameter("@GroupBy", grouping));
+            return new { Success = true, Rows = Rows(ds, 0), Header = Rows(ds, 1).FirstOrDefault() };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object GetProjectSummary()
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.View);
+            return new { Success = true, Rows = Rows(Run("usp_pms_cc_ProjectSummary", Reg(login)), 0) };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    #endregion
+
+    #region Periods
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object GetPeriods(int projectId)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.View);
+            return new { Success = true, Rows = Rows(Run("usp_pms_cc_Period_List", Reg(login), new SqlParameter("@ProjectId", projectId)), 0) };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object SetPeriodStatus(int projectId, string periodStart, bool close, string reason)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.Approve);
+            DateTime period = PmsCostControl.ParseBusinessDate(periodStart, "the month");
+            return SaveResult(Run("usp_pms_cc_Period_SetStatus", Reg(login), new SqlParameter("@ProjectId", projectId),
+                PmsCostControl.DateParameter("@PeriodStart", period), new SqlParameter("@Close", close),
+                new SqlParameter("@Reason", PmsCostControl.DbText(reason)), Uid(login)));
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    #endregion
+
+    #region History and access
+
+    /// <summary>projectId = 0 returns company-level history (cost codes, access).</summary>
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object GetHistory(int projectId)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.View);
+            if (projectId <= 0 && !login.IsAdmin) throw new HttpException(403, "Only administrators can view company-level history.");
+            DataSet ds = Run("usp_pms_cc_Audit_List", Reg(login), new SqlParameter("@ProjectId", PmsCostControl.DbValue((int?)projectId)));
+            return new { Success = true, Rows = Rows(ds, 0) };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object GetAccessList()
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.Admin);
+            return new { Success = true, Rows = Rows(Run("usp_pms_cc_Access_List", Reg(login)), 0) };
+        }
+        catch (Exception ex) { return Failure(ex); }
+    }
+
+    public class AccessRequest
+    {
+        public int EmployeeId { get; set; }
+        public bool CanView { get; set; }
+        public bool CanEnter { get; set; }
+        public bool CanApprove { get; set; }
+    }
+
+    [WebMethod(EnableSession = true)]
+    [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+    public static object SaveAccess(AccessRequest request)
+    {
+        try
+        {
+            var login = Require(PmsCostControl.Need.Admin);
+            if (request == null || request.EmployeeId <= 0) throw new ArgumentException("Select an employee.");
+            return SaveResult(Run("usp_pms_cc_Access_Save", Reg(login), new SqlParameter("@EmployeeId", request.EmployeeId),
+                new SqlParameter("@CanView", request.CanView), new SqlParameter("@CanEnter", request.CanEnter),
+                new SqlParameter("@CanApprove", request.CanApprove), Uid(login)));
         }
         catch (Exception ex) { return Failure(ex); }
     }

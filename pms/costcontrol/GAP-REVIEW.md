@@ -76,6 +76,8 @@
 
 ## 4. What can be built next with no outside dependency (proposed Phase 2)
 
+> **Status 2026-11-05:** all 10 items are **built**. The code is in place but the database script has not been run yet. Details and verification are in `README.md`. The status tables in §1–§3 describe Phase 1. After Phase 2, these items are covered: CC-01, CC-04, AU-01/NF-06 (Cost Control scope), AP-03, AP-10 (simplified), §5.1 admin-approval conflict, PE-01/04/06 (simplified monthly lock), RP-01 (ETC/EAC/VAC, cost type), RP-16 (multi-project summary), RP-17 (Excel), and DM-01 (site as text, source document type).
+
 None of these needs an ERP, Finance or statutory decision first.
 
 | # | Item | Requirements | Database change |
