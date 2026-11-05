@@ -730,7 +730,7 @@ BEGIN
     -- Every budget line uses a posting code and a milestone of this project; every reserve line a reserve of this project.
     IF EXISTS (SELECT 1 FROM dbo.Pms_tbl_BudgetMovementLine l WHERE l.MovementId = @MovementId AND l.regid = @regid AND l.status = 1 AND l.archive = 0 AND l.LineKind = N'Budget'
                AND (dbo.ufn_pms_cc_IsPostingCode(@regid, l.CostCodeId) = 0
-                    OR (l.MilestoneId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_AddMilestone ms WHERE ms.id = l.MilestoneId AND ms.ProjectId = @ProjectId AND ms.regid = @regid AND ms.status = 1 AND ms.archive = 0)))))
+                    OR (l.MilestoneId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_AddMilestone ms WHERE ms.id = l.MilestoneId AND ms.ProjectId = @ProjectId AND ms.regid = @regid AND ms.status = 1 AND ms.archive = 0))))
         BEGIN SET @Message = N'A budget line has an invalid cost code or milestone.'; RETURN; END
     IF EXISTS (SELECT 1 FROM dbo.Pms_tbl_BudgetMovementLine l WHERE l.MovementId = @MovementId AND l.regid = @regid AND l.status = 1 AND l.archive = 0 AND l.LineKind = N'Reserve'
                AND NOT EXISTS (SELECT 1 FROM dbo.Pms_tbl_ProjectReserve r WHERE r.id = l.ReserveId AND r.ProjectId = @ProjectId AND r.regid = @regid AND r.status = 1 AND r.archive = 0))
