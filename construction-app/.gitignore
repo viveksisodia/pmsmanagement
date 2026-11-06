@@ -1,0 +1,15 @@
+# build output
+bin/
+obj/
+*.user
+.vs/
+
+# Angular
+web/node_modules/
+web/dist/
+web/.angular/
+
+# local secrets and test accounts (never commit)
+.local/
+appsettings.*.local.json
+*.env
