@@ -33,17 +33,17 @@ BEGIN
     DECLARE @Levels int = 0, @Types int = 0;
     BEGIN TRY
     BEGIN TRAN;
-    IF NOT EXISTS (SELECT 1 FROM dbo.cpm_LevelType WHERE RegId = @RegId)
+    IF NOT EXISTS (SELECT 1 FROM dbo.cpm_LevelType WHERE regid = @RegId AND status = 1 AND archive = 0)
     BEGIN
-        INSERT dbo.cpm_LevelType(RegId, Code, Name, IsHabitable, SortOrder) VALUES
+        INSERT dbo.cpm_LevelType(regid, Code, Name, IsHabitable, SortOrder) VALUES
             (@RegId, N'BAS', N'Basement', 0, 10), (@RegId, N'GRD', N'Ground', 1, 20), (@RegId, N'STL', N'Stilt', 0, 30),
             (@RegId, N'POD', N'Podium', 0, 40), (@RegId, N'TYP', N'Typical', 1, 50), (@RegId, N'REF', N'Refuge', 0, 60),
             (@RegId, N'SRV', N'Service', 0, 70), (@RegId, N'TER', N'Terrace', 0, 80);
         SET @Levels = @@ROWCOUNT;
     END
-    IF NOT EXISTS (SELECT 1 FROM dbo.cpm_UnitType WHERE RegId = @RegId)
+    IF NOT EXISTS (SELECT 1 FROM dbo.cpm_UnitType WHERE regid = @RegId AND status = 1 AND archive = 0)
     BEGIN
-        INSERT dbo.cpm_UnitType(RegId, Code, Name, Category, Bedrooms) VALUES
+        INSERT dbo.cpm_UnitType(regid, Code, Name, Category, Bedrooms) VALUES
             (@RegId, N'1BHK', N'1 BHK', N'Residential', 1), (@RegId, N'2BHK', N'2 BHK', N'Residential', 2),
             (@RegId, N'3BHK', N'3 BHK', N'Residential', 3), (@RegId, N'4BHK', N'4 BHK', N'Residential', 4),
             (@RegId, N'PH', N'Penthouse', N'Residential', NULL), (@RegId, N'VILLA', N'Villa', N'Villa', NULL),
@@ -52,7 +52,7 @@ BEGIN
         SET @Types = @@ROWCOUNT;
     END
     IF @Levels + @Types > 0
-        INSERT dbo.cpm_AuditLog(RegId, EntityType, EntityId, Action, NewData)
+        INSERT dbo.cpm_AuditLog(regid, EntityType, EntityId, Action, NewData)
         VALUES(@RegId, N'Company', @RegId, N'Setup', (SELECT @Levels AS LevelTypes, @Types AS UnitTypes FOR JSON PATH, WITHOUT_ARRAY_WRAPPER));
     COMMIT;
     END TRY

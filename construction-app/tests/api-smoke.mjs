@@ -176,6 +176,27 @@ await check('other company sees none of these projects', async () => {
     return `other company sees ${list.length} projects; direct get 404`;
   } finally { token = keep; }
 });
+await check('soft delete: a deleted unit leaves the lists, and its number can be used again', async () => {
+  const before = (await call('GET', `/api/projects/${projectId}/units?buildingId=${villaId}`)).data;
+  const v3 = before.items.find(u => u.unitNo === 'V-03');
+  await call('POST', `/api/projects/${projectId}/units/delete`, { ids: [v3.id], reason: 'Created by mistake' });
+  const after = (await call('GET', `/api/projects/${projectId}/units?buildingId=${villaId}`)).data;
+  await call('GET', `/api/projects/${projectId}/units/${v3.id}`, undefined, { expect: [404] });
+  const villa = unitTypes.find(u => u.code === 'VILLA').id;
+  const again = (await call('POST', `/api/projects/${projectId}/buildings/${villaId}/units/generate`,
+    { positions: [1, 2, 3].map(n => ({ position: n, unitTypeId: villa, plotSqm: 240 })) })).data;
+  return `${before.total} → ${after.total} units after delete; regenerate created ${again.created}, skipped ${again.skipped}`;
+});
+await check('soft delete: removing a team member archives the link, the project keeps working', async () => {
+  const p = (await call('GET', `/api/projects/${projectId}`)).data;
+  const keep = p.members.filter(m => m.fullName !== 'View Only').map(m => m.id);
+  await call('PUT', `/api/projects/${projectId}`, { ...p, land: p.land.map(l => ({ landParcelId: l.landParcelId, areaUsedSqm: l.areaUsedSqm })), memberIds: keep });
+  const p2 = (await call('GET', `/api/projects/${projectId}`)).data;
+  const back = p2.members.map(m => m.id).concat(p.members.filter(m => !keep.includes(m.id)).map(m => m.id));
+  await call('PUT', `/api/projects/${projectId}`, { ...p2, land: p2.land.map(l => ({ landParcelId: l.landParcelId, areaUsedSqm: l.areaUsedSqm })), memberIds: back });
+  const p3 = (await call('GET', `/api/projects/${projectId}`)).data;
+  return `members ${p.members.length} → ${p2.members.length} → ${p3.members.length}`;
+});
 await check('username shared by two people is refused', async () => {
   const r = await call('POST', '/api/auth/sign-in', { userName: 'shared', password: env.TEST_VIEWER_PASSWORD }, { auth: false, expect: [409] }); return r.data.message;
 });

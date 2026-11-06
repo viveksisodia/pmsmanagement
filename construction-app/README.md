@@ -60,7 +60,13 @@ construction-app/
 * Each script stops unless it runs in `absolutebook_2172` (or a scratch database named `cpmtest_…` for testing),
   and records itself in `dbo.cpm_SchemaVersion`. All scripts are safe to run again.
 * Written for SQL Server 2016 SP1, compatibility level 130 (no `STRING_AGG`, `TRIM`, `CONCAT_WS`).
-* 21 tables, 43 procedures, 4 functions and 6 table types. Every business table has `RegId`; every procedure takes `@RegId` and `@UserId`
+* 21 tables, 43 procedures, 5 functions and 6 table types.
+* **Columns follow the ERP convention in every table:** `regid`, `cdate` (datetime, `GETDATE()`), `uid` (who created it),
+  `status` (bit, default 1) and `archive` (bit, default 0), plus `mid` / `mdate` for changes.
+  Every read uses `status = 1 AND archive = 0`, and nothing is hard-deleted: deleting sets `status = 0, archive = 1`.
+  Replaced child rows (land owners, project land and team, profile permissions) are archived the same way.
+  Existing ERP tables are read with the same `status = 1 AND archive = 0` check the ERP uses.
+  Unique codes and numbers apply to current rows only, so a deleted unit number can be used again. Every business table has `RegId`; every procedure takes `@RegId` and `@UserId`
   first and checks permissions and project access itself. Saves use row versions, so a stale save is refused.
 
 **Installing in absolutebook_2172 (your DBA runs these in SSMS):**
